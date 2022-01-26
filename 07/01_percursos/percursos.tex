@@ -1,0 +1,613 @@
+\documentclass{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,matrix,fit, arrows.meta}
+\usetikzlibrary{graphdrawing.trees}
+\usepackage{color}
+\newcommand{\vet}[1]{\foreach \num in {#1}{\el{\num}}}
+\newcommand{\vetempty}[1]{\foreach \num in {#1}{\elempty{\num}}}
+\newcommand{\el}[1]{\tikz{\node[font=\smaller, draw]{#1}}}
+\newcommand{\elempty}[1]{\tikz{\node[font=\small, minimum size=1cm, draw=white, fill=white]{#1}}}
+\newcommand{\bl}{\color{blue}}
+\newcommand{\gr}{\color{gray}}
+\newcommand{\re}{\color{red}}
+\newcommand{\tcb}[1]{\textcolor{blue}{\textbf{#1}}}
+\newcommand{\tcg}[1]{\textcolor{green}{\textbf{#1}}}
+\newcommand{\tcr}[1]{\textcolor{red}{\textbf{#1}}}
+\newcommand{\ar}{\tikz{\draw [->] (0,0) -- (0,0.4)}}
+\newcommand{\nd}{\color{white!0}.}
+
+\usepackage{beamerthemeSingapore}
+\usepackage{graphicx}
+%\usepackage{here}
+\usepackage{url}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage[tight,raggedright]{subfigure}
+\usepackage{subfigure}
+\usepackage[alf]{abntex2cite}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{algorithm2e}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+% Please add the following required packages to your document preamble:
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{mathtools}
+\usepackage{caption}
+\usepackage{xmpmulti}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily},
+  arn_b/.style = {treenode, circle, black, font=\sffamily\bfseries, draw=black,
+    fill=white, text width=1.5em},% arbre rouge noir, noeud noir
+  arn_n/.style = {treenode, circle, white, font=\sffamily\bfseries, draw=black,
+    fill=black, text width=1.5em},% arbre rouge noir, noeud noir
+  arn_r/.style = {treenode, circle, red, draw=red, 
+    text width=1.5em, very thick},% arbre rouge noir, noeud rouge
+  arn_x/.style = {treenode, rectangle, draw=black,
+    minimum width=0.5em, minimum height=0.5em}% arbre rouge noir, nil
+}
+
+\captionsetup[figure]{labelformat=empty,textfont=smaller}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\apptocmd{\frame}{}{\justifying}{} % Allow optional arguments after frame.
+
+% TODO TODO TODO TODO TODO TODO TODO
+\title{07 - Percursos e Propriedades de Árvores}
+\author{Prof. Alex Kutzke}
+\date{Junho de 2021}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+  \begin{center}
+    % TODO TODO TODO TODO TODO TODO
+    \large{Setor de Educação Profissional e Tecnológica}\\
+    Tecnologia em Análise e Desenvolvimento de Sistemas\\
+    \vspace{1cm}			
+    \small{DS141 - Estruturas de Dados II}
+  \end{center}
+  \titlepage
+
+  \begin{center}
+    Slides adaptados do material produzido\\pelo Prof. Rodrigo Minetto
+  \end{center}
+\end{frame}
+% ==========================================
+
+% ==========================================
+\begin{frame}[c]{Roteiro}
+  \tableofcontents
+
+\end{frame}
+% ==========================================
+
+\section{Percursos}
+
+\begin{frame}[c]{Percurso}
+  \begin{itemize}
+    \item Um \textbf{percurso} corresponde a uma \tcr{visita} sistemática a cada um dos
+      nós da árvore;
+    \item Muitas operações em árvores binárias envolvem o percurso de todas as subárvores,
+      con a execução de alguma ação em cada nó.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{Percurso}
+  \begin{itemize}
+    \item Por exemplo: se cada nó da árvore possui um campo que armazena o salário;
+    \item Para realizar um ``reajuste salarial'', precisamos alterar o valor de todos os nós;
+    \item Nesse caso ``visitar um nó'' seria atualizar o valor armazenado;
+    \item Não podemos esquecer de nenhum nó, nem queremos visitar um nó mais do que uma vez;
+    \item \textbf{Nesse caso}, a ordem da visita não é importante:
+    \begin{itemize}
+      \item Mas em algumas outras aplicações, queremos visitar os nós em certa ordem desejada.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Visita}
+
+  \textbf{Visitar} um nó significa trabalhar com
+a informação do nó (por exemplo: imprimir, modificar, etc). Contudo, 
+durante um percurso podemos passar várias vezes por alguns dos nós sem
+visitá-los.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Formas de Percurso}
+
+  É comum percorrer uma árvore em uma das seguintes ordens:
+  \begin{itemize}
+    \item Pré-ordem (\tcb{R,E,D});
+    \item In-ordem (\tcr{E,R,D});
+    \item Pós-ordem (\tcg{E,D,R});
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pré-ordem}
+
+  \begin{description}
+    \item [Pré-ordem] (R, E, D):
+    \begin{enumerate}
+      \item Visitar a \textbf{raiz};
+      \item Percorrer a \textbf{subárvore da esquerda} em pré-ordem;
+      \item Percorrer a \textbf{subárvore da direita} em pré-ordem.
+    \end{enumerate}
+  \end{description}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pré-ordem: exemplo}
+
+  Percurso pré-ordem para a árvore abaixo:\\
+  \texttt{50, 30, 20, 10, 40, 35, 45, 90, 95}
+  
+  \vspace{1cm}
+
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+
+      \centering
+      \begin{tikzpicture}[-]
+        \node (root) [arn_b] {50}
+        child { 
+        node [arn_b] {30} 
+        child { 
+        node [arn_b] {20} 
+        child { node [arn_b] {10} }
+        child [missing]
+        } 
+        child { 
+        node [arn_b] {40}
+        child { node [arn_b] {35} }
+        child { node [arn_b] {45} }
+        } 
+        }
+        child [missing]
+        child { 
+        node [arn_b] {90} 
+        child [missing]
+        child { node [arn_b] {95} } 
+        };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}
+        \item Segue os nós até chegar ao mais \tcr{"profundos"}, em \tcr{"ramos"} de subárvores da esquerda para a direita;
+        \item Percurso em \tcb{profundidade}.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{In-ordem}
+
+  \begin{description}
+    \item [In-ordem] (E, R, D):
+    \begin{enumerate}
+      \item Percorrer a \textbf{subárvore da esquerda} em in-ordem;
+      \item Visitar a \textbf{raiz};
+      \item Percorrer a \textbf{subárvore da direita} em in-ordem.
+    \end{enumerate}
+  \end{description}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{In-ordem: exemplo}
+
+  Percurso in-ordem para a árvore abaixo:\\
+  \texttt{10, 20, 30, 35, 40, 45, 50, 90, 95}
+  
+  \vspace{1cm}
+
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+
+      \centering
+      \begin{tikzpicture}[-]
+        \node (root) [arn_b] {50}
+        child { 
+        node [arn_b] {30} 
+        child { 
+        node [arn_b] {20} 
+        child { node [arn_b] {10} }
+        child [missing]
+        } 
+        child { 
+        node [arn_b] {40}
+        child { node [arn_b] {35} }
+        child { node [arn_b] {45} }
+        } 
+        }
+        child [missing]
+        child { 
+        node [arn_b] {90} 
+        child [missing]
+        child { node [arn_b] {95} } 
+        };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}
+        \item Visita a raiz entre as ações de percorrer as duas subárvores;
+        \item Percurso em \tcb{ordem simétrica}.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Pós-ordem}
+
+  \begin{description}
+    \item [Pós-ordem] (E, D, R):
+    \begin{enumerate}
+      \item Percorrer a \textbf{subárvore da esquerda} em pós-ordem;
+      \item Percorrer a \textbf{subárvore da direita} em pós-ordem.
+      \item Visitar a \textbf{raiz};
+    \end{enumerate}
+  \end{description}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pós-ordem: exemplo}
+
+  Percurso pré-ordem para a árvore abaixo:\\
+  \texttt{10, 20, 35, 45, 40, 30, 95, 90, 50}
+  
+  \vspace{1cm}
+
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+
+      \centering
+      \begin{tikzpicture}[-]
+        \node (root) [arn_b] {50}
+        child { 
+        node [arn_b] {30} 
+        child { 
+        node [arn_b] {20} 
+        child { node [arn_b] {10} }
+        child [missing]
+        } 
+        child { 
+        node [arn_b] {40}
+        child { node [arn_b] {35} }
+        child { node [arn_b] {45} }
+        } 
+        }
+        child [missing]
+        child { 
+        node [arn_b] {90} 
+        child [missing]
+        child { node [arn_b] {95} } 
+        };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{itemize}
+        \item Visita a raiz \textbf{após} as ações de percorrer as duas subárvores;
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\section{Altura da árvore}
+
+\begin{frame}
+  \frametitle{Altura da árvore}
+
+  \begin{itemize}
+    \item Existe apenas um caminho da raiz para qualquer nó:
+      \begin{itemize}
+        \item Em outras palavras, o que isso quer dizer?;
+        \pause
+        \item Não existem ligações entre nós ``irmãos''. Quando isso ocorre,
+              a estrutura deixa de ser uma árvore de se torna um \textit{grafo};
+      \end{itemize}
+    \pause
+    \item Assim, \tcb{altura} é:
+
+    \center \textit{o comprimento do caminho mais longo, da raiz até uma das folhas.}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Altura da árvore}
+
+  \begin{itemize}
+    \item Altura de uma árvore com um único nó é 0;
+    \item Altura de uma árvore vazia é -1;
+  \end{itemize}
+
+  \begin{columns}[t]
+    \begin{column}{0.3\textwidth}
+      \centering
+      Altura 0\\
+      \begin{tikzpicture}[-]
+        \node (root) [arn_b] {};
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \centering
+      Altura 1\\
+      \begin{tikzpicture}[-]
+        \node (root) [arn_b] {1}
+        child [missing] 
+        child { node [arn_b] {2} };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \centering
+      Altura 2\\
+      \begin{tikzpicture}[-]
+        \node (root) [arn_b] {}
+        child { 
+          node [arn_b] {} 
+        }
+        child [missing]
+        child { 
+          node [arn_b] {} 
+          child { node [arn_b] {} }
+          child [missing]
+        };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Níveis}
+
+  \centering
+  \begin{tikzpicture}[-]
+    \node (root) [arn_b] {}
+    child { 
+      node [arn_b] {} 
+    }
+    child [missing]
+    child { 
+      node (lv1) [arn_b] {} 
+      child { node (lv2) [arn_b] {} }
+      child [missing]
+    };
+    \node [fit=(root)(lv1)(lv2)] (box) {};
+    \node (lroot) [right = 3cm of root] {Nível 0};
+    \node (llv1) [below= of lroot]  {Nível 1};
+    \node (llv2) [below= of llv1]  {Nível 2};
+    \draw[->,shorten <= 5pt,dashed] (root) -- (lroot);
+    \draw[->,shorten <= 5pt,dashed] (lv1) -- (llv1);
+    \draw[->,shorten <= 5pt,dashed] (lv2) -- (llv2);
+  \end{tikzpicture}
+\end{frame}
+
+\section{Altura, número de nós e eficiência}
+
+\begin{frame}
+  \frametitle{Ávores cheias: número de nós}
+
+    \only<1>{\center Uma árvore \textit{binária} \tcb{cheia (ou completa)} é aquela em que todos os nós internos têm duas subárvores e todos os nós folhas estão no último nível. uma árvore com um único nó é 0.}
+
+    \only<2>{\center Podemos notar que nesse tipo de árvore temos \textbf{um} nó no nível \tcb{0}, \text{dois} nós no nível \tcb{1}, \textbf{quatro} nós no nível \tcb{2}, \textbf{oito} nós no nível \tcb{3}, e assim por diante. Isto é, no nível $n$, temos $2^n$ nós.}
+
+    \only<3>{\center É possível mostrar que uma árvore cheia de altura $h$ tem um número de nós dado por \textbf{$2^{h+1} - 1$}. \tcb{Como?}}
+
+    \vspace{1cm}
+
+    \centering
+    \begin{tikzpicture}[-]
+      \node (root) [arn_b] {}
+      child { 
+        node [arn_b] {} 
+          child { 
+            node [arn_b] {} 
+          }
+          child { 
+            node [arn_b] {} 
+          }
+      }
+      child [missing]
+      child { 
+        node [arn_b] {} 
+          child { 
+            node [arn_b] {} 
+          }
+          child { 
+            node [arn_b] {} 
+          }
+      };
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Árvores degeneradas}
+
+  \begin{itemize}
+    \item Uma árvore é dita \tcb{degenerada} se todos os seus
+      nós internos tem uma única subárvore associada;
+    \item Apenas um nó por nível;
+    \item Uma árvore degenerada de altura $h$ possui $h+1$ nós;
+  \end{itemize}
+
+  \vspace{1cm}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \begin{tikzpicture}[-,level distance=1cm]
+        \node (root) [arn_b] {}
+          child { 
+            node [arn_b] {}
+            child { 
+              node [arn_b] {} 
+              child { 
+                node [arn_b] {} 
+              }
+              child [missing]
+            }
+            child [missing]
+          }
+          child [missing];
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm]
+        \node (root) [arn_b] {}
+          child { 
+            node [arn_b] {}
+            child [missing]
+            child { 
+              node [arn_b] {} 
+              child { 
+                node [arn_b] {} 
+              }
+              child [missing]
+            }
+          }
+          child [missing];
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Eficiência X Altura}
+
+  \centering
+  A altura de uma árvore é uma medida importante 
+  na avaliação da eficiência com que visitamos os 
+  nós da árvore. 
+
+  \vspace{1cm}
+
+  Uma árvore binária com $n$ nós tem uma altura mínima
+  proporcional a $\log_2{n}$ (caso da árvore cheia) e
+  uma altura máxima proporcional a $n$ (caso da árvore 
+  degenerada). A altura indica o esforço computacional 
+  necessário para alcançar qualquer nó da árvore.
+\end{frame}
+
+\section{Exercícios propostos}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 1} Suponha a árvore binária abaixo. (a) ache o grau
+  de cada um dos nós; (b) determine os nós folhas; e (c) complete a 
+  árvore com quantos nós forem necessários para transformá-la em uma
+  árvore binária cheia.
+      
+  \centering
+  \begin{tikzpicture}[-, level distance=1cm]
+    \node (root) [arn_b] {50}
+    child { 
+      node [arn_b] {30} 
+      child { 
+        node [arn_b] {20} 
+        child { node [arn_b] {10} }
+        child [missing]
+      } 
+      child { 
+        node [arn_b] {40}
+        child [missing]
+        child [missing]
+      } 
+    }
+    child [missing]
+    child { 
+      node [arn_b] {90} 
+      child [missing]
+      child { 
+        node [arn_b] {95} 
+        child [missing]
+        child { 
+          node [arn_b] {98} 
+        } 
+      } 
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 2} Escreva funções que recebam uma árvore binária
+  inteira como entrada e a imprima com os seguintes tipos de percurso:
+
+  \begin{itemize}
+    \item pré-ordem;
+    \item in-ordem;
+    \item pós-ordem.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 3} Escreva uma função que conte o número de nós
+  de uma árvore binária. Utilize o seguinte protótipo para a sua função:
+
+  \texttt{int conta\_nos(Arvore \*a);}
+  
+  \vspace{1cm}
+
+  \textbf{Exercício 4} Escreva uma função que imprime e retorna o maior
+  valor inteiro em uma árvore binária composta por valores inteiros. 
+  Utilize o seguinte protótipo para a sua função:
+
+  \texttt{int max\_arvore(Arvore \*a);}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 5} Escreva uma função que calcula a altura de uma árvore
+  binária. Utilize o seguinte protótipo para a sua função:
+
+  \texttt{int altura\_arvores(Arvore *a);}
+
+  \vspace{1cm}
+
+  \textbf{Exercício 6} Escreva uma função que conta o número de nós
+  folhas em uma árvore binária.
+  Utilize o seguinte protótipo para a sua função:
+
+  \texttt{int nos\_folha\_arvore(Arvore *a);}
+
+\end{frame}
+
+% ==========================================
+% Frame para referências
+\begin{frame}[allowframebreaks]
+  \frametitle{Referências utilizadas na apresentação}
+  \bibliography{referencias}
+\end{frame}
+% ==========================================
+
+\end{document}

@@ -1,0 +1,703 @@
+\documentclass{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,matrix, arrows.meta}
+\usepackage{color}
+\newcommand{\vet}[1]{\foreach \num in {#1}{\el{\num}}}
+\newcommand{\vetempty}[1]{\foreach \num in {#1}{\elempty{\num}}}
+\newcommand{\el}[1]{\tikz{\node[font=\huge, minimum size=1cm, draw]{#1}}}
+\newcommand{\elempty}[1]{\tikz{\node[font=\footnotesize, minimum size=1cm, draw=white, fill=white]{#1}}}
+\newcommand{\bl}{\color{blue}}
+\newcommand{\gr}{\color{gray}}
+\newcommand{\re}{\color{red}}
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcg}[1]{\textcolor{green}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\ar}{\tikz{\draw [->] (0,0) -- (0,0.4)}}
+\newcommand{\nd}{\color{white!0}.}
+
+\usepackage{beamerthemeSingapore}
+\usepackage{graphicx}
+%\usepackage{here}
+\usepackage{url}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[tight,raggedright]{subfigure}
+\usepackage[alf]{abntex2cite}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+% Please add the following required packages to your document preamble:
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\apptocmd{\frame}{}{\justifying}{} % Allow optional arguments after frame.
+
+% TODO TODO TODO TODO TODO TODO TODO
+\title{04 - Busca}
+\author{Prof. Alex Kutzke}
+\date{Maio de 2021}
+
+\begin{document}
+
+	% ==========================================
+	\begin{frame}
+		\begin{center}
+			% TODO TODO TODO TODO TODO TODO
+			\large{Setor de Educação Profissional e Tecnológica}\\
+			Tecnologia em Análise e Desenvolvimento de Sistemas\\
+			\vspace{1cm}			
+			\small{DS141 - Estruturas de Dados II}
+		\end{center}
+		\titlepage
+		\begin{center}
+			Slides adaptados do material produzido\\pelo Prof. Rodrigo Minetto
+		\end{center}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Roteiro}
+		\tableofcontents
+
+	\end{frame}
+	% ==========================================
+
+	\section{Introdução}
+
+	\begin{frame}[c]{Busca}
+		\textbf{Motivação}: a operação de \tcr{busca} por uma \tcb{palavra-chave}
+		ou \tcb{valor} é a base de muitas aplicações da computação, seja em um 
+		motor de busca na internet ou em um sistema comercial.
+	\end{frame}
+
+	\begin{frame}[c]{Busca}
+		\begin{description}
+			\justifying
+			\item[O problema]: uma \tcb{coleção} de elementos, onde cada elemento possui
+				um identificador e uma \tcb{chave} para busca;
+			\item[Saída]: o \tcb{índice} na coleção que possui a mesma \tcb{chave} procurada
+				\tcr{ou} identificar que tal chave \tcb{não existe} na coleção.
+		\end{description}
+	\end{frame}
+
+	\begin{frame}[c]{Busca}
+		Em nossos exemplos usaremos um vetor de inteiros como coleção. No entanto,
+		podemos utilizar qualquer coleção cujos elementos possam ser comparados.
+	\end{frame}
+
+	\section{Busca sequencial}
+
+	\begin{frame}[c]{Busca}
+		A forma mais simples de fazer uma busca em um vetor consistem em \tcb{percorrer o vetor},
+		\tcr{elemento a elemento}, para verificar se o elemento de interesse é igual
+		a um dos elementos do vetor.
+	\end{frame}
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 66.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação}
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 66.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{\bf \bl 22,99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação}
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 66.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,\bf \bl 99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação}
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 66.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,\bf \bl 66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação}
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 66.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,\bf \re 66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Elemento encontrado na posição 3}.
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{\bf \bl 22,99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,\bf \bl 99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,\bf \bl 66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,\bf \bl 33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,\bf \bl 11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,11,\bf \bl 00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,11,00,\bf \bl 77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,11,00,77,\bf \bl 55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo Busca sequencial}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 44.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{22,99,66,33,11,00,77,55}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Não encontrou (posição: -1)}.
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	\section{Busca binária}
+
+	\begin{frame}[c]{Busca binária}
+		Em diversas aplicações reais, existe a necessidade de algoritmos
+		eficientes. \tcr{Seria possível melhorar a eficiência do algoritmo
+		de busca sequencial}?
+	\end{frame}
+
+	\begin{frame}[c]{Busca binária}
+		Infelizmente, se os \tcr{elementos} estiverem \tcr{armazenados} em uma 
+		\tcb{ordem aleatória} no vetor, \tcr{não} temos como melhorar o algoritmo
+		de busca, pois precisamos verificar todos os elementos.
+	\end{frame}
+	
+	\begin{frame}[c]{Busca binária}
+		No entanto, se os elementos do vetor estiverem ordenados, podemos aplicar
+		um algoritmo mais eficiente para realizar a busca. Trata-se do algoritmo
+		\tcb{Busca Binária}.
+	\end{frame}
+	
+	\begin{frame}[c]{Busca binária}
+		Contexto:\\
+		Jogo ``adivinhe o número'': pense em um número e diga o intervalo em que ele
+		está. Para cada adivinhação de um oponente, apenas uma das três respostas
+		podem ser dadas: \tcb{o número é maior, o número é menor ou acertou}. O vencedor
+		é aquele que acertar o número com menos adivinhações.
+	\end{frame}
+	
+	\begin{frame}[c]{Busca binária - conceito}
+		\begin{enumerate}
+			\item Testar o elemento que buscamos com o valor armazenado no \tcb{meio} do vetor;
+			\item Se o elemento que buscamos for \tcb{menor} que o elemento do meio, sabemos que, se
+			o elemento estiver presente no vetor, ele estará na primeira parte do vetor.
+			\item Se for \tcb{maior}, estará na segunda parte do vetor;
+			\item Se for \tcb{igual}, o elemento foi encontrado;
+			\item Se concluirmos que o elemento está em uma das partes do vetor, 
+				repetimos o procedimento descrito considerando apenas a parte restante.
+		\end{enumerate}
+	\end{frame}
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 55.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,22,33,55,66,77,99}\\
+			\vetempty{\nd,\nd,\nd,\nd,\nd,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 55.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{\re 00,11,22,\bl 33,55,66,77,\re 99}\\
+			\vetempty{\huge \re i,\nd,\nd,\nd,\nd,\nd,\nd,\huge \re f}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{$\displaystyle \frac{(1+8)}{2} = 4$};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 55.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,22,33,\re 55,\bl 66,77,\re 99}\\
+			\vetempty{\nd,\nd,\nd,\nd,\huge \re i,\nd,\nd,\huge \re f}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{$\displaystyle \frac{(5+8)}{2} = 6$};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 55.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,22,33,\re 55, 66,77, 99}\\
+			\vetempty{\nd,\nd,\nd,\nd,\huge \re i f,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{$\displaystyle \frac{(5+5)}{2} = 5$};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 55.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,22,33,\re 55, 66,77, 99}\\
+			\vetempty{\nd,\nd,\nd,\nd,\huge \re i f,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{Elemento encontrado na posição 5};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 15.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,22,33,55,66,77,99}\\
+			\vetempty{\nd,\nd,\nd,\nd,\nd,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 15.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{\re 00,11,22,\bl 33,55,66,77,\re 99}\\
+			\vetempty{\huge \re i,\nd,\nd,\nd,\nd,\nd,\nd,\huge \re f}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{$\displaystyle \frac{(1+8)}{2} = 4$};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 15.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{\re 00,\bl 11,\re 22,33,55,66,77,\re 99}\\
+			\vetempty{\huge \re i,\nd,\huge \re f,\nd,\nd,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{$\displaystyle \frac{(1+3)}{2} = 2$};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 15.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,\re 22,33,55,66,77,\re 99}\\
+			\vetempty{\nd,\nd,\huge \re i \huge \re f,\nd,\nd,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{$\displaystyle \frac{(3+3)}{2} = 3$};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+	
+	% ==========================================
+	\begin{frame}[c]{Exemplo busca binária}
+		\begin{itemize}
+			\item \tcb{Elemento desejado:} 15.
+		\end{itemize}
+		\begin{center}
+			\vetempty{0,1,2,3,4,5,6,7}\\
+			\vet{00,11,22,33,55,66,77,\re 99}\\
+			\vetempty{\nd,\nd,\huge \re i \huge \re f,\nd,\nd,\nd,\nd,\nd}\\
+		\end{center}
+		\begin{itemize}
+			\item \tcb{Comparação};
+			\item \tcr{Intervalo considerado (início e fim)};
+			\item \tcr{Não encontrou (posição -1)};
+		\end{itemize}
+	\end{frame}
+	% ==========================================
+
+	\begin{frame}[fragile]{Busca Sequencial - Análise}
+
+		\begin{minted}[
+				frame=lines,
+				framesep=2mm,
+				baselinestretch=1.2,
+				fontsize=\footnotesize,
+				linenos
+			]{c}
+int busca(int * v, int n, int x){
+	for(i=0; i<n; i++)
+		if(v[i] == x)
+			return(i)
+	return(-1);
+}
+		\end{minted}
+		\only<2-> \tcb{Quantas comparações} o algoritmo Busca Sequencial realiza?
+		\begin{itemize}
+			\item<3->{Melhor caso? \only<4->{$= 1$}}
+			\item<3->{Pior caso? \only<5->{$\displaystyle = \sum_{i=0}^{n}{1} = n$}}
+			\item<3->{Caso médio? \only<6->{$\displaystyle = \frac{n}{2}$}}
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}[fragile]{Busca Binária}
+		\begin{minted}[
+				frame=lines,
+				framesep=2mm,
+				baselinestretch=1.2,
+				fontsize=\footnotesize,
+				linenos
+			]{c}
+int busca_binaria(int v[], int n, int elem){
+  l = 0; r = n-1;
+
+  while(l <= r){
+    m = (l+r)/2;
+    if(v[m] == elem) return(m);
+    else if(v[m] < elem) l = m + 1;
+    else if(v[m] > elem) r = m - 1;
+  }
+  return(-1);
+}
+		\end{minted}
+	\end{frame}
+
+	\begin{frame}[fragile]{Busca Binária Recursiva}
+		\begin{minted}[
+				frame=lines,
+				framesep=2mm,
+				baselinestretch=1.2,
+				fontsize=\footnotesize,
+				linenos
+			]{c}
+int busca_binaria_recur(int v[], int n, int elem, int l, int r){
+  int m = (l+r)/2;
+
+  if(l > r)
+    return(-1);
+
+  if(v[m] == elem)
+    return(m);
+  else if(v[m] < elem)
+    return(busca_binaria_recur(v,n,elem,m+1,r));
+  else if(v[m] > elem)
+    return(busca_binaria_recur(v,n,elem,l,m-1));
+}
+		\end{minted}
+	\end{frame}
+
+	\begin{frame}{Busca Binária - Análise}
+		Dado um inteiro $n$, quantas vezes é possível dividir $n$
+		ao meio, até que o seu valor seja $1$ ou fique abaixo disso?
+
+		\center $\displaystyle \frac{n}{2},\frac{n}{4},\frac{n}{8},\ldots,\frac{n}{2^k}$
+
+	\end{frame}
+	
+	\begin{frame}{Busca Binária - Análise}
+		\center $\displaystyle \frac{n}{2},\frac{n}{4},\frac{n}{8},\ldots,\frac{n}{2^k}$
+
+		Para achar o valor de $k$ (número máximo de divisões):
+
+		\center $\displaystyle \frac{n}{2^k} = 1$
+		
+		\center $\displaystyle k = \log_2{n}$
+		
+		\center $\displaystyle k = \ceil{\log_2{n}}$
+
+		\center $\displaystyle \sum_{i=1}^{\ceil{\log_2{n}}}{1} = \log_2{n}$
+	\end{frame}
+
+	% ==========================================
+	% \begin{frame}[fragile,c]{Implementação Recursiva Fatorial}
+	%	\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{c}
+	%	\end{minted}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% \begin{frame}
+	% 	\frametitle{Título}
+	% 	\begin{itemize}
+	% 		\item Item bla bla bla
+	% 	\end{itemize}
+	%	  \begin{block}{Título de bloco}
+	%		 	Conteúdo do bloco
+	%   \end{block}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% Exemplo de frame com figura
+	% \begin{frame}
+	% 	\frametitle{Título}
+	%	  \begin{figure}[h]
+	%	  	\centering
+	%	  	\includegraphics[width=10cm]{paht.png}
+	%			\caption{Bla bla bla ...}
+	%	  	\label{label}
+	%	  \end{figure}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% Exemplo de frame com algoritmo
+	% \begin{frame}[fragile]
+	% 	\frametitle{Título}
+	% 	\begin{lstlisting}[language=C]
+	% 		#include <stdio.h>
+	%
+	% 		int main()
+	% 		{
+	% 		  int a[5];
+	%
+	% 		  a[0] = 30;
+	% 		  a[1] = 25;
+	% 		  a[2] = 5;
+	% 		  a[3] = 100;
+	% 		  a[4] = 1;
+	%
+	% 		  printf("%d\n",a[1]);
+	% 		}
+	% 	\end{lstlisting}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% Frame para referências
+	%\begin{frame}[allowframebreaks]
+	%	\frametitle{Referências utilizadas na apresentação}
+	%	\bibliography{referencias}
+	%\end{frame}
+  % ==========================================
+
+\end{document}

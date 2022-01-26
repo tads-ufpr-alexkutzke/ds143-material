@@ -1,0 +1,896 @@
+\documentclass{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,matrix, arrows.meta}
+\usetikzlibrary{graphdrawing.trees}
+\usetikzlibrary{external}
+\tikzexternalize % activate!
+\usepackage{color}
+\newcommand{\vet}[1]{\foreach \num in {#1}{\el{\num}}}
+\newcommand{\vetempty}[1]{\foreach \num in {#1}{\elempty{\num}}}
+\newcommand{\el}[1]{\tikz{\node[font=\smaller, draw]{#1}}}
+\newcommand{\elempty}[1]{\tikz{\node[font=\small, minimum size=1cm, draw=white, fill=white]{#1}}}
+\newcommand{\bl}{\color{blue}}
+\newcommand{\gr}{\color{gray}}
+\newcommand{\re}{\color{red}}
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcg}[1]{\textcolor{green}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\ar}{\tikz{\draw [->] (0,0) -- (0,0.4)}}
+\newcommand{\nd}{\color{white!0}.}
+
+\usepackage{beamerthemeSingapore}
+\usepackage{graphicx}
+%\usepackage{here}
+\usepackage{url}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage[tight,raggedright]{subfigure}
+\usepackage{subfigure}
+\usepackage[alf]{abntex2cite}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{algorithm2e}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+% Please add the following required packages to your document preamble:
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{mathtools}
+\usepackage{caption}
+\usepackage{xmpmulti}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily},
+  arn_b/.style = {treenode, circle, black, font=\sffamily\bfseries, draw=black,
+    fill=white, text width=1.5em},% arbre rouge noir, noeud noir
+  arn_bl/.style = {treenode, circle, blue, font=\sffamily\bfseries, draw=black,
+    fill=white, text width=1.5em},% arbre rouge noir, noeud noir
+  arn_n/.style = {treenode, circle, white, font=\sffamily\bfseries, draw=black,
+    fill=black, text width=1.5em},% arbre rouge noir, noeud noir
+  arn_r/.style = {treenode, circle, red, draw=red, 
+    text width=1.5em, very thick},% arbre rouge noir, noeud rouge
+  arn_x/.style = {treenode, rectangle, draw=black,
+    minimum width=0.5em, minimum height=0.5em}% arbre rouge noir, nil
+}
+
+\captionsetup[figure]{labelformat=empty,textfont=smaller}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\apptocmd{\frame}{}{\justifying}{} % Allow optional arguments after frame.
+
+% TODO TODO TODO TODO TODO TODO TODO
+\title{08 - Árvores binárias de busca}
+\author{Prof. Alex Kutzke}
+\date{Junho de 2021}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+  \begin{center}
+    % TODO TODO TODO TODO TODO TODO
+    \large{Setor de Educação Profissional e Tecnológica}\\
+    Tecnologia em Análise e Desenvolvimento de Sistemas\\
+    \vspace{1cm}			
+    \small{DS141 - Estruturas de Dados II}
+  \end{center}
+  \titlepage
+
+  \begin{center}
+    Slides adaptados do material produzido\\pelo Prof. Rodrigo Minetto
+  \end{center}
+\end{frame}
+% ==========================================
+
+% ==========================================
+\begin{frame}[c]{Roteiro}
+  \tableofcontents
+
+\end{frame}
+% ==========================================
+
+\section{Motivação e conceito}
+
+\begin{frame}[c]{Motivação}
+  \begin{itemize}
+    \item Algoritmo de busca binária:
+    \begin{itemize}
+      \item Bom desempenho para busca;
+      \item Mas apenas para conjuntos ordenados;
+      \item Necessita de estrutura de dados com indexação direta;
+    \end{itemize}
+    \item Inserção e remoção em vetores ordenados:
+      \begin{itemize}
+        \item Necessita rearranjar elementos;
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{Motivação}
+  \begin{itemize}
+    \item É possível uma estrutura de dados tal que
+      \begin{itemize}
+        \item Inserção eficiente;
+        \item Remoção eficiente;
+        \item Busca eficiente;
+        \item Tamanho flexível;
+      \end{itemize}
+    \item ???
+    \pause
+    \item Sim!
+    \pause
+  \item \tcb{Árvores binárias de busca} são um exemplo;
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Árvores binárias de busca}
+
+  \begin{itemize}
+    \item \tcb{Árvores binárias de busca} são árvores binárias com uma \textbf{propriedade fundamental}:
+  \end{itemize}
+
+  \center O valor associado à \textbf{raiz} é sempre \tcr{maior} do que o valor
+          associado a qualquer nó da subárvore à \tcr{esquerda} e é sempre \tcr{menor} do que
+          o valor associado a qualquer nó da subárvore à \tcr{direita}.
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplos}
+      \centering
+      \begin{tikzpicture}[-,level distance=1cm]
+        \node (root) [arn_b] {50}
+        child { 
+          node [arn_b] {30} 
+          child { 
+            node [arn_b] {20} 
+            child { node [arn_b] {10} }
+            child [missing]
+          } 
+          child [missing]
+          child { 
+            node [arn_b] {40}
+            child { node [arn_b] {35} }
+            child { node [arn_b] {45} }
+          } 
+        }
+        child [missing]
+        child [missing]
+        child [missing]
+        child { 
+          node [arn_b] {90} 
+          child [missing]
+          child { node [arn_b] {95} } 
+        };
+      \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplos}
+      \centering
+      \begin{tikzpicture}[-,level distance=1cm]
+        \node (root) [arn_b] {e}
+        child { 
+          node [arn_b] {c}
+          child { node [arn_b] {a} }
+          child { node [arn_b] {d} }
+        }
+        child [missing]
+        child { 
+          node [arn_b] {m}
+          child [missing]
+          child {
+            node [arn_b] {r}
+            child [missing]
+            child { node [arn_b] {z} }
+          }
+        };
+      \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Percurso in-ordem}
+
+  \begin{itemize}
+    \item A propriedade fundamental garante que:
+  \end{itemize}
+
+  \center Quando percorrida em ordem \tcb{simétrica}, ou seja, in-ordem (E,R,D), os valores
+          são encontrados em ordem crescente.
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Percurso in-ordem: exemplo}
+
+    In-ordem: \texttt{10,20,30,35,40,45,50,90,95}.
+    \vspace{1cm}
+
+      \centering
+      \begin{tikzpicture}[-,level distance=1cm]
+        \node (root) [arn_b] {50}
+        child { 
+          node [arn_b] {30} 
+          child { 
+            node [arn_b] {20} 
+            child { node [arn_b] {10} }
+            child [missing]
+          } 
+          child [missing]
+          child { 
+            node [arn_b] {40}
+            child { node [arn_b] {35} }
+            child { node [arn_b] {45} }
+          } 
+        }
+        child [missing]
+        child [missing]
+        child [missing]
+        child { 
+          node [arn_b] {90} 
+          child [missing]
+          child { node [arn_b] {95} } 
+        };
+      \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Percurso in-ordem: exemplo}
+
+    In-ordem: \texttt{a,c,d,e,m,r,z}.
+    \vspace{1cm}
+
+      \centering
+      \begin{tikzpicture}[-,level distance=1cm]
+        \node (root) [arn_b] {e}
+        child { 
+          node [arn_b] {c}
+          child { node [arn_b] {a} }
+          child { node [arn_b] {d} }
+        }
+        child [missing]
+        child { 
+          node [arn_b] {m}
+          child [missing]
+          child {
+            node [arn_b] {r}
+            child [missing]
+            child { node [arn_b] {z} }
+          }
+        };
+      \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Percurso in-ordem}
+
+  \begin{itemize}
+    \item A propriedade fundamental \tcb{também} possibilita que:
+  \end{itemize}
+
+  \center As operações de \tcb{busca, inserção e remoção} podem ser realizadas de forma
+          \textbf{eficiente}. \tcr{Como?}
+
+  \pause
+
+  \begin{itemize}
+    \item Basta aplicar o mesmo algoritmo da busca binária para todas as operações acima.
+  \end{itemize}
+
+\end{frame}
+
+\section{Operações}
+
+\begin{frame}[fragile]
+  \frametitle{Estrutura}
+
+  \begin{itemize}
+    \item Podemos utilizar a mesma estrutura de dados  apresentada na última aula;
+    \item Árvores binária de busca são árvores binárias normais mas com uma propriedade fundamental.
+  \end{itemize}
+
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1,fontsize=\normalsize,linenos]{c}
+typedef struct arvore {
+  int info;
+  struct arvore *esq;
+  struct arvore *dir;
+} Arvore;
+      \end{minted}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \begin{tikzpicture}[-]
+        \node at (0,-1) (root) [arn_b] {a}
+        child { node [arn_b] {b} edge from parent node [above,left] {*esq} }
+        child { node [arn_b] {c} edge from parent node [above,right] {*dir} };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Busca}
+
+  \begin{itemize}
+    \item A operação de \tcb{busca} explora diretamente a propriedade fundamental da árvore:
+  \end{itemize}
+  
+  \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1,fontsize=\normalsize,linenos]{c}
+int buscar (Arvore *a, int v) {
+  if (a == NULL) { return 0; } /*Nao achou*/
+  else if (v < a->info) {
+    return buscar (a->esq, v);
+  }
+  else if (v > a->info) {
+    return buscar (a->dir, v);
+  }
+  else { return 1; } /*Achou*/
+}
+  \end{minted}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Inserção}
+
+  \begin{itemize}
+    \item A operação de \tcb{inserção} precisa garantir que propriedade fundamental da árvore seja mantida;
+    \item Ou seja, o novo elemento precisa ser inserido na \tcr{posição correta}; 
+    \item A solução mais simples é \tcb{sempre inserir elementos folha};
+    \item Para isso seguimos o seguinte algoritmo recursivo para inserir um novo elemento \textbf{x}:
+    \begin{enumerate}
+      \item Se $x$ é menor que a raiz, insere na subárvore da esquerda;
+      \item Se $x$ é maior que a raiz, insere na subárvore da direita;
+      \item Se a árvore é vazia, apenas cria um novo nó com valor $x$.
+    \end{enumerate}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Inserção: implementação}
+  
+  \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1,fontsize=\normalsize,linenos]{c}
+Arvore* inserir (Arvore *a, int v) {
+  if (a == NULL) {
+    a = (Arvore*)malloc(sizeof(Arvore));
+    a->info = v;
+    a->esq = a->dir = NULL;
+  }
+  else if (v < a->info) {
+    a->esq = inserir (a->esq, v);
+  }
+  else { a->dir = inserir (a->dir, v); }
+  return a;
+}
+  \end{minted}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo inserção}
+
+    \only<1-5>{Inserir o elemento 42.}
+
+    \vspace{1cm}
+
+    \noindent
+      \centering
+      \begin{tikzpicture}[
+          -, 
+          level/.style={sibling distance=60mm/####1},
+        ]
+        \node (root) [arn_b] {50}
+        child { 
+          node (n30) [arn_b] {30} 
+          child { 
+            node (n20) [arn_b] {20} 
+            child { node (n10) [arn_b] {10} }
+            child [missing]
+          } 
+          child { 
+            node (n40) [arn_b] {40}
+            child { node (n35) [arn_b] {35} }
+            child { 
+              node (n45) [arn_b] {45}
+           }
+          } 
+        }
+        child { 
+          node (n90) [arn_b] {90} 
+          child [missing]
+          child { node (n95) [arn_b] {95} } 
+        };
+        \only<2>{\node [arn_r,above right=0pt of root] {42};}
+        \only<3>{\node [arn_r,above left=0pt of n30] {42};}
+        \only<4>{\node [arn_r,above right=0pt of n40] {42};}
+        \only<5>{\node [arn_r,above right=0pt of n45] {42};}
+      \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo inserção}
+
+    Elemento 42 inserido.
+
+      \centering
+      \begin{tikzpicture}[
+          -, 
+          level/.style={sibling distance=60mm/####1}
+        ]
+        \node (root) [arn_b] {50}
+        child { 
+          node [arn_b] {30} 
+          child { 
+            node [arn_b] {20} 
+            child { node [arn_b] {10} }
+            child [missing]
+          } 
+          child { 
+            node [arn_b] {40}
+            child { node [arn_b] {35} }
+            child { 
+              node [arn_b] {45}
+              child { node [arn_r] {42} }
+              child [missing]
+            }
+          } 
+        }
+        child { 
+          node [arn_b] {90} 
+          child [missing]
+          child { node [arn_b] {95} } 
+        };
+      \end{tikzpicture}
+\end{frame}
+
+\section{Operação de remoção}
+
+\begin{frame}
+  \frametitle{Operação: remoção}
+
+  A operação de \tcb{remoção} é mais complexa que a inserção.
+  Novamente, a implementação dessa função vem da natureza recursiva da árvore:
+  \begin{itemize}
+    \item Se a árvore for \tcr{vazia}, nada tem de ser feito, pois o elemento não
+      está presente na árvore;
+    \item Se a árvore \tcr{não for vazia}:
+      \begin{enumerate}
+        \item Compara-se o valor armazenado no nó raiz ao valor que se
+          deseja retirar da árvore;
+        \item Se o valor a ser removido for \tcr{menor} do que a raiz, chama-se a
+          função recursivamente para subárvore da \tcb{esquerda};
+        \item Se o valor a ser removido for \tcr{maior} do que a raiz, chama-se a
+          função recursivamente para subárvore da \tcb{direita};
+        \item Se o valor a ser removido for \tcr{igual} a raiz, remove-se esse elemento;
+      \end{enumerate}
+
+    \item Entretanto, teremos 3 casos diferentes para esse operação do item $4$;
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Operação: remoção ($1^o$ caso)}
+
+  Três situações diferentes para a remoção de um nó na árvore binária de busca binária:
+
+  \begin{itemize}
+    \item \textbf{$1^o$ caso}: Quando o nó a ser removido é uma \tcb{folha} da árvore;
+    \begin{itemize}
+      \item Ou seja, uma raiz sem filhos;
+      \item Basta liberar a memória alocada para o elemento removido e retornar NULL para que
+        a árvore pai possa atualizar seu estado;
+    \end{itemize}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo remoção ($1^o$ caso)}
+
+    \only<1-6>{Remover o elemento \tcb{10}.}
+    
+    \noindent
+    \centering
+    \begin{tikzpicture}[
+        -, 
+        level/.style={sibling distance=60mm/####1},
+      ]
+      \node (root) [arn_b] {50}
+      child { 
+        node (n30) [arn_b] {30} 
+        child { 
+          node (n20) [arn_b] {20} 
+          child { node (n10) [arn_b] {10} }
+          child [missing]
+        } 
+        child { 
+          node (n40) [arn_b] {40}
+          child { 
+            node (n35) [arn_b] {35} 
+            child [missing]
+            child {node (n37) [arn_b] {37} }
+          }
+          child { 
+            node (n45) [arn_b] {45}
+         }
+        } 
+      }
+      child { 
+        node (n90) [arn_b] {90} 
+        child [missing]
+        child { node (n95) [arn_b] {95} } 
+      };
+      \only<2>{\node [arn_bl,at = (root)] {50};}
+      \only<3>{\node [arn_bl,at = (n30)] {30};}
+      \only<4>{\node [arn_bl,at = (n20)] {20};}
+      \only<5>{\node [arn_bl,at = (n10)] {10};}
+      \only<6>{\node [arn_r,at = (n10)] {10};}
+    \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo remoção ($1^o$ caso)}
+
+    Remover o elemento \tcb{10} - Resultado final:
+    
+    \noindent
+    \centering
+    \begin{tikzpicture}[
+        -, 
+        level/.style={sibling distance=60mm/####1},
+      ]
+      \node (root) [arn_b] {50}
+      child { 
+        node (n30) [arn_b] {30} 
+        child { 
+          node (n20) [arn_b] {20} 
+          child [missing]
+          child [missing]
+        } 
+        child { 
+          node (n40) [arn_b] {40}
+          child { 
+            node (n35) [arn_b] {35} 
+            child [missing]
+            child {node (n37) [arn_b] {37} }
+          }
+          child { 
+            node (n45) [arn_b] {45}
+         }
+        } 
+      }
+      child { 
+        node (n90) [arn_b] {90} 
+        child [missing]
+        child { node (n95) [arn_b] {95} } 
+      };
+    \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Operação: remoção ($2^o$ caso)}
+
+  \begin{itemize}
+    \item \textbf{$2^o$ caso}: Quando o nó a ser removido possui apenas \tcb{um filho}
+    \begin{itemize}
+      \item Basta liberar a memória alocada para o elemento removido e retornar o ponteiro do único filho
+        para que a árvore pai possa atualizar seu estado;
+    \end{itemize}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo remoção ($2^o$ caso)}
+
+    \only<1-4>{Remover o elemento \tcb{90}.}
+    
+    \noindent
+    \centering
+    \begin{tikzpicture}[
+        -, 
+        level/.style={sibling distance=60mm/####1},
+      ]
+      \node (root) [arn_b] {50}
+      child { 
+        node (n30) [arn_b] {30} 
+        child { 
+          node (n20) [arn_b] {20} 
+          child { node (n10) [arn_b] {10} }
+          child [missing]
+        } 
+        child { 
+          node (n40) [arn_b] {40}
+          child { 
+            node (n35) [arn_b] {35} 
+            child [missing]
+            child {node (n37) [arn_b] {37} }
+          }
+          child { 
+            node (n45) [arn_b] {45}
+         }
+        } 
+      }
+      child { 
+        node (n90) [arn_b] {90} 
+        child [missing]
+        child { node (n95) [arn_b] {95} } 
+      };
+      \only<2>{\node [arn_bl,at = (root)] {50};}
+      \only<3>{\node [arn_bl,at = (n90)] {90};}
+      \only<4>{\node [arn_r,at = (n90)] {90};}
+    \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo remoção ($2^o$ caso)}
+
+    Remover o elemento \tcb{90} - Resultado final:
+    
+    \noindent
+    \centering
+    \begin{tikzpicture}[
+        -, 
+        level/.style={sibling distance=60mm/####1},
+      ]
+      \node (root) [arn_b] {50}
+      child { 
+        node (n30) [arn_b] {30} 
+        child { 
+          node (n20) [arn_b] {20} 
+          child { node (n10) [arn_b] {10} }
+          child [missing]
+        } 
+        child { 
+          node (n40) [arn_b] {40}
+          child { 
+            node (n35) [arn_b] {35} 
+            child [missing]
+            child {node (n37) [arn_b] {37} }
+          }
+          child { 
+            node (n45) [arn_b] {45}
+         }
+        } 
+      }
+      child { 
+        node (n90) [arn_bl] {95} 
+      };
+    \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Operação: remoção ($3^o$ caso)}
+
+  \begin{itemize}
+    \item \textbf{$3^o$ caso}: Quando o nó a ser removido possui \tcb{dois filhos}
+    \begin{itemize}
+      \item É necessário um procedimento mais elaborado para que a propriedade fundamental da árvore
+        seja mantida após a remoção;
+      \item A pergunta chave é: \textbf{Qual elemento da árvore deve ocupar o lugar daquele a ser removido?}
+    \end{itemize}
+  \end{itemize}
+  \pause
+
+  Resposta: Aquele que \tcb{imediatamente o precede} ou que \tcb{imediatamente o sucede} na ordenação dos elementos da árvore.
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Operação: remoção ($3^o$ caso)}
+
+  \centering
+  Escolheremos aquele que \textbf{imediatamente o precede}. 
+
+  \vspace{1cm}
+
+  Ou seja, mais próximo daquele que se deseja remover e que seja menor do que este.
+  
+  \vspace{1cm}
+
+
+  Em outras palavras ...
+  \pause
+  
+  \vspace{1cm}
+
+  Encontrar o elemento \tcb{mais à direita} da \tcr{subárvore da esquerda} do elemento que se deseja remover.
+
+\end{frame}
+
+\begin{frame}[c]
+  \frametitle{Operação: remoção ($3^o$ caso)}
+
+  Assim, a remoção no terceiro caso segue os seguintes passos:
+
+  \begin{enumerate}
+    \item \tcb{Encontre} o elemento a ser removido;
+    \item Vá para sua \tcb{subárvore da esquerda};
+    \item Desça até o \tcb{último nó mais à direita} dessa subárvore;
+    \item \tcb{Atribua} o valor desse nó ao nó onde se encontra o elemento a ser removido;
+    \item \tcb{Remova} esse último nó;
+  \end{enumerate}
+
+  A remoção final será como nos casos 1 ou 2, pois ou ele será um nó folha ou um nó com apenas um filho
+  (um filho à esquerda);
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exemplo remoção ($3^o$ caso)}
+
+    \only<1-9>{Remover o elemento \tcb{50}}\only<1-8>{.}\only<9>{ - Resultado final:}
+    
+    \noindent
+    \centering
+    \begin{tikzpicture}[
+        -, 
+        level/.style={sibling distance=60mm/####1},
+      ]
+      \only<1-6>{
+        \node (root) [arn_b] {50}
+        child { 
+          node (n30) [arn_b] {30} 
+          child { 
+            node (n20) [arn_b] {20} 
+            child { node (n10) [arn_b] {10} }
+            child [missing]
+          } 
+          child { 
+            node (n40) [arn_b] {40}
+            child { 
+              node (n35) [arn_b] {35} 
+              child [missing]
+              child {node (n37) [arn_b] {37} }
+            }
+            child [missing]
+          } 
+        }
+        child { 
+          node (n90) [arn_b] {90} 
+          child [missing]
+          child { node (n95) [arn_b] {95} } 
+        };
+      }
+      \only<7>{
+        \node (n40) [arn_b] {40}
+        child { 
+          node (n30) [arn_b] {30} 
+          child { 
+            node (n20) [arn_b] {20} 
+            child { node (n10) [arn_b] {10} }
+            child [missing]
+          } 
+          child { 
+            node (n50) [arn_b] {50}
+            child { 
+              node (n35) [arn_b] {35} 
+              child [missing]
+              child {node (n37) [arn_b] {37} }
+            }
+            child [missing]
+          } 
+        }
+        child { 
+          node (n90) [arn_b] {90} 
+          child [missing]
+          child { node (n95) [arn_b] {95} } 
+        };
+      }
+      \only<8-9>{
+        \node (n40) [arn_b] {40}
+        child { 
+          node (n30) [arn_b] {30} 
+          child { 
+            node (n20) [arn_b] {20} 
+            child { node (n10) [arn_b] {10} }
+            child [missing]
+          } 
+          child { 
+              node (n35) [arn_b] {35} 
+              child [missing]
+              child {node (n37) [arn_b] {37} }
+          } 
+        }
+        child { 
+          node (n90) [arn_b] {90} 
+          child [missing]
+          child { node (n95) [arn_b] {95} } 
+        };
+      }
+      \only<2>{\node [arn_bl,at = (root)] {50};}
+      \only<3-6>{\node [arn_r, at = (root)] {50};}
+      \only<4>{\node [arn_bl, at = (n30)] {30};}
+      \only<5>{\node [arn_bl, at = (n40)] {40};}
+      \only<6>{\node [arn_r, at = (n40)] {40};}
+      \only<7-8>{\node [arn_r, at = (n40)] {40};}
+      \only<7>{\node [arn_r, at = (n50)] {50};}
+      \only<8>{\node [arn_r, at = (n35)] {35};}
+      \only<8>{\node [arn_r, at = (n37)] {37};}
+    \end{tikzpicture}
+
+\end{frame}
+
+\section{Exercícios propostos}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 1} Desenhe as árvores binárias de busca
+  para os seguintes números inseridos nessa ordem:
+
+  \begin{itemize}
+    \item 1, 2, 3, 4, 5, 6, 7;
+    \item 7, 6, 5, 4, 3, 2, 1;
+    \item 4, 6, 3, 5, 1, 7, 3;
+  \end{itemize}
+  
+  Qual das três é melhor para buscar um dado elemento.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 2} Escreva um programa que produza 30
+  números aleatórios entre 0 e 999. Insira esses números em
+  uma árvore binária de busca e imprima os valores na árvore
+  (utilizando um percurso in-ordem). Os valores estão ordenados?
+
+  \vspace{1cm}
+
+  \textbf{Exercício 3} Escreva um programa que produza 100000
+  números aleatórios entre 0 e 99999. Insira esses números em uma
+  árvore binária de busca. Procure por um valor que não existe,
+  por exemplo 100000. Quanto tempo a busca levou?
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 4} Escreva um programa que produza 100000
+  números em ordem (0 até 99999). Insira esses números em uma
+  árvore binária de busca. Procure por um valor que não existe
+  por exemplo 100000. Quanto tempo a busca levou?
+
+  \vspace{1cm}
+
+  \textbf{Exercício 5} Escreva a função ``min'' que encontre
+  uma chave mínima em uma árvore de busca binária. Escreva uma função
+  ``max'' que encontre uma chave máxima.
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exercícios propostos}
+
+  \textbf{Exercício 6} Escreva uma função para remover elementos
+  de uma árvore binária de busca. Teste todos os 3 casos descritos
+  na aula.
+
+\end{frame}
+
+% ========================================== 
+% Frame para referências 
+%\begin{frame}[allowframebreaks] 
+%  \frametitle{Referências utilizadas na apresentação}
+%  \bibliography{referencias}
+%\end{frame}
+% ==========================================
+
+\end{document}

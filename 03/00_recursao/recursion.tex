@@ -1,0 +1,391 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage{graphicx}
+%\usepackage{here}
+\usepackage{url}
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[tight,raggedright]{subfigure}
+\usepackage[alf]{abntex2cite}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+% Please add the following required packages to your document preamble:
+\usepackage{booktabs}
+
+% TODO TODO TODO TODO TODO TODO TODO
+\title{03 - Recursão}
+\author{Prof. Alex Kutzke}
+\date{Maio de 2021}
+
+\begin{document}
+
+	% ==========================================
+	\begin{frame}
+		\begin{center}
+			% TODO TODO TODO TODO TODO TODO
+			\large{Setor de Educação Profissional e Tecnológica}\\
+			Tecnologia em Análise e Desenvolvimento de Sistemas\\
+			\vspace{1cm}			
+			\small{DS141 - Estruturas de Dados II}
+		\end{center}
+		\titlepage
+	\end{frame}
+	% ==========================================
+
+	% ==========================================
+	\begin{frame}[c]{Roteiro}
+		\tableofcontents
+	\end{frame}
+	% ==========================================
+
+	\section{Definição}
+
+  \begin{frame}[c]{Recursão}
+  	\begin{itemize}
+  		\item Fundamental na matemática e na computação;
+
+			\item Definição: ``Algo definido em \textbf{termos de si próprio}'';
+
+			\begin{itemize}
+				\item Matemática: Uma \textbf{função recursiva} é aquela que é definida em termos de si própria;
+				\item Computação: Um \textbf{programa recursivo} é aquele que ``chama'' (executa) a si mesmo.
+			\end{itemize}
+
+			\item \textbf{Algoritmo recursivo:} aquele que resolve um problema a partir da solução de uma ou mais instâncias \textit{menores} do mesmo problema \cite{sedgewick2014algorithms};
+			\begin{itemize}
+				\item Em $C$, utilizamos funções recursivas para implementar programas recursivos.
+			\end{itemize}
+  	\end{itemize}
+  \end{frame}
+
+	\begin{frame}[c]{Relação de Recorrência}
+		\begin{itemize}
+			\item Relações de recorrência são funções definidas recursivamente (matemática);
+
+			\item Uma relação de recorrência é definida por duas partes:
+			\begin{itemize}
+				\item conjunto de valores iniciais, ou bases; e
+				\item valores determinados em termos da própria função para valores \textbf{menores} de ``entrada''.
+			\end{itemize}
+
+			\item Talvez a mais conhecida seja a função \textit{fatorial}:
+		\end{itemize}
+
+		\begin{center}
+			\[ N! =
+			\left \{
+			\begin{array}{rc}
+				1,&\mbox{se}\quad N = 0,\\
+				N * (N-1)!,&\mbox{se}\quad N \ge 1.
+			\end{array}
+			\right .
+			\]
+		\end{center}
+	\end{frame}
+
+\lstset{language=C,
+								 basicstyle=\ttfamily,
+                 keywordstyle=\color{blue}\ttfamily,
+                 stringstyle=\color{red}\ttfamily,
+                 commentstyle=\color{green}\ttfamily,
+                 morecomment=[l][\color{magenta}]{\#}}
+
+	\begin{frame}[fragile,c]{Implementação Recursiva Fatorial}
+	
+		\begin{minted}[
+				frame=lines,
+				framesep=2mm,
+				baselinestretch=1.2,
+				%fontsize=\footnotesize,
+				linenos
+			]{c}
+int fat(int n)
+{
+	if(n == 1) return(1);
+	return(n * fat(n-1));
+}
+		\end{minted}
+
+		\begin{itemize}
+			\item É sempre possível transformar um algoritmo recursivo em um não-recursivo:
+		\end{itemize}
+	
+		\begin{minted}[
+				frame=lines,
+				framesep=2mm,
+				baselinestretch=1.2,
+				%fontsize=\footnotesize,
+				linenos
+			]{c}
+for(t=1,i=1;i<=n;i++) t*=i;
+		\end{minted}
+		\begin{itemize}
+			\item O inverso também é verdadeiro: é possível transformar qualquer algotirmo não-recursivo que envolva laços em algoritmos recursivos.
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}[c]{Análise Algoritmo Fatorial}
+		\begin{itemize}
+			\item O algoritmo de fatorial apresentado ilustra as principais propriedades da recursão:
+			\begin{itemize}
+				\item Possui uma condição de parada (término);
+				\item Executa ele mesmo para valores cada vez menores.
+			\end{itemize}
+
+			\item Indução matemática pode ser utilizada para provar que o programa funciona como esperado:
+
+			\begin{itemize}
+				\item Computa 0! (base da indução);
+				\item Sobre a suposição de que computa $k!$, para $k < N$ (hipótese indutiva), temos que o algoritmo computa $N!$.
+			\end{itemize}
+			\item O mesmo raciocínio pode ser utilizado para resolver problemas mais complexos.
+		\end{itemize}
+	\end{frame}
+
+	\section{Propriedades}
+
+	\begin{frame}[c]{Condições}
+		Em resumo, uma função recursiva precisa:
+		\begin{itemize}
+			\item Resolver pelo menos um caso base;
+			\item Cada chamada recursiva deve envolver valores menores de argumentos.
+		\end{itemize}
+
+		Esses itens permitem acreditar que uma prova por indução é possível. Além de serem ótimos guias de implementação para algoritmos recursivos.
+	\end{frame}
+
+	\begin{frame}[c]{Vantagens e desvantagens}
+		\begin{itemize}
+			\item Vantagens:
+			\begin{itemize}
+				\item Deixa o código mais simples e mais compacto;
+				\begin{itemize}
+					\item Nem sempre significa que é mais fácil de entender, mas sim que segue a definição matemática.
+				\end{itemize}
+				\item Fácil implementação (seguindo a recorrência matemática).
+			\end{itemize}
+			\item Desvantagens:
+			\begin{itemize}
+				\item Podem se tornar impraticáveis em termos de custo computacional;
+				\begin{itemize}
+					\item É necessário fugir de implementações ruins.
+				\end{itemize}
+				\item Seu desempenho depende da implementação de pilhas do sistema operacional e da \textit{profundidade da recursão};
+				\item Em geral utilizam mais memória e são de difícil depuração.
+			\end{itemize}
+		\end{itemize}
+	\end{frame}
+	
+	\section{Exemplos}
+
+	\begin{frame}[fragile, c]{Qual o problema dessa função?}
+		\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,linenos]{c}
+int puzzle(int n)
+{
+	if(n == 1) return(1);
+	if(n % 2 == 0)
+		return(puzzle(n/2));
+	else return(puzzle(3*n+1));
+}
+		\end{minted}
+	\end{frame}
+
+	\begin{frame}[c]{Máximo Divisor Comum}
+		\begin{itemize}
+			\item Algoritmo de euclides:
+			\begin{itemize}
+				\item Baseia-se na seguinte observação:
+				\begin{center}
+					O máximo divisor comum de dois números inteiros $x$ e $y$, com $x > y$, é o mesmo que o máximo divisor comum de $y$ e $x \% y$.
+
+					\vspace{10pt}
+					\pause
+					Um número $t$ divide ambos $x$ e $y$ se, e somente se, $t$ divide ambos $y$ e $x \% y$, pois $x$ é igual a $x \% y$ mais um múltiplo de $y$.
+				\end{center}
+			\end{itemize}
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}[fragile,c]{Algoritmo de Euclides Recursivo}
+		\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,linenos]{c}
+int mdc(int m, int n)
+{
+	if(n == 0) return(m);
+	return(mdc(n, m % n));
+}
+		\end{minted}
+	\end{frame}
+
+	\begin{frame}[c]{Avaliação de Expressões Pré-fixas}
+		Como seria um algoritmo recursivo para expressões do tipo:\\
+
+		$*$ $+$ $7$ $*$ $*$ $4$ $6$ $+$ $8$ $9$ $5$ ?
+	\end{frame}
+
+	\begin{frame}[fragile,c]{Avaliador Pré-fixo}
+		\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,linenos]{c}
+char a[100]; int i;
+int eval(){
+	int x = 0;
+	while(a[i] == ' ') i++;
+	if(a[i] == '+') { i++;
+		return(eval() + eval()); }
+	if(a[i] == '*') { i++;
+		return(eval() * eval()); }
+	while((a[i] >= '0') && (a[i] <= '9'))
+		x = 10*x + (a[i++]-'0');
+	return(x);
+}
+		\end{minted}
+	\end{frame}
+
+	\begin{frame}[c]{Profundidade da Recursão}
+		\begin{itemize}
+			\item A chamada de uma função carrega consigo um custo computacional ``escondido'':
+			\begin{itemize}
+				\item Pilha de chamadas de função.
+			\end{itemize}
+			\item A \textbf{profundidade} de uma recursão é a quantidade de chamadas recursivas que a função realiza.
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}[fragile,c]{Algoritmo Fibonacci Recursivo}
+		\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,linenos]{c}
+int fib(int n)
+{
+	if(n == 0) return(0);
+	if(n == 1) return(1);
+	return(fib(n-1) + fib(n-2));
+}
+		\end{minted}
+		\begin{center}
+			Quantas chamandas recursivas esse algoritmo faz quando $n = 25$?
+		\end{center}
+
+		\begin{center}
+			O que se pode dizer sobre a complexidade desse algoritmo?
+		\end{center}
+	\end{frame}
+
+	\section{Recursão e TADs}
+
+	\begin{frame}[c]{Recursão e TADs}
+		\begin{itemize}
+			\item TADs baseadas em nós e ponteiros possuem, em geral, um caráter recursivo;
+
+			\item Como contar o número de elementos de uma lista utilizando uma função recursiva?
+
+			\item Como encontrar o maior elementa da lista?
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}[fragile,c]{O que esse algoritmo faz?}
+		\begin{minted}[fontsize=\scriptsize,frame=lines,framesep=2mm,baselinestretch=1.2,linenos]{c}
+int aaaa(int a[],int l, int r){
+	int u,v;
+	if(l == r) return(a[l]);
+	int m = (l+r)/2;
+	u = aaaa(a,l,m);
+	v = aaaa(a,m+1,r);
+	if(u > v) return(u); else return(v);
+}
+...
+aaaa(v,0,tam_v);
+		\end{minted}
+
+		\pause
+
+		\begin{itemize}
+			\item Encontrar o máximo do vetor;
+			\item Abordagem dividir para conquistar.
+		\end{itemize}
+
+		\begin{center}
+			Uma função recursiva que divide um problema de tamanho $N$ em duas partes independentes (não vazias) que são resolvidas recursivamente, faz menos de $N$ chamadas recursivas.
+		\end{center}
+	\end{frame}
+
+	\begin{frame}[fragile,c]{Programação Dinâmica}
+		\begin{itemize}
+			\item Técnica de programação;
+			\item Armazenar valores já calculados para chamadas recursivas;
+		\end{itemize}
+		\begin{minted}[fontsize=\scriptsize,frame=lines,framesep=2mm,baselinestretch=1.2,linenos]{c}
+int knownF[100];
+int fib(int n)
+{
+	int t;
+
+	if(knownF[n] != 0) return knownF[n];
+	if(n == 0) return(0);
+	if(n == 1) return(1);
+	t = fib(n-1) + fib(n-2);
+	return knownF[n] = t;
+}
+		\end{minted}
+		\begin{itemize}
+			\item Quantas chamadas recursivas esse algoritmo faz?
+		\end{itemize}
+	\end{frame}
+	%--- Next Frame ---%
+
+	% ==========================================
+	% \begin{frame}
+	% 	\frametitle{Título}
+	% 	\begin{itemize}
+	% 		\item Item bla bla bla
+	% 	\end{itemize}
+	%	  \begin{block}{Título de bloco}
+	%		 	Conteúdo do bloco
+	%   \end{block}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% Exemplo de frame com figura
+	% \begin{frame}
+	% 	\frametitle{Título}
+	%	  \begin{figure}[h]
+	%	  	\centering
+	%	  	\includegraphics[width=10cm]{paht.png}
+	%			\caption{Bla bla bla ...}
+	%	  	\label{label}
+	%	  \end{figure}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% Exemplo de frame com algoritmo
+	% \begin{frame}[fragile]
+	% 	\frametitle{Título}
+	% 	\begin{lstlisting}[language=C]
+	% 		#include <stdio.h>
+	%
+	% 		int main()
+	% 		{
+	% 		  int a[5];
+	%
+	% 		  a[0] = 30;
+	% 		  a[1] = 25;
+	% 		  a[2] = 5;
+	% 		  a[3] = 100;
+	% 		  a[4] = 1;
+	%
+	% 		  printf("%d\n",a[1]);
+	% 		}
+	% 	\end{lstlisting}
+	% \end{frame}
+	% ==========================================
+
+	% ==========================================
+	% Frame para referências
+	\begin{frame}[allowframebreaks]
+		\frametitle{Referências utilizadas na apresentação}
+		\bibliography{referencias}
+	\end{frame}
+  % ==========================================
+
+\end{document}
