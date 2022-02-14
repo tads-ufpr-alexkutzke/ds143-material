@@ -2,10 +2,10 @@
 
 ## Material
 
-1. [Recursao](https://gitlab.tadsufpr.net.br/ds141-alexkutzke/material/raw/master/03/00_recursao/recursion.pdf);
-   - [Códigos](https://gitlab.tadsufpr.net.br/ds141-alexkutzke/material/tree/master/03/00_recursao/codes);
-2. [Busca](https://gitlab.tadsufpr.net.br/ds141-alexkutzke/material/raw/master/03/01_busca/busca.pdf);
-   - [Códigos](https://gitlab.tadsufpr.net.br/ds141-alexkutzke/material/tree/master/03/01_busca/codes).
+1. [Recursao](https://gitlab.com/ds143-alexkutzke/material/raw/main/03/00_recursao/recursion.pdf);
+   - [Códigos](https://gitlab.com/ds143-alexkutzke/material/tree/main/03/00_recursao/codes);
+2. [Busca](https://gitlab.com/ds143-alexkutzke/material/raw/main/03/01_busca/busca.pdf);
+   - [Códigos](https://gitlab.com/ds141-alexkutzke/material/tree/main/03/01_busca/codes).
 
 ## Exercícios para praticar (não precisa entregar)
    
