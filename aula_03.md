@@ -5,7 +5,7 @@
 1. [Recursao](https://gitlab.com/ds143-alexkutzke/material/raw/main/03/00_recursao/recursion.pdf);
    - [Códigos](https://gitlab.com/ds143-alexkutzke/material/tree/main/03/00_recursao/codes);
 2. [Busca](https://gitlab.com/ds143-alexkutzke/material/raw/main/03/01_busca/busca.pdf);
-   - [Códigos](https://gitlab.com/ds141-alexkutzke/material/tree/main/03/01_busca/codes).
+   - [Códigos](https://gitlab.com/ds143-alexkutzke/material/tree/main/03/01_busca/codes).
 
 ## Exercícios para praticar (não precisa entregar)
    
