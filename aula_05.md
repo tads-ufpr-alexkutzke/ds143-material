@@ -2,5 +2,5 @@
 
 ## Material
 
-1. [Merge Sort](https://gitlab.tadsufpr.net.br/ds141-alexkutzke/material/-/blob/master/05/00_merge/mergesort.pdf);
-2. [Implementações](https://gitlab.tadsufpr.net.br/ds141-alexkutzke/material/-/tree/master/05/codes);
+1. [Merge Sort](https://gitlab.com/ds143-alexkutzke/material/-/blob/main/05/00_merge/mergesort.pdf);
+2. [Implementações](https://gitlab.com/ds143-alexkutzke/material/-/tree/main/05/codes);
