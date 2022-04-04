@@ -1,4 +1,4 @@
-# Especificação do Trabalho prático 2020/2
+# Especificação do Trabalho prático 2021/2
 
 O trabalho consiste na criação de um programa, em linguagem C, capaz de indexar palavras de um ou mais documentos de texto. Tal programa deverá ser nomeado como `indexer`.
 
