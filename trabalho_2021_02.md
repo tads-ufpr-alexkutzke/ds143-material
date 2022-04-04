@@ -1,6 +1,6 @@
 # Especificação do Trabalho prático 2021/2
 
-O trabalho consiste na criação de um programa, em linguagem C, capaz de indexar palavras de um ou mais documentos de texto. Tal programa deverá ser nomeado como `indexer`.
+O trabalho consiste na criação de um programa capaz de indexar palavras de um ou mais documentos de texto. Tal programa deverá ser nomeado como `indexer`.
 
 ## Arquivos para testes
 
@@ -56,17 +56,18 @@ de atender às funcionalidades descritas acima, mesmo quando executado com
 arquivos grandes (> 1GB). Tal estrutura deve ser implementada pelos próprios 
 alunos e deverá ser explicada no dia da defesa do trabalho.
 
-O programa deve ser capaz de ser compilado e executado em um ambiente Linux. 
+O programa deve ser capaz de ser compilado, se for o caso, e executado em um ambiente Linux. 
 Isso não deve gerar maiores problemas para aqueles que programam em Windows ou 
 outro S.O.. Basta ter cuidado para não utilizar bibliotecas ou outras diretrizes 
 específicas desses S.O.'s.
 
-Além disso, o programa deverá ser acompanhado de um Makefile (sugestão sobre o 
-tema https://pt.wikibooks.org/wiki/Programar_em_C/Makefiles ).
+Além disso, o repositório deverá conter um arquivo `README.md` com a
+explicação do processo de execução do programa.
 
 Como informado acima, o funcionamento da aplicação **indexer** tem as seguintes
 peculiaridades:
 - Transformar todas os caracteres em minúsculo, ou seja, comportamento de *ignore-case*;
+- Ignorar palavras com menos de 2 caracteres;
 - Ignorar caracteres que não sejam letras, como números e pontuações:
   - Por conta disso, palavras compostas como `bem-vindo` serão separadas em duas, `bem` e `vindo`.
 
@@ -80,11 +81,9 @@ o horário de aula. A defesa **não** é feita para a turma toda, mas sim, apena
 A entrega será realizada por meio da criação de um repositório no gitlab 
 (enviar endereço do repositório por tarefa na UFPRVirtual). 
 
-Basicamente, eu, professor, vou clonar o repositório recebido, executar o 
-comando `make` e, a partir daí, um programa chamado `indexer` já deve estar 
-disponível para que eu inicie testes em minha máquina.
-
-Caso eu não seja capaz de compilar e executar o trabalho na minha máquina, 
+Basicamente, eu, professor, vou clonar o repositório recebido, 
+seguir as instruções do README e, a partir daí, executar um programa chamado `indexer`. 
+Caso eu não seja capaz de compilar e/ou executar o trabalho na minha máquina, 
 a nota máxima será 50.
 
 **Data da entrega e defesa:** 02/05/2022 pela UFPRVirtual.
