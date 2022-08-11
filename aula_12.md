@@ -2,4 +2,4 @@
 
 ## Material
 
-1. [Grafos Direcionados e Menor Caminho](https://gitlab.com/ds143-alexkutzke/material/raw/master/12/00_grafos_direcionados/grafos_direcionados.pdf).
+1. [Grafos Direcionados e Menor Caminho](https://gitlab.com/ds143-alexkutzke/material/raw/main/12/00_grafos_direcionados/grafos_direcionados.pdf).
