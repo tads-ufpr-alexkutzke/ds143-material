@@ -22,7 +22,7 @@ Nenhuma tarefa no momento.
 
 ## Biblioteca de Grafos
 
-* https://gitlab.tadsufpr.net.br/ds141-alexkutzke/simple-c-graph-lib
+* https://gitlab.com/ds143-alexkutzke/simple-c-graph-lib
 
 ## Lista de exercícios 
 
