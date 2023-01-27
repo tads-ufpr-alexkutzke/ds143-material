@@ -83,7 +83,7 @@ seguir as instruções do README e, a partir daí, executar um programa chamado 
 Caso eu não seja capaz de compilar e/ou executar o trabalho na minha máquina, 
 a nota máxima será 50.
 
-**Data da entrega:** 21/02/2022 pela UFPRVirtual.
+**Data da entrega:** 21/02/2022 (turma noite) e 24/02/2023 (turma tarde) pela UFPRVirtual.
 
 ## Cálculo de Relevância
 
