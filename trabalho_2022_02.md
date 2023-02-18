@@ -54,7 +54,7 @@ O trabalho deve ser realizado em grupos de até 3 alunos.
 O programa deve conter a implementação de uma estrutura de dados eficiente capaz
 de atender às funcionalidades descritas acima, mesmo quando executado com 
 arquivos grandes (> 1GB). Tal estrutura deve ser implementada pelos próprios 
-alunos e deverá ser explicada no dia da defesa do trabalho.
+alunos.
 
 O programa deve ser capaz de ser compilado, se for o caso, e executado em um ambiente Linux. 
 Isso não deve gerar maiores problemas para aqueles que programam em Windows ou 
@@ -71,7 +71,7 @@ peculiaridades:
 - Ignorar caracteres que não sejam letras, como números e pontuações:
   - Por conta disso, palavras compostas como `bem-vindo` serão separadas em duas, `bem` e `vindo`.
 
-## Entrega e Defesa
+## Entrega
 
 A avaliação do trabalho será composta pela entrega do código-fonte.
 
