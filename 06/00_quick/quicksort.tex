@@ -193,7 +193,7 @@
   Repita até que \tcb{i} e \tcb{j} se cruzem:
   \begin{itemize}
     \item Varrer \tcb{i} da esquerda para a direita enquanto $a[i] < a[lo]$;
-    \item Varrer \tcb{j} da esquerda para a direita enquanto $a[j] > a[lo]$;
+    \item Varrer \tcb{j} da direita para a esquerda enquanto $a[j] > a[lo]$;
     \item Troque $a[i]$ com $a[j]$.
   \end{itemize}
 
@@ -413,7 +413,7 @@ void quicksort(int * a, int n)
 
   \begin{itemize}
     \item Melhor pivô? Mediana do array (divide a coleção exatamente ao meio);
-    \item Utilizar a mediana exata o array (caro);
+    \item Utilizar a mediana exata do array (caro);
     \item Utilizar a mediana entre uma amostra qualquer (tamanho 3) do array (boa aproximação);
     \item Já evita o pior caso!
   \end{itemize}
