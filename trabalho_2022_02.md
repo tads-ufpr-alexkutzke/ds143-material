@@ -73,7 +73,7 @@ peculiaridades:
 
 ## Entrega
 
-A avaliação do trabalho será composta pela entrega do código-fonte.
+A avaliação do trabalho será composta pela entrega do código-fonte e por defesa presencial.
 
 A entrega será realizada por meio da criação de um repositório no gitlab 
 (enviar endereço do repositório por tarefa na UFPRVirtual). 
@@ -83,7 +83,7 @@ seguir as instruções do README e, a partir daí, executar um programa chamado 
 Caso eu não seja capaz de compilar e/ou executar o trabalho na minha máquina, 
 a nota máxima será 50.
 
-**Data da entrega:** 21/02/2022 (turma noite) e 24/02/2023 (turma tarde) pela UFPRVirtual.
+**Data da entrega:** ver na UFPRVirtual.
 
 ## Cálculo de Relevância
 
