@@ -40,44 +40,6 @@ void in_order(Arvore *a){
 }
 
 Arvore* remover(Arvore *a, int x){
-  Arvore * aux, * pai_aux;
-  int filhos = 0,tmp;
-
-  if(!a)
-    return(NULL);
-
-  if(a->info < x)
-    a->dir = remover(a->dir,x);
-  else if(a->info > x)
-    a->esq = remover(a->esq,x);
-  else{
-    if(a->esq)
-      filhos++;
-    if(a->dir)
-      filhos++;
-
-    if(filhos == 0){
-      free(a);
-      return(NULL);
-    }
-    else if(filhos == 1){
-      aux = a->esq ? a->esq : a->dir;
-      free(a);
-      return(aux);
-    }
-    else{
-      aux = a->esq;
-      pai_aux = a;
-      while(aux->dir){ pai_aux = aux; aux = aux->dir; }
-      tmp = a->info;
-      a->info = aux->info;
-      aux->info = tmp;
-      pai_aux->dir = remover(aux,tmp);
-      return(a);
-    }
-  }
-
-  return(a);
 }
 
 void print(Arvore * a,int spaces){
