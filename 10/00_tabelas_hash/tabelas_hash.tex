@@ -81,7 +81,7 @@
 % TODO TODO TODO TODO TODO TODO TODO
 \title{10 - Tabelas Hash}
 \author{Prof. Alex Kutzke}
-\date{Julho de 2021}
+\date{Setembro de 2025}
 
 \begin{document}
 
@@ -146,7 +146,7 @@
   \tcb{Questões importantes:}
   \begin{itemize}
     \item Computar a função hash;
-    \item Teste que igualdade: método para checar se duas chaves são iguais;
+    \item Teste de igualdade: método para checar se duas chaves são iguais;
     \item Resolução de colisão: algoritmo e estruturas de dados para resolver o caso de quando duas ou mais chaves são alocadas em um mesmo índice do array.
   \end{itemize}
   
@@ -461,7 +461,7 @@ int string_hash(char * s) {
   while (c = *s++){
     hash_value = (hash_value + 
                   (c - 'a' + 1) * p_pow) % m;
-    p_pow = (p_pow * p) % m;
+    p_pow = p_pow * p;
   }
   return(hash_value);
 }
