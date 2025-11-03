@@ -132,7 +132,7 @@ O algoritmo funciona da seguinte forma:
 </details>
 
 
-**8)** Em um grafo não-direcionado, a BFS encontra o caminho mais curto entre dois nós $s$ e $t$ (em número de arestas). Por que a DFS não garante encontrar o caminho mais curto?
+**9)** Em um grafo não-direcionado, a BFS encontra o caminho mais curto entre dois nós $s$ e $t$ (em número de arestas). Por que a DFS não garante encontrar o caminho mais curto?
 
 <details>
   <sumary>Resposta</sumary>
@@ -146,7 +146,7 @@ A BFS, por outro lado, usa uma Fila. Ela explora primeiro os vizinhos de $s$ (di
 </details>
 
 
-**9)** Qual problema o algoritmo de Dijkstra resolve? Qual é a principal restrição para que o algoritmo funcione corretamente?
+**10)** Qual problema o algoritmo de Dijkstra resolve? Qual é a principal restrição para que o algoritmo funcione corretamente?
 
 <details>
   <sumary>Resposta</sumary>
@@ -158,7 +158,7 @@ O algoritmo de Dijkstra resolve o problema do **caminho mais curto de fonte úni
 </details>
 
 
-**10)** O que significa "relaxar" uma aresta `(u, v)` no contexto do algoritmo de Dijkstra? Descreva a operação de relaxamento.
+**11)** O que significa "relaxar" uma aresta `(u, v)` no contexto do algoritmo de Dijkstra? Descreva a operação de relaxamento.
 
 <details>
   <sumary>Resposta</sumary>
@@ -177,7 +177,7 @@ Isso significa: "Se a distância conhecida até $u$, somada ao peso da aresta de
 
 </details>
 
-**11)** Por que o algoritmo de Dijkstra falha se o grafo (direcionado ou não) contiver arestas de peso negativo?
+**12)** Por que o algoritmo de Dijkstra falha se o grafo (direcionado ou não) contiver arestas de peso negativo?
 
 <details>
   <sumary>Resposta</sumary>
