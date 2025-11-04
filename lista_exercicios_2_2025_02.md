@@ -108,14 +108,15 @@ Dada a string "A A A B B C D A", construa a árvore de Huffman correspondente. E
 
 --- 
 
-Um grafo pode ser utilizado para mostrar relacionamentos entre pessoas. Por exemplo, dada a seguinte lista de pessoas pertencentes a um mesmo curso (vértices) e suas relações de amizades (arestas) abaixo:
+Um grafo pode ser utilizado para mostrar relacionamentos entre pessoas. Por exemplo, dada a seguinte lista de pessoas pertencentes a um mesmo curso e suas relações de amizades abaixo:
 
-> Pessoas = {Jorge, Jaime, José, Francisco, Frederico, João, Suzana}
->
-> Amizades = {(Jorge, Jaime), (Francisco, Frederico), (Jorge, João),
->
-> (Jaime, Frederico), (Jaime, Francisco), (Jaime, Suzana),
-> (Suzana, Francisco)}
+```
+Pessoas = {Jorge, Jaime, José, Francisco, Frederico, João, Suzana}
+
+Amizades = {(Jorge, Jaime), (Francisco, Frederico), (Jorge, João),
+            (Jaime, Frederico), (Jaime, Francisco), (Jaime, Suzana), 
+            (Suzana, Francisco)}
+```
 
 Determine:
 
@@ -314,7 +315,9 @@ Isso significa: "Se a distância conhecida até $u$, somada ao peso da aresta de
 
 </details>
 
-**12)** Por que o algoritmo de Dijkstra falha se o grafo (direcionado ou não) contiver arestas de peso negativo?
+---
+
+Por que o algoritmo de Dijkstra falha se o grafo (direcionado ou não) contiver arestas de peso negativo?
 
 <details>
   <sumary>Resposta</sumary>
@@ -329,24 +332,26 @@ Se houver arestas negativas, essa premissa é quebrada. Um vértice $u$ pode ser
 
 Simule a execução do algoritmo de Dijkstra para o grafo direcionado com as arestas abaixo (o grafo contém 8 vértices), iniciando pelo vértice 1:
 
-> origem -> destino (peso)
-> 
-> 0 -> 1 (5) 
-> 0 -> 7 (8) 
-> 0 -> 4 (9) 
-> 1 -> 7 (4) 
-> 1 -> 3 (15) 
-> 1 -> 2 (12) 
-> 2 -> 3 (3) 
-> 2 -> 6 (11) 
-> 3 -> 6 (9)
-> 4 -> 7 (5)
-> 4 -> 5 (4)
-> 4 -> 6 (20)
-> 5 -> 2 (1)
-> 5 -> 6 (13)
-> 7 -> 5 (6)
-> 7 -> 2 (7)
+```
+origem -> destino (peso)
+
+0 -> 1 (5) 
+0 -> 7 (8) 
+0 -> 4 (9) 
+1 -> 7 (4) 
+1 -> 3 (15) 
+1 -> 2 (12) 
+2 -> 3 (3) 
+2 -> 6 (11) 
+3 -> 6 (9)
+4 -> 7 (5)
+4 -> 5 (4)
+4 -> 6 (20)
+5 -> 2 (1)
+5 -> 6 (13)
+7 -> 5 (6)
+7 -> 2 (7)
+```
 
 <details>
   <sumary>Resposta</sumary>
@@ -379,8 +384,8 @@ Para a simulação, usaremos `dist[]` para armazenar as distâncias (iniciando c
 
 Para o mesmo grafo da questão anterior, determine:
 
-a. Sua representação na forma de matriz de adjacências;
-b. Sua representação na forma de lista de adjacências.
+a) Sua representação na forma de matriz de adjacências;
+b) Sua representação na forma de lista de adjacências.
 
 <details>
   <sumary>Resposta</sumary>
