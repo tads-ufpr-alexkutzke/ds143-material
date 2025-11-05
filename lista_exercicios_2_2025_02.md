@@ -16,7 +16,7 @@ Descreva o funcionamento e a complexidade de pior caso do algoritmo de busca de 
 
 O algoritmo de força bruta funciona deslizando o padrão sobre o texto, caractere por caractere. Para cada posição $i$ no texto, ele tenta "casar" o padrão $P[0..m-1]$ com o texto $T[i..i+m-1]$.
 
-  * **Funcionamento:** Um laço externo percorre as posições $i$ de $0$ a $n-m$ (onde $n$ é o tamanho do texto e $m$ o do padrão). Um laço interno compara $P[j]$ com $T[i+j]$. Se uma diferença for > encontrada, o laço interno é quebrado e o laço externo avança (incrementa $i$).
+  * **Funcionamento:** Um laço externo percorre as posições $i$ de $0$ a $n-m$ (onde $n$ é o tamanho do texto e $m$ o do padrão). Um laço interno compara $P[j]$ com $T[i+j]$. Se uma diferença for encontrada, o laço interno é quebrado e o laço externo avança (incrementa $i$).
   * **Pior Caso:** A complexidade de pior caso é $O(n \cdot m)$.
   * **Exemplo:** Isso ocorre quando, para cada posição do texto, quase todo o padrão casa antes de falhar no último caractere.
       * Texto (T): "AAAAAAAAAAAAAAAAAB"
@@ -59,7 +59,7 @@ O que é uma "codificação livre de prefixo" (ou *prefix-free code*) e por que 
 <details>
   <sumary>Resposta</sumary>
 
-Uma codificação de prefixo é um conjunto de códigos (binários, no caso de Huffman) onde nenhum código é o prefixo de outro código.
+Uma codificação livre de prefixo é um conjunto de códigos (binários, no caso de Huffman) onde nenhum código é o prefixo de outro código.
 
   * **Exemplo:** Se "A" é `01`, "B" não pode ser `010` (pois `01` é prefixo). Um conjunto válido seria: A=`0`, B=`10`, C=`11`.
   * **Importância:** Essa propriedade é essencial para a descompressão, pois permite que o descompressor leia o fluxo de bits comprimido de forma inequívoca. Ao ler os bits, assim que uma sequência corresponde a um código na árvore de Huffman, o descompressor sabe que aquele símbolo foi encontrado. Não há ambiguidade; ele não precisa "olhar para frente" para ver se bits adicionais poderiam formar um código diferente (e mais longo).
@@ -120,10 +120,13 @@ Amizades = {(Jorge, Jaime), (Francisco, Frederico), (Jorge, João),
 
 Determine:
 
-a. todos os amigos de João;
-b. todos os amigos de Suzana;
-c. todos os amigos de Jaime;
-d. O grau de cada vértice.
+a) todos os amigos de João;
+
+b) todos os amigos de Suzana;
+
+c) todos os amigos de Jaime;
+
+d) O grau de cada vértice.
 
 <details>
   <sumary>Resposta</sumary>
@@ -262,9 +265,9 @@ A prova pode ser feita por uma contagem combinatória:
 5.  Expandindo o fatorial:
     $\binom{n}{2} = \frac{n \cdot (n-1) \cdot (n-2)!}{2 \cdot 1 \cdot (n-2)!}$
 6.  Simplificando (cortando o $(n-2)!$):
-    $\binom{n}{2} = \frac{n(n-1)}{2}$
+    $\binom{n}{2} = \frac{n \cdot (n-1)}{2}$
 
-Portanto, um grafo não-direcionado com $n$ vértices contém no máximo $\frac{n(n-1)}{2}$ arestas.
+Portanto, um grafo não-direcionado com $n$ vértices contém no máximo $\frac{n \cdot (n-1)}{2}$ arestas.
 
 </details>
 
