@@ -265,7 +265,7 @@ A prova pode ser feita por uma contagem combinatória:
 5.  Expandindo o fatorial:
     $\binom{n}{2} = \frac{n \cdot (n-1) \cdot (n-2)!}{2 \cdot 1 \cdot (n-2)!}$
 6.  Simplificando (cortando o $(n-2)!$):
-    $\binom{n}{2} = \frac{n \cdot (n-1)}{2}$
+    $\binom{n}{2} = \frac{ n \cdot (n-1) }{2}$
 
 Portanto, um grafo não-direcionado com $n$ vértices contém no máximo $\frac{n \cdot (n-1)}{2}$ arestas.
 
