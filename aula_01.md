@@ -175,33 +175,52 @@ go fmt ./...            # formata o código automaticamente
 
 ### O problema da Conectividade Dinâmica
 
-**Conectividade dinâmica**: a entrada é uma sequência de pares de inteiros,
-onde cada inteiro representa um objeto de algum tipo e nós interpretamos
-o par `p q` como "`p` está conectado a `q`". Assumimos que "estar conectado
-a" é uma relação de equivalência:
+Imagine uma rede de computadores, onde cada computador é identificado por um
+número inteiro entre `0` e `N-1`. Sabemos que alguns pares de computadores já
+estão fisicamente conectados por um cabo, mas não temos o mapa completo da
+rede — apenas uma lista de conexões, uma por linha, no formato `p q` (o
+computador `p` está conectado ao computador `q`).
 
+A pergunta que queremos responder repetidamente é: **dado um novo par `p q`,
+os dois computadores já pertencem à mesma rede** (mesmo que a conexão entre
+eles não seja direta, mas por meio de outros computadores)**?**
+
+Chamamos essa relação de "pertencer à mesma rede" de **conectividade**. Ela
+se comporta como uma **relação de equivalência**, ou seja, satisfaz três
+propriedades:
+
+- *Reflexiva*: todo computador está conectado a si mesmo (`p` — `p`);
 - *Simétrica*: se `p` está conectado a `q`, então `q` está conectado a `p`;
-- *Transitiva*: se `p` está conectado a `q` e `q` está conectado a `r`, então `p` está conectado a `r`;
-- *Reflexiva*: `p` está conectado a `p`.
+- *Transitiva*: se `p` está conectado a `q`, e `q` está conectado a `r`, então
+  `p` está conectado a `r` — mesmo que não exista um cabo direto entre `p` e
+  `r`.
 
-Uma relação de equivalência particiona objetos em **classes de equivalência** ou
-**componentes conexas** (ou componentes conectadas ou, apenas, componentes).
-Nesse caso, dois itens estão em uma mesma componente se, e somente se, eles estão
-conectados.
+Toda relação de equivalência particiona o conjunto de objetos em grupos
+disjuntos chamados **componentes conexas** (ou apenas **componentes**): dois
+computadores estão na mesma componente se, e somente se, estão conectados
+(direta ou indiretamente). Inicialmente, antes de qualquer conexão, cada um
+dos `N` computadores forma sua própria componente, com apenas um elemento.
 
-Podemos identificar tanto itens quanto componentes por números inteiros entre
-0 e N-1.
+Para representar isso computacionalmente, identificamos cada componente pelo
+número de um dos computadores que a compõem (seu **identificador**). Dois
+computadores têm o mesmo identificador de componente se, e somente se,
+pertencem à mesma componente.
 
-Inicialmente, existem N componentes independentes (nenhuma conexão), com cada
-item em sua própria componente. O identificador de uma componente é um dos
-itens que a compõem. Dois itens têm o mesmo identificador de componente se
-e somente se eles fazem parte de uma mesma componente.
+### O programa que vamos construir
 
-Nosso objetivo é escrever um programa para filtrar pares externos em uma sequência:
-quando o programa ler um par `p q` da entrada padrão, ele deve escrever o próprio par
-lido na saída padrão apenas se os pares lidos até o momento não implicam que `p` está
-conectado a `q`. Se os pares lidos até o momento implicam que `p` está conectado a `q`,
-então o programa não deve imprimir nada e proceder para o próximo par.
+O programa lê pares `p q` da entrada, um por vez, e decide o que fazer com
+cada um:
+
+1. Se `p` e `q` **já** estão na mesma componente, a conexão é redundante — já
+   sabíamos que eles estavam ligados — então o programa **não imprime nada**
+   e passa para o próximo par.
+2. Caso contrário, o programa **imprime o par** (essa é uma conexão nova e
+   relevante) e registra que, a partir de agora, `p` e `q` pertencem à mesma
+   componente.
+
+Note que o programa nunca recebe a rede completa de uma vez: ele descobre a
+conectividade **incrementalmente**, à medida que lê os pares — por isso o
+nome *conectividade dinâmica*.
 
 ### API Union-Find em Go
 
@@ -265,7 +284,6 @@ item 0 pertence. Existem diferentes implementações para os métodos `Union` e 
 Qual seria a mais eficiente que você consegue pensar?
 
 **Tente resolver essa questão sem procurar por alternativas na internet. Se desafie!**
-Esta tarefa está na UFPR Virtual.
 
 ## Referências (consulte apenas depois de fazer sua própria solução)
 
