@@ -1,762 +1,649 @@
 \documentclass{beamer}
 
 \usepackage{beamerthemeSingapore}
-\usepackage{graphicx}
-%\usepackage{here}
-\usepackage{url}
 \usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[tight,raggedright]{subfigure}
-%usepackage[alf]{abntex2cite}
-\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
 \usepackage{minted}
 \usepackage{amsmath}
-\usepackage{pdfpages}
-% Please add the following required packages to your document preamble:
-\usepackage{booktabs}
 
-% TODO TODO TODO TODO TODO TODO TODO
-\title{02 - Análise de Algoritmos}
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\tcg}[1]{\textcolor{green!50!black}{#1}}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+\title{02 - Análise de Algoritmos e Conectividade Dinâmica}
 \author{Prof. Alex Kutzke}
-\date{Maio de 2021}
+\date{Agosto de 2026}
 
 \begin{document}
 
-	% ==========================================
-	\begin{frame}
-		\begin{center}
-			% TODO TODO TODO TODO TODO TODO
-			\large{Setor de Educação Profissional e Tecnológica}\\
-			Tecnologia em Análise e Desenvolvimento de Sistemas\\
-			\vspace{1cm}			
-			\small{DS143 - Estruturas de Dados II}
-		\end{center}
-		\titlepage
-	\end{frame}
-	% ==========================================
+% ==========================================
+\begin{frame}
+  \begin{center}
+    \large{Setor de Educação Profissional e Tecnológica}\\
+    Tecnologia em Análise e Desenvolvimento de Sistemas\\
+    \vspace{1cm}
+    \small{DS143 - Estruturas de Dados II}
+  \end{center}
+  \titlepage
+\end{frame}
 
-	% ==========================================
-	\begin{frame}[c]{Roteiro}
-		\tableofcontents
-	\end{frame}
-	% ==========================================
+% ==========================================
+\begin{frame}{Objetivos da aula}
+  \small
+  Ao final desta aula você deve ser capaz de:
+  \begin{enumerate}
+    \item Contar operações de um trecho de código em função de $n$;
+    \item Identificar o termo dominante de uma função de custo;
+    \item Classificar uma função com $O$, $\Omega$ e $\Theta$;
+    \item Distinguir melhor caso, pior caso e caso médio;
+    \item Estimar a ordem de crescimento por medição (hipótese de duplicação);
+    \item Explicar as três implementações de Union-Find e o custo de \texttt{Find}/\texttt{Union} em cada uma;
+    \item Justificar por que pendurar a árvore menor sob a maior reduz $O(n)$ para $O(\log n)$;
+    \item Escolher, para um tamanho de entrada dado, qual implementação usar.
+  \end{enumerate}
+\end{frame}
 
-	\section{Caixeiro Viajante}
-	
-	% ==========================================
-	\begin{frame}
-		\frametitle{Problema do Caixeiro Viajante}
-	
-	  \begin{block}{Definição}
-		Suponha que um caixeiro viajante tenha de visitar n cidades diferentes, iniciando e encerrando sua viagem na primeira cidade. Suponha, também, que não importa a ordem com que as cidades são visitadas e que de cada uma delas pode-se ir diretamente a qualquer outra. O problema do caixeiro viajante consiste em descobrir a rota que torna mínima a viagem total. 
-	  \end{block}
-	\end{frame}
-	% ==========================================
+% ==========================================
+\begin{frame}{Roteiro}
+  \tableofcontents
+\end{frame}
 
-	% ==========================================
-	% Exemplo de frame com figura
-	\begin{frame}
-		\frametitle{Problema do Caixeiro Viajante}
-	  \begin{figure}[h]
-	  	\centering
-	  	\includegraphics[width=8cm]{fig/mapa.png}
-			\caption{Problema do Caixeiro Viajante.}
-	  	\label{label}
-	  \end{figure}
-	\end{frame}
-	% ==========================================
+% ==========================================
+\section{Análise}
+% ==========================================
 
-	% ==========================================
-	\begin{frame}
-		\frametitle{Problema do Caixeiro Viajante}
-	
-	  \begin{center}
-			Qual a solução mais \underline{simples} para esse problema??\\
-		  \pause
-	  	Verificar \textbf{todas as possibilidades}.
- 	  \end{center}
-	\end{frame}
-	% ==========================================
+\begin{frame}[fragile]{Três programas, a mesma resposta}
+  Na Aula 1, o desafio foi implementar \texttt{Find} e \texttt{Union}. Existe
+  mais de uma forma de fazer isso.
 
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Problema do Caixeiro Viajante}
-	
-	  \begin{center}
-			Considere o problema com 4 cidades ($n=4$):
-			$A$, $B$, $C$ ,$D$.\\ Quais são as possibilidades?
-		  \pause
- 	  \end{center}
- 	  \begin{enumerate}
-			\item ABCDA
-			\item ABDCA
-			\item ACBDA
-			\item ACDBA
-			\item ADBCA
-			\item ADCBA
- 	  \end{enumerate}
- 	  \pause
- 	  E para 5 cidades, quantas rotas são possíveis? E para 6 cidades?
- 	  \pause
- 	  \center{\textbf{$R(n) = (n-1)!$}}
+  \begin{minted}{bash}
+cd 02/codes/unionfind
+go build -o quick_find quick_find.go
+go build -o quick_union quick_union.go
+go build -o weighted weighted_quick_union.go
 
-	\end{frame}
-	% ==========================================
+./weighted < largeUF.txt > /dev/null
+  \end{minted}
 
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Análise do Problema}
-		\begin{itemize}
-			\item Clássico problema de \textbf{otimização combinatória};
-			\item Solução anterior, reduz para um \textbf{problema de enumeração} e consegue encontrar a solução ótima;
-		\end{itemize}
-		
-		Legal! Encontramos a solução. Então por que estamos falando desse problema?\\
-		\pause
-		Qual o problema dessa solução? \pause 
+  \vspace{0.2cm}
+  \begin{center}
+    \Large Agora o mesmo arquivo, com \texttt{quick\_find}. Quanto tempo leva?
+  \end{center}
+\end{frame}
 
-		\vspace{2cm}
+\begin{frame}{800 vezes mais lento}
+  \begin{center}
+    \Large
+    \texttt{weighted}: \tcg{cerca de 1 segundo}\\[0.4cm]
+    \texttt{quick\_find}: \tcr{quase 14 minutos}
+  \end{center}
 
-		\begin{center}		
-			O esforço cresce em uma taxa \textbf{fatorial}!
-		\end{center}
-	\end{frame}
-	% ==========================================
-	
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Análise do Problema}
-		Suponha:
-		\begin{itemize}
-			\item Um computador muito veloz capaz de fazer 1 bilhão de adições por segundo;
-			\item Um problema com 20 cidades.
-		\end{itemize}
-		
-		O computador precisa de apenas 19 adições para dizer qual o comprimento de uma rota. Portanto:
-		\begin{itemize}
-			\item É capaz de calcular $10^9 / 19 = $\textbf{53 milhões de rotas por segundo};
-			\item Ótimo, não?
-		\end{itemize}		 
-		
-		Sabemos que o computador precisará calcular $19!$ rotas. Quanto é $19!$?
-		\pause
-		\begin{center}
-		$121645100408832000$
-		\end{center}
-		\pause
-		Assim, o computador precisará de 
+  \vspace{0.5cm}
+  Mesma entrada, mesma máquina, mesmo compilador, menos de 140 linhas cada.
+  A diferença vem só da estrutura de dados escolhida.
 
-		\begin{center}
-		
-		$1.2 \times 10^{17} / ( 53 $milhões$ ) = 2.3 x 10^9$ segundos
-		\end{center}
+  \vspace{0.3cm}
+  Medir essa diferença é a primeira metade da aula. Explicar de onde ela vem é
+  a segunda.
+\end{frame}
 
-	\end{frame}
-	% ==========================================	
-	
-	
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Análise do Problema}
-		\begin{center}
-		
-		$2.3 x 10^9$ segundos\\ 
-		$ = 2300000000$ segundos\\
-		\pause
-		$ = 38333333$ minutos\\
-		\pause
-		$ = 638888$ horas\\
-		\pause		 
-		$ = 26620$ dias\\
-		\pause
-		$ = 73$ \textbf{anos}!\\
-		\pause
-		\end{center}
-		
-		``Ah, mas tudo bem! É só alocar mais processamento. Se tivermos um computador 1000 vezes mais rápido,
-		quanto tempo leva?''
+\begin{frame}{Como decidir sem esperar 14 minutos?}
+  \begin{block}{Análise empírica}
+    Implementar, rodar, cronometrar. Indispensável, mas: depende dos dados de
+    entrada, da máquina, do compilador. E custa tempo -- não dá para
+    implementar seis alternativas para escolher uma.
+  \end{block}
 
-		\pause
-		
-		\begin{center}
-		$73$ anos $ / 1000 = 0,073$ anos $ = 26$ dias\\		
-		\end{center}
+  \pause
 
-		\pause
-		
-		Com esse novo computador e uma única cidade a mais, já levaríamos mais de um ano para calcular a melhor rota.
+  \begin{block}{Análise de algoritmos}
+    Estuda desempenho no papel, antes de existir código. Responde ``quanto
+    tempo para uma entrada de tamanho $n$?'' sem depender da máquina.
+  \end{block}
+\end{frame}
 
-	\end{frame}
-	% ==========================================	
+\begin{frame}{O problema do caixeiro viajante}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=6.5cm]{fig/mapa.png}
+  \end{figure}
+  Visitar $n$ cidades, voltando à primeira. Qual rota minimiza a distância
+  total?
+\end{frame}
 
+\begin{frame}{Quantas rotas existem?}
+  \begin{center}
+    Com 4 cidades $A,B,C,D$ (fixando $A$ como origem): 6 rotas.\\[0.3cm]
+    \pause
+    E com 20 cidades?
+  \end{center}
+\end{frame}
 
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Análise do Problema}
-\begin{table}[]
-\centering
-\caption{Crescimento Fatorial.}
-\label{my-label}
-\begin{tabular}{@{}llll@{}}
-\toprule
-\multicolumn{1}{c}{\textbf{n}} & \multicolumn{1}{c}{\textbf{rotas por segundo}} & \multicolumn{1}{c}{\textbf{( n - 1 )!}} & \multicolumn{1}{c}{\textbf{cálculo total}} \\ \midrule
-5                              & 250 milhoes                                    & 24                                      & insignific                                 \\
-10                             & 110 milhoes                                    & 362 880                                 & 0.003 seg                                  \\
-15                             & 71 milhoes                                     & 87 bilhoes                              & 20 min                                     \\
-20                             & 53 milhoes                                     & 1.2 x $10^{17}$                              & 73 anos                                    \\
-25                             & 42 milhoes                                     & 6.2 x $10^{23}$                              & 470 milhoes de anos                        \\ \bottomrule
-\end{tabular}
-\end{table}	
-	\end{frame}
-	% ==========================================		
-	
-	
+\begin{frame}{$(n-1)!$ rotas}
+  \begin{center}
+    \small
+    \begin{tabular}{@{}lll@{}}
+      \toprule
+      $n$ & $(n-1)!$ & tempo total (1 bilhão de add./s) \\
+      \midrule
+      10 & 362.880 & 0,003 s \\
+      15 & 87 bilhões & 20 min \\
+      20 & $1,2 \times 10^{17}$ & \textbf{73 anos} \\
+      25 & $6,2 \times 10^{23}$ & 470 milhões de anos \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
 
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Análise do Problema}
+  \vspace{0.4cm}
+  \pause
+  Com uma máquina 1000 vezes mais rápida: 73 anos caem para 26 dias. Some
+  \textbf{uma} cidade e o ganho desaparece.
+\end{frame}
 
-\begin{table}[]
-\centering
-\caption{Crescimento Polinomial}
-\label{my-label}
-\begin{tabular}{@{}llll@{}}
-\toprule
-\textbf{n} & \textbf{rotas por segundo} & \textbf{$n^5$} & \textbf{cálculo total} \\ \midrule
-5          & 250 milhoes                & 3 125        & insignific             \\
-10         & 110 milhoes                & 100 000      & insignific             \\
-15         & 71 milhoes                 & 759 375      & 0.01 seg               \\
-20         & 53 milhoes                 & 3 200 000    & 0.06 seg               \\
-25         & 42 milhoes                 & 9 765 625    & 0.23 seg               \\ \bottomrule
-\end{tabular}
-\end{table}
-	\end{frame}
-	% ==========================================		
-	
-	\section{Problemas Complexos}
-	
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Problemas Complexos}
-		
-		E o que tudo isso quer dizer??
-		\pause
-		
-		\begin{center}
-			Que nem todos os problemas são facilmente resolvidos de maneira satisfatória por um computador.
-		\end{center}
-		
-		\pause
-		Mas não existe um algoritmo melhor?
-		\pause
-		
-		
-		\begin{center}
-			Algoritmo ótimo? A princípio não. Se você descobrir, pode se considerar um milionário. :)
-		\end{center}
-		
+\begin{frame}{Compare com um algoritmo $n^5$}
+  \begin{center}
+    \small
+    \begin{tabular}{@{}lll@{}}
+      \toprule
+      $n$ & $n^5$ & tempo total \\
+      \midrule
+      10 & 100.000 & insignificante \\
+      15 & 759.375 & 0,01 s \\
+      20 & 3.200.000 & 0,06 s \\
+      25 & 9.765.625 & 0,23 s \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
 
-	\end{frame}
-	% ==========================================		
+  \vspace{0.4cm}
+  Expoente alto, considerado lento -- e ainda assim resolve em décimos de
+  segundo o que o outro não resolve em milhões de anos.
 
-	% ==========================================
-	\begin{frame}[t]
-		\frametitle{Classes de problemas}
-			
-		De uma maneira \textbf{\textit{muito simplificada}}, podemos dividir problemas em 2 grupos:			
-			
-		\begin{block}{Problemas \textbf{P}}
-		Problemas resolvíveis em tempo polinomial (de acordo com o tamanho da entrada).
-		\end{block}
-		
-		
-		\begin{block}{Problemas \textbf{NP}}
-		Problemas \textbf{não} resolvíveis em tempo polinomial (de acordo com o tamanho da entrada).
-		\begin{itemize}
-			\item \textit{``Non-deterministic polynomial time''};
-			\item Mas verificáveis em tempo polinomial;
-			\item Redução de problemas;
-		\end{itemize}
-		\end{block}
-				
-		\begin{center}
-			\textbf{P = NP ??}
-		\end{center}
-	\end{frame}
-	% ==========================================			
-	
-	\section{Análise de Algoritmos}
-	% ==========================================
-	\begin{frame}[c]
-		\frametitle{Análise de Algoritmos}
-			
-		O que a teoria de computação tem a oferecer para que possamos entender qual o tipo de problemas que estamos tratando e se seus algoritmos são bons?
-		
-		\begin{block}{Análise de Algoritmos}
-			Estuda a correção e o desempenho de algoritmos.  Em outras palavras, a análise de algoritmos procura respostas para perguntas do seguinte tipo:  
-			\begin{itemize}
-				\item ``Este algoritmo resolve o meu problema?'';
-				\item ``Quanto tempo o algoritmo consome para processar uma 'entrada' de tamanho n?''.
-			\end{itemize}
-		\end{block}
-	\end{frame}
-	% ==========================================			
-	
-	
-	\begin{frame}[c]{Análise de Algoritmos}
-		\begin{itemize}
-			\item Comparar algoritmos:
-			\begin{itemize}
-				\item Qual algoritmo é melhor para uma tarefa?
-			\end{itemize}
-			\item Duas abordagens:
-			\begin{itemize}
-				\item Análise empírica;
-				\item Análise de Algoritmos.
-			\end{itemize}
-		\end{itemize}
-	\end{frame}
+  \vspace{0.2cm}
+  \textbf{Polinomial e fatorial são de naturezas diferentes.} A distância entre
+  $n^2$ e $n^5$ é pequena comparada a essa.
+\end{frame}
 
-	\begin{frame}[c]{Análise Empírica}
-		\begin{itemize}
-			\item Bastante simples:
-			\begin{itemize}
-				\item Implementa os algoritmos e testa.
-			\end{itemize}
-			\item Funciona bem em alguns casos. Mas nem sempre;
-			\item Obstáculos para a análise empírica:
-			\begin{itemize}
-				\item Implementar corretamente;
-				\item Determinar um conjunto de dados de entrada:
-				\begin{itemize}
-					\item Real;
-					\item Aleatório;
-					\item ``Perverso'';
-					\item Dependerá da aplicação.
-				\end{itemize}
-				\item Desempenho da máquina.
-			\end{itemize}
-		\end{itemize}
-	\end{frame}
+% ==========================================
+\section{Notação assintótica}
+% ==========================================
 
-	\begin{frame}[c]{Escolha de um Algoritmo}
-		\begin{itemize}
-			\item Qual algoritmo escolher dada uma análise empírica?
-			\item Problemas:
-			\begin{itemize}
-				\item Valorizar pouco o desempenho;
-				\item Valorizar demais o desempenho.
-			\end{itemize}
-			\item Não é possível realizar sempre uma análise empírica:
-			\begin{itemize}
-				\item Demanda tempo e esforço.
-			\end{itemize}
-			\item É necessário ser capaz de ter noção do desempenho do algoritmo.
-		\end{itemize}
-		
-		Para isso, temos o estudo da \textbf{complexidade de algoritmos}.
-	\end{frame}
-	%--- Next Frame ---%
-	
+\begin{frame}{O que contar}
+  Contar ``instruções de máquina'' não serve -- depende do compilador e do
+  processador.
 
-	\begin{frame}[fragile]{Exemplo}
+  \vspace{0.4cm}
+  Sedgewick propõe o \textbf{modelo de custo}: escolher a operação relevante
+  para aquele algoritmo e contar só ela.
 
-		Quantas vezes o seguinte algoritmo imprime "Ola mundo"?
-		
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				%fontsize=\footnotesize,
-				linenos
-			]{c}
-scanf("%d",&n);
+  \begin{center}
+    \small
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      Ordenação & comparações e trocas \\
+      Busca & comparações com a chave \\
+      Union-Find & acessos ao array \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
 
-for(i=0; i<n; i++){
-	printf("Ola mundo\n");
+\begin{frame}[fragile]{Quantas vezes \texttt{contador++} executa?}
+  \begin{minted}{go}
+for i := 0; i < n; i++ {       // (a)
+    contador++
 }
-		\end{minted}
-		
-	\end{frame}
-	%--- Next Frame ---%
-
-	\begin{frame}[fragile]{Exemplo}
-
-		E agora?
-		
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				%fontsize=\footnotesize,
-				linenos
-			]{c}
-scanf("%d",&n);
-
-for(i=0; i<n; i++){
-	for(j=0; j<n; j++){
-		printf("Ola mundo\n");
-	}
+for i := 0; i < n; i++ {       // (b)
+    for j := 0; j < n; j++ { contador++ }
 }
-		\end{minted}
-		
-	\end{frame}
-	%--- Next Frame ---%	
-	
-
-	\begin{frame}[fragile]{Exemplo}
-
-		E esse?
-		
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				%fontsize=\footnotesize,
-				linenos
-			]{c}
-scanf("%d",&n);
-
-for(i=0; i<n; i++){
-	for(j=0; j<n; j++){
-		for(k=0; k<n; k++){
-			printf("Ola mundo\n");
-		}
-	}
+for i := 0; i < n; i++ {       // (c)
+    for j := i; j < n; j++ { contador++ }
 }
-		\end{minted}
-		
-	\end{frame}
-	%--- Next Frame ---%	
+  \end{minted}
+  \begin{center}
+    Responda antes de continuar.
+  \end{center}
+\end{frame}
 
+\begin{frame}{$n$, $n^2$ e...}
+  \begin{center}
+    (a) $n$ \qquad (b) $n^2$
+  \end{center}
 
-	\begin{frame}[fragile]{Exemplo}
+  \pause
 
-		E agora?
-		
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				%fontsize=\footnotesize,
-				linenos
-			]{c}
-scanf("%d",&n);
+  \vspace{0.4cm}
+  (c) o laço interno começa em $i$: executa $n, n-1, \dots, 1$ vezes.
 
-for(i=0; i<n; i++){
-	for(j=i; j<n; j++){
-		printf("Ola mundo\n");
-	}
+  $$n + (n-1) + \cdots + 1 = \frac{n(n+1)}{2} = \frac{n^2}{2} + \frac{n}{2}$$
+
+  \vspace{0.3cm}
+  Metade do trabalho de (b) -- ainda assim, os dois caem na mesma categoria.
+\end{frame}
+
+\begin{frame}[fragile]{Bubble Sort: quantas comparações no total?}
+  \begin{minted}{go}
+func bubbleSort(v []int) int {
+    n := len(v)
+    comparacoes := 0
+    for i := 1; i < n; i++ {
+        for j := 0; j < n-i; j++ {
+            comparacoes++
+            if v[j] > v[j+1] {
+                v[j], v[j+1] = v[j+1], v[j]
+            }
+        }
+    }
+    return comparacoes
 }
-		\end{minted}
-		
-	\end{frame}
-	%--- Next Frame ---%			
-	
-	\begin{frame}[c]{Complexidade de Algoritmos}
-	
-		Dizemos que, \textbf{no pior caso}, os tempos de execução dos algoritmos anteriores crescem da seguinte maneira:
-		\begin{enumerate}
-			\item Proporcionalmente ao tamanho de $n$ ($O(n)$);
-			\item Proporcionalmente ao tamanho de $n^2$ ($O(n^2)$);
-			\item Proporcionalmente ao tamanho de $n^3$ ($O(n^3)$);
-			\item Proporcionalmente ao tamanho de $n^2$ ($O(n^2)$);
-		\end{enumerate}
-		
-		Com estudos assim, podemos comparar algoritmos independentemente do computador utilizado.
-	\end{frame}
-	
-	
-	\begin{frame}[c]{Crescimento de Funções}
-		  \begin{figure}[h]
-	  	\centering
-	  	\includegraphics[width=9cm]{fig/graf.png}
-			\caption{Crescimento de diferentes funções.}
-	  	\label{label}
-	  \end{figure}
-	\end{frame}
-	
-	
-	\section{Exemplo: Bubble Sort}
-	
-		
-	\begin{frame}[c]{Exemplo: Ordenação}
-	
-		\begin{block}{Problema da Ordenação}
-		Ordenação é o ato de se colocar os elementos de uma sequência de informações, ou dados, em uma ordem predefinida.
-		\end{block}
+  \end{minted}
+\end{frame}
 
-		\begin{enumerate}
-			\item Algoritmo Bubble Sort (Bolha)??
-			\begin{enumerate}
-				\item Fazer trocas sucessivas dois a dois até que o maior elemento esteja na última posição;
-				\item Repetir $n-1$ vezes.
-			\end{enumerate}
+\begin{frame}{Somando o laço interno}
+  Para cada $i$ de 1 a $n-1$, o laço interno roda $n-i$ vezes.
 
-		\end{enumerate}
-		
-	\end{frame}
+  \pause
+  $$
+  \begin{aligned}
+  \text{Comparações} &= \sum_{i=1}^{n-1} (n-i) \\
+  \pause
+  &= (n-1) \cdot n - \big(1 + 2 + \cdots + (n-1)\big) \\
+  \pause
+  &= (n^2-n) - \frac{n(n-1)}{2} \\
+  \pause
+  &= \frac{n^2}{2} - \frac{n}{2}
+  \end{aligned}
+  $$
+\end{frame}
 
-	\begin{frame}[fragile]{Bubble Sort - Análise}
+\begin{frame}{Termo dominante}
+  \begin{center}
+    \small
+    \begin{tabular}{@{}lccc@{}}
+      \toprule
+      $n$ & $n/2$ & $n^2/2$ & $n^2/2 - n/2$ \\
+      \midrule
+      1024 & 512 & 524.288 & 523.776 \\
+      32768 & 16.384 & 536.870.912 & 536.854.528 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
 
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				%fontsize=\footnotesize,
-				linenos
-			]{c}
-for(i=1; i < n; i++){
-	for(j=0; j < n - i; j++){
-		if(v[j] > v[j+1])
-			// troca v[j] com v[j+1]
-			tmp = v[j];
-			v[j] = v[j+1];
-			v[j+1] = aux;
-	}
+  \vspace{0.4cm}
+  Na última linha, $n/2$ é três milésimos de 1\% do total: existe, e é
+  irrelevante.
+
+  \vspace{0.3cm}
+  \begin{block}{Duas simplificações}
+    Descartar termos de ordem inferior: $n^2/2 - n/2 \to n^2/2$.\\
+    Descartar constantes multiplicativas: $n^2/2 \to n^2$.
+  \end{block}
+
+  \vspace{0.2cm}
+  \footnotesize Válido \textbf{quando $n$ é grande}. Problema pequeno,
+  qualquer algoritmo resolve.
+\end{frame}
+
+\begin{frame}{$O$ -- limite superior}
+  \begin{block}{}
+    $f(n) = O(g(n))$ quando existem $c>0$ e $n_0 \ge 0$ tais que
+    $$f(n) \le c \cdot g(n) \quad \text{para todo } n \ge n_0$$
+  \end{block}
+
+  \vspace{0.3cm}
+  A partir de certo $n$, $f$ nunca ultrapassa $g$ vezes uma constante.
+
+  \vspace{0.3cm}
+  Bubble Sort: $n^2/2 - n/2 = O(n^2)$. Também é $O(n^3)$ -- um limite frouxo
+  continua sendo limite, mas informe sempre o mais justo que conhecer.
+\end{frame}
+
+\begin{frame}{$\Omega$ e $\Theta$}
+  \begin{block}{$\Omega$ -- limite inferior}
+    $f(n) = \Omega(g(n))$: a partir de certo $n$, $f$ é \textbf{pelo menos}
+    $g$ vezes uma constante.
+  \end{block}
+
+  \begin{block}{$\Theta$ -- limite justo}
+    $f(n) = \Theta(g(n))$ quando $f(n)=O(g(n))$ \textbf{e} $f(n)=\Omega(g(n))$.
+    Bubble Sort é $\Theta(n^2)$: o custo real, não só um limite.
+  \end{block}
+
+  \vspace{0.3cm}
+  \footnotesize No dia a dia, escreve-se $O$ quase sempre -- mesmo quando
+  $\Theta$ seria a afirmação mais forte. Saiba a diferença, use $O$.
+\end{frame}
+
+\begin{frame}{Classes de crescimento}
+  \begin{center}
+    \small
+    \begin{tabular}{@{}llll@{}}
+      \toprule
+      Classe & Função & Exemplo & Ao dobrar $n$ \\
+      \midrule
+      Constante & $1$ & acesso a \texttt{v[i]} & não muda \\
+      Logarítmica & $\log n$ & busca binária & soma constante \\
+      Linear & $n$ & percorrer um slice & dobra \\
+      Linearítmica & $n \log n$ & MergeSort & pouco mais que dobra \\
+      Quadrática & $n^2$ & Bubble Sort & quadruplica \\
+      Cúbica & $n^3$ & três laços & multiplica por 8 \\
+      Exponencial & $2^n$ & subconjuntos & inviável \\
+      Fatorial & $n!$ & caixeiro viajante & inviável antes \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \vspace{0.2cm}
+  \footnotesize A base do log não aparece: mudar de base só multiplica por
+  uma constante.
+\end{frame}
+
+\begin{frame}{Melhor caso, pior caso, caso médio}
+  Comparações do Bubble Sort não dependem do vetor. \textbf{Trocas} dependem:
+
+  \begin{itemize}
+    \item vetor já ordenado: \tcg{0} trocas (melhor caso);
+    \item vetor decrescente: $n^2/2-n/2$ trocas (pior caso).
+  \end{itemize}
+
+  \vspace{0.4cm}
+  \begin{alertblock}{QuickSort: $O(n^2)$ ou $O(n \log n)$?}
+    Depende do caso. Pior caso: $O(n^2)$. Caso médio: $O(n \log n)$. Omitir
+    qual caso torna a afirmação inútil nas duas direções.
+  \end{alertblock}
+\end{frame}
+
+% ==========================================
+\section{Crescimento}
+% ==========================================
+
+\begin{frame}{Como descobrir a classe sem ler o código?}
+  \begin{block}{Teste de duplicação}
+    \begin{enumerate}
+      \item gere uma entrada aleatória de tamanho $n$;
+      \item meça o tempo;
+      \item dobre $n$ e repita;
+      \item observe para onde converge a razão entre tempos.
+    \end{enumerate}
+  \end{block}
+
+  \vspace{0.3cm}
+  \footnotesize Meça o binário compilado, não \texttt{go run}. Descarte
+  medições abaixo de um décimo de segundo.
+\end{frame}
+
+\begin{frame}{Por que funciona}
+  A maioria dos programas segue uma lei de potência: $T(n) = a \cdot n^b$.
+
+  \vspace{0.3cm}
+  Dobrando a entrada:
+  $$\frac{T(2n)}{T(n)} = \frac{a \cdot (2n)^b}{a \cdot n^b} = 2^b$$
+
+  \vspace{0.3cm}
+  $a$ desaparece na divisão. Só resta $b$.
+
+  \begin{center}
+    \small
+    \begin{tabular}{@{}lccc@{}}
+      \toprule
+      Razão & 2 & 4 & 8 \\
+      Classe & linear & quadrática & cúbica \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+% ==========================================
+\section{Union-Find}
+% ==========================================
+
+\begin{frame}[fragile]{Retomando o problema}
+  \begin{center}
+    \includegraphics[width=7cm]{../../01/dynamic-connectivity-tiny.png}
+  \end{center}
+
+  \begin{minted}[fontsize=\scriptsize]{go}
+func NewUF(n int) *UF
+func (uf *UF) Count() int
+func (uf *UF) Find(p int) int
+func (uf *UF) Connected(p, q int) bool
+func (uf *UF) Union(p, q int)
+  \end{minted}
+
+  \vspace{0.1cm}
+  \footnotesize Modelo de custo: acessos ao array (leitura ou escrita).
+\end{frame}
+
+\begin{frame}[fragile]{Quick-Find: a estrutura}
+  \texttt{id[i]} guarda a componente de \texttt{i}. Conectados $\iff$ mesmo
+  valor em \texttt{id}.
+
+  \begin{minted}{go}
+func (uf *UF) Find(p int) int {
+    return uf.id[p]           // O(1)
 }
-		\end{minted}
-
-			\only<1>{Quantas comparações entre os elementos o algoritmo Bubble Sort realiza?}
-			\only<2>{Comparações: $\displaystyle \sum_{i=1}^{n-1}{\sum_{j=0}^{(n-i-1)}{1}}$\\}
-	\end{frame}
-			
-	\begin{frame}[c]{Bubble Sort - Quantidade de Comparações}
-
-		\begin{itemize}[label={}]
-
-			\item[]<1->{$\displaystyle \sum_{i=1}^{n-1}{\sum_{j=0}^{(n-i-1)}{1}}$\\}
-			\item[]<2->{$\displaystyle = \sum_{i=1}^{n-1}{(n-i)}$\\}
-			\item[]<3->{$\displaystyle = \sum_{i=1}^{n-1}{n} - \sum_{i=1}^{n-1}{i}$\\}
-			\item[]<4->{$\displaystyle = (n^2-n) - \frac{(n-1)n}{2}$\\}
-			\item[]<5->{$\displaystyle = n^2-n - \frac{n^2-n}{2}$\\}
-			\item[]<6->{$\displaystyle = \frac{n^2}{2} - \frac{n}{2} \approx n^2$\\}
-		
-		\end{itemize}
-
-	\end{frame}
-	
-	\begin{frame}[c]{Bubble Sort - Quantidade de Comparações}
-		Por que $\displaystyle = \frac{n^2}{2} - \frac{n}{2} \approx n^2$?
-	\end{frame}
-	
-	\begin{frame}[c]{Bubble Sort - Quantidade de Comparações}
-
-		\begin{table}
-			\centering
-			\caption{Crescimento de diferentes funções}
-			\begin{tabular}{r|r|r|r}
-				\toprule
-				\multicolumn{1}{r|}{$n$} & \multicolumn{1}{r|}{$n/2$} & \multicolumn{1}{r|}{$n^{2}/2$} & \multicolumn{1}{r}{$n^{2}$}  \\
-				\hline
-				64                         & 32                           & 512                               & 1024                            \\
-				\hline
-				128                        & 64                           & 2048                              & 4096                            \\
-				\hline
-				512                        & 256                          & 131072                            & 262144                          \\
-				\hline
-				1024                       & 512                          & 524288                            & 1048576                         \\
-				\hline
-				2048                       & 1024                         & 2097152                           & 4194304                         \\
-				\hline
-				4096                       & 2048                         & 8388608                           & 16777216                        \\
-				\hline
-				8192                       & 4096                         & 33554432                          & 67108864                        \\
-				\hline
-				16384                      & 8192                         & 134217728                         & 268435456                       \\
-				\hline
-				32768                      & 16384                        & 536870912                         & 1073741824                      \\
-				\bottomrule
-			\end{tabular}
-		\end{table}
-	\end{frame}
-
-	\begin{frame}[c]{Bubble Sort - Quantidade de Comparações}
-		\begin{itemize}
-			\item $\frac{n^2}{2}$ é o termo dominante quando $n$ é grande;
-			\item De um modo geral, podemos nos concentrar nos termos dominantes e esquecer os demais;
-			\item Mas sempre devemos pensar quando o valor de $n$ é grande;
-		\end{itemize}
-
-		\begin{block}
-		``Problema pequeno qualquer algoritmo resolve.'' :)
-		\end{block}
-	\end{frame}
-
-	\begin{frame}[fragile]{Bubble Sort - Análise Trocas}
-
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				fontsize=\footnotesize,
-				linenos
-			]{c}
-for(i=1; i < n; i++){
-	for(j=0; j < n - i; j++){
-		if(v[j] > v[j+1])
-			// troca v[j] com v[j+1]
-			tmp = v[j];
-			v[j] = v[j+1];
-			v[j+1] = aux;
-	}
+func (uf *UF) Connected(p, q int) bool {
+    return uf.id[p] == uf.id[q]  // O(1)
 }
-		\end{minted}
+  \end{minted}
 
-			Quantas trocas entre os elementos o algoritmo Bubble Sort realiza?
-			\pause
-			\begin{itemize}
-			\item \textbf{Melhor} caso?
-			\item \textbf{Pior} caso?
-			\end{itemize}
-	\end{frame}
-			
-	\section{Exemplo: Fibonacci}
-		
-	\begin{frame}[c]{Série de Fibonacci}
+  \begin{center}
+    \Large E \texttt{Union}, quanto custa?
+  \end{center}
+\end{frame}
 
-		\begin{center}
-			\[ fib(n) =
-			\left \{
-			\begin{array}{rc}
-				0,&\mbox{se}\quad n = 0,\\
-				1,&\mbox{se}\quad n = 1,\\
-				fib(n-1) + fib(n-2),&\mbox{se}\quad n \ge 2.
-			\end{array}
-			\right .
-			\]
-		\end{center}
-	\end{frame}
-
-	\begin{frame}[fragile,c]{Algoritmo 1}
-
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				%fontsize=\footnotesize,
-				linenos
-			]{c}
-long int fib(long int n)
-{
-  if(n == 0) return(0);
-  if(n == 1) return(1);
-  return(fib(n-1) + fib(n-2));
+\begin{frame}[fragile]{Quick-Find: o preço do Union}
+  \begin{minted}{go}
+func (uf *UF) Union(p, q int) {
+    pID, qID := uf.id[p], uf.id[q]
+    if pID == qID { return }
+    for i := 0; i < uf.n; i++ {   // percorre TUDO
+        if uf.id[i] == pID {
+            uf.id[i] = qID
+        }
+    }
+    uf.count--
 }
-		\end{minted}
-	
-	\end{frame}
+  \end{minted}
 
-	\begin{frame}[fragile,c]{Algoritmo 2}
+  \vspace{0.2cm}
+  $O(n)$ por união, sempre -- mesmo unindo dois elementos. $M$ operações sobre
+  $n$ objetos: $O(M \cdot n)$, quadrático quando $M \propto n$.
 
-		\begin{minted}[
-				frame=lines,
-				framesep=2mm,
-				baselinestretch=1.2,
-				fontsize=\footnotesize,
-				linenos
-			]{c}
-long int fib(long int n)
-{
-   long int first = 1, second = 1, next, c, sum;
-   sum = 0;
-   for ( c = 0 ; c < n ; c++ ){
-      if ( c <= 1 )
-         next = c;
-      else{
-         next = first + second;
-         first = second;
-         second = next;
-      }
-   }
-   return(next);
+  \vspace{0.2cm}
+  \footnotesize Algoritmos quadráticos não acompanham a evolução do hardware
+  (10x mais rápido resolve um problema 10x maior 10x mais lento).
+\end{frame}
+
+\begin{frame}[fragile]{Quick-Union: adiar o trabalho}
+  Em vez de renomear tudo, muda-se \textbf{um} valor -- o custo migra para
+  \texttt{Find}.
+
+  \begin{minted}{go}
+func (uf *UF) Find(p int) int {
+    for p != uf.parent[p] {
+        p = uf.parent[p]
+    }
+    return p
 }
-		\end{minted}
-	
-	\end{frame}
+func (uf *UF) Union(p, q int) {
+    rootP, rootQ := uf.Find(p), uf.Find(q)
+    if rootP == rootQ { return }
+    uf.parent[rootP] = rootQ
+    uf.count--
+}
+  \end{minted}
 
-	
-	\section{Conclusão}
+  \begin{center}
+    \Large \texttt{Union} agora é uma atribuição. Qual o custo de \texttt{Find}?
+  \end{center}
+\end{frame}
 
-	% ==========================================
-	\begin{frame}
-		\frametitle{Considerações Finais}
+\begin{frame}[fragile]{Depende da altura da árvore}
+  \begin{minted}[fontsize=\scriptsize]{text}
+Union(0,1)      Union(1,2)      Union(2,3)
 
-		Por que falar de tudo isso em um curso de análise e desenvolvimento?
-		\begin{itemize}
-			\item Sistemas resolvem problemas cada vez mais \textbf{complexos};
-			\begin{itemize}
-				\item Saber identificar se um problema tem solução computacional ou não;
-				\item Exemplo: Como o waze calcula o menor caminho?
-				\item Exemplo: BigData.
-			\end{itemize}
-			\item Entender diferentes técnicas de algoritmos;
-			\item Comparar e escolher soluções para um problema;
-			\item Enfim, se tornar um programador melhor;
-			
-		\end{itemize}
-		\pause
-		
-		\vspace{1cm}
-		
-	\end{frame}
-	% ==========================================
+     1               2               3
+     |               |               |
+     0               1               2
+                     |               |
+                     0               1
+                                     |
+                                     0
+  \end{minted}
 
+  \texttt{Union} sempre pendura a raiz \textbf{antiga} sob a nova -- a cadeia
+  cresce por baixo. \texttt{Find(0)} percorre 3 arestas.
 
-	% ==========================================
-	% \begin{frame}
-	% 	\frametitle{Título}
-	% 	\begin{itemize}
-	% 		\item Item bla bla bla
-	% 	\end{itemize}
-	%	  \begin{block}{Título de bloco}
-	%		 	Conteúdo do bloco
-	%   \end{block}
-	% \end{frame}
-	% ==========================================
+  \vspace{0.2cm}
+  Pior caso: árvore degenera numa lista de $n$ nós. \texttt{Find} custa $n$ --
+  \textbf{pior que Quick-Find}, e sem nem ser acesso contíguo à memória.
+\end{frame}
 
-	% ==========================================
-	% Exemplo de frame com figura
-	% \begin{frame}
-	% 	\frametitle{Título}
-	%	  \begin{figure}[h]
-	%	  	\centering
-	%	  	\includegraphics[width=10cm]{paht.png}
-	%			\caption{Bla bla bla ...}
-	%	  	\label{label}
-	%	  \end{figure}
-	% \end{frame}
-	% ==========================================
+\begin{frame}{O defeito é identificável}
+  \texttt{Union} escolhe \textbf{arbitrariamente} qual raiz pende de qual --
+  não usa nenhuma informação sobre as árvores.
 
-	% ==========================================
-	% Exemplo de frame com algoritmo
-	% \begin{frame}[fragile]
-	% 	\frametitle{Título}
-	% 	\begin{lstlisting}[language=C]
-	% 		#include <stdio.h>
-	%
-	% 		int main()
-	% 		{
-	% 		  int a[5];
-	%
-	% 		  a[0] = 30;
-	% 		  a[1] = 25;
-	% 		  a[2] = 5;
-	% 		  a[3] = 100;
-	% 		  a[4] = 1;
-	%
-	% 		  printf("%d\n",a[1]);
-	% 		}
-	% 	\end{lstlisting}
-	% \end{frame}
-	% ==========================================
+  \vspace{0.5cm}
+  \begin{center}
+    \Large Como você corrigiria isso?
+  \end{center}
+\end{frame}
 
-	% ==========================================
-	% Frame para referências
-	%\begin{frame}[allowframebreaks]
-	%	\frametitle{Referências utilizadas na apresentação}
-	%	\bibliography{referencias}
-	%\end{frame}
-  % ==========================================
+\begin{frame}[fragile]{Pendurar a menor sob a maior}
+  \begin{minted}{go}
+if uf.size[rootP] < uf.size[rootQ] {
+    uf.parent[rootP] = rootQ
+    uf.size[rootQ] += uf.size[rootP]
+} else {
+    uf.parent[rootQ] = rootP
+    uf.size[rootP] += uf.size[rootQ]
+}
+  \end{minted}
+
+  Três linhas a mais que o Quick-Union.
+
+  \vspace{0.3cm}
+  \begin{block}{Proposição}
+    A profundidade de qualquer nó é no máximo $\log_2 n$.
+  \end{block}
+
+  \footnotesize A profundidade de $x$ só aumenta quando a árvore de $x$ é a
+  \textbf{menor} das duas -- e nesse momento o tamanho da árvore de $x$ pelo
+  menos dobra. Dobrar no máximo $\log_2 n$ vezes.
+\end{frame}
+
+% ==========================================
+\section{Lado a lado}
+% ==========================================
+
+\begin{frame}{Custo de $M$ operações sobre $n$ objetos}
+  \begin{center}
+    \begin{tabular}{@{}lll@{}}
+      \toprule
+      Implementação & Custo & Ordem \\
+      \midrule
+      Quick-Find & $M \cdot n$ & quadrática \\
+      Quick-Union & $M \cdot n$ & quadrática (pior caso) \\
+      Weighted Quick-Union & $n + M\log n$ & linearítmica \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.5cm}
+  \begin{center}
+    \Large Você mediria essas três com o teste de duplicação. Que razão
+    esperaria ver?
+  \end{center}
+\end{frame}
+
+\begin{frame}{Medido de verdade}
+  \begin{center}
+    \small
+    \begin{tabular}{@{}lccc@{}}
+      \toprule
+      $n$ & Quick-Find & razão & Weighted \\
+      \midrule
+      40.000 & 1,23 s & & 0,02 s \\
+      80.000 & 4,96 s & 4,0 & 0,06 s \\
+      160.000 & 19,63 s & 4,0 & 0,12 s \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.4cm}
+  Razão 4 confirma quadrático ($b = \log_2 4 = 2$), exatamente como a análise
+  previu.
+
+  \vspace{0.3cm}
+  Em \texttt{largeUF.txt} (1 milhão de objetos): Weighted leva
+  \textbf{1,07 s}. Quick-Find, \textbf{829 s} -- os mesmos 14 minutos do
+  início da aula, agora explicados.
+\end{frame}
+
+\begin{frame}{Qual implementação usar}
+  \begin{itemize}
+    \item Dezenas ou centenas de objetos: qualquer uma responde em
+          microssegundos -- escolha pela simplicidade do código;
+    \item Milhares de objetos com uso intenso de \texttt{Union}: a ordem de
+          crescimento domina, e Weighted Quick-Union é a escolha.
+  \end{itemize}
+
+  \vspace{0.4cm}
+  \begin{block}{}
+    O ganho não vem de código mais rápido -- as três têm o mesmo tipo de laço.
+    Vem de escolher a estrutura de dados certa.
+  \end{block}
+\end{frame}
+
+% ==========================================
+\section*{Resumo}
+% ==========================================
+
+\begin{frame}{Resumo}
+  \small
+  \begin{itemize}
+    \item Medição depende de máquina, dados e implementação. Análise
+          assintótica não depende de nenhum dos três;
+    \item Analisar começa por declarar o modelo de custo;
+    \item Termos de ordem inferior e constantes somem quando $n$ cresce -- para
+          $n$ pequeno, eles dominam;
+    \item $O$ é limite superior, $\Omega$ inferior, $\Theta$ os dois. Diga
+          sempre qual caso;
+    \item Razão ao dobrar $n$: 2 linear, 4 quadrática, 8 cúbica;
+    \item Quick-Find: \texttt{Find} $O(1)$, \texttt{Union} $O(n)$. Quick-Union
+          inverte, e degenera em árvore torta;
+    \item Pendurar a menor sob a maior limita a profundidade a $\log_2 n$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Bibliografia}
+  \begin{itemize}
+    \item SEDGEWICK, R.; WAYNE, K. \textbf{Algorithms}, 4th ed., seções 1.4 e 1.5.
+    \item \url{https://algs4.cs.princeton.edu/14analysis/}
+    \item \url{https://algs4.cs.princeton.edu/15uf/}
+    \item BHARGAVA, A. Y. \textbf{Entendendo Algoritmos}, cap. 1 e 4.
+  \end{itemize}
+\end{frame}
 
 \end{document}
