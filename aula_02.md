@@ -79,8 +79,8 @@ time ./weighted < largeUF.txt > /dev/null
 ```
 
 Cerca de um segundo. Agora tente o primeiro, `quick_find`, com o mesmo arquivo.
-Ele também termina, e também dá a resposta certa, mas depois de 
-vai demorar. Não espere: interrompa com `Ctrl-C`.
+Ele também termina, e também dá a resposta certa, mas só depois de quase 14
+minutos. Não espere: interrompa com `Ctrl-C`. O número medido está na seção 14.
 
 Os três programas têm menos de 140 linhas cada, foram escritos pela mesma
 pessoa, compilados pelo mesmo compilador e rodam na mesma máquina. A diferença

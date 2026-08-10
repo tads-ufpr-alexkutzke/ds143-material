@@ -12,10 +12,16 @@
 \usepackage{etoolbox}
 \usepackage{minted}
 \usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric}
 
 \newcommand{\tcb}[1]{\textcolor{blue}{#1}}
 \newcommand{\tcr}[1]{\textcolor{red}{#1}}
 \newcommand{\tcg}[1]{\textcolor{green!50!black}{#1}}
+\newcommand{\hl}[1]{\textcolor{red}{\textbf{#1}}}
+% \ol{n}{conteudo}: revela a celula a partir do slide n, reservando o espaco.
+% Usado celula a celula para que a linha inteira da tabela apareca de uma vez.
+\newcommand{\ol}[2]{\onslide<#1->{#2}}
 
 \setminted{
   fontsize=\footnotesize,
@@ -39,45 +45,40 @@
 
 % ==========================================
 \begin{frame}
-  \begin{center}
-    \large{Setor de Educação Profissional e Tecnológica}\\
-    Tecnologia em Análise e Desenvolvimento de Sistemas\\
-    \vspace{1cm}
-    \small{DS143 - Estruturas de Dados II}
-  \end{center}
-  \titlepage
+	\begin{center}
+		\large{Setor de Educação Profissional e Tecnológica}\\
+		Tecnologia em Análise e Desenvolvimento de Sistemas\\
+		\vspace{1cm}
+		\small{DS143 - Estruturas de Dados II}
+	\end{center}
+	\titlepage
 \end{frame}
 
 % ==========================================
 \begin{frame}{Objetivos da aula}
-  \small
-  Ao final desta aula você deve ser capaz de:
-  \begin{enumerate}
-    \item Contar operações de um trecho de código em função de $n$;
-    \item Identificar o termo dominante de uma função de custo;
-    \item Classificar uma função com $O$, $\Omega$ e $\Theta$;
-    \item Distinguir melhor caso, pior caso e caso médio;
-    \item Estimar a ordem de crescimento por medição (hipótese de duplicação);
-    \item Explicar as três implementações de Union-Find e o custo de \texttt{Find}/\texttt{Union} em cada uma;
-    \item Justificar por que pendurar a árvore menor sob a maior reduz $O(n)$ para $O(\log n)$;
-    \item Escolher, para um tamanho de entrada dado, qual implementação usar.
-  \end{enumerate}
+	Ao final desta aula você deve ser capaz de:
+	\begin{enumerate}
+		\item Contar operações de um trecho de código em função de $n$ e
+		      identificar o termo dominante;
+		\item Classificar uma função de custo com $O$, $\Omega$ e $\Theta$,
+		      informando de qual caso se trata;
+		\item Estimar a ordem de crescimento de um programa por medição, com o
+		      teste de duplicação;
+		\item Explicar as três implementações de Union-Find, o custo de
+		      \texttt{Find} e \texttt{Union} em cada uma, e escolher qual usar
+		      para um tamanho de entrada dado.
+	\end{enumerate}
 \end{frame}
 
 % ==========================================
-\begin{frame}{Roteiro}
-  \tableofcontents
-\end{frame}
-
-% ==========================================
-\section{Análise}
+\section{Custo}
 % ==========================================
 
 \begin{frame}[fragile]{Três programas, a mesma resposta}
-  Na Aula 1, o desafio foi implementar \texttt{Find} e \texttt{Union}. Existe
-  mais de uma forma de fazer isso.
+	Na Aula 1, o desafio foi implementar \texttt{Find} e \texttt{Union}. Existe
+	mais de uma forma de fazer isso.
 
-  \begin{minted}{bash}
+	\begin{minted}{bash}
 cd 02/codes/unionfind
 go build -o quick_find quick_find.go
 go build -o quick_union quick_union.go
@@ -86,131 +87,122 @@ go build -o weighted weighted_quick_union.go
 ./weighted < largeUF.txt > /dev/null
   \end{minted}
 
-  \vspace{0.2cm}
-  \begin{center}
-    \Large Agora o mesmo arquivo, com \texttt{quick\_find}. Quanto tempo leva?
-  \end{center}
+	\vspace{0.2cm}
+	\begin{center}
+		\Large Agora o mesmo arquivo, com \texttt{quick\_find}. Quanto tempo leva?
+	\end{center}
 \end{frame}
 
 \begin{frame}{800 vezes mais lento}
-  \begin{center}
-    \Large
-    \texttt{weighted}: \tcg{cerca de 1 segundo}\\[0.4cm]
-    \texttt{quick\_find}: \tcr{quase 14 minutos}
-  \end{center}
+	\begin{center}
+		\Large
+		\texttt{weighted}: \tcg{cerca de 1 segundo}\\[0.4cm]
+		\texttt{quick\_find}: \tcr{quase 14 minutos}
+	\end{center}
 
-  \vspace{0.5cm}
-  Mesma entrada, mesma máquina, mesmo compilador, menos de 140 linhas cada.
-  A diferença vem só da estrutura de dados escolhida.
+	\vspace{0.5cm}
+	Mesma entrada, mesma máquina, mesmo compilador, menos de 140 linhas cada.
+	A diferença vem só da estrutura de dados escolhida.
 
-  \vspace{0.3cm}
-  Medir essa diferença é a primeira metade da aula. Explicar de onde ela vem é
-  a segunda.
+	\vspace{0.3cm}
+	Medir essa diferença é a primeira metade da aula. Explicar de onde ela vem é
+	a segunda.
 \end{frame}
 
 \begin{frame}{Como decidir sem esperar 14 minutos?}
-  \begin{block}{Análise empírica}
-    Implementar, rodar, cronometrar. Indispensável, mas: depende dos dados de
-    entrada, da máquina, do compilador. E custa tempo -- não dá para
-    implementar seis alternativas para escolher uma.
-  \end{block}
+	\begin{block}{Análise empírica}
+		Implementar, rodar, cronometrar. Indispensável, mas depende dos dados de
+		entrada, da máquina e do compilador. E custa tempo. Não dá para
+		implementar seis alternativas para escolher uma.
+	\end{block}
 
-  \pause
+	\pause
 
-  \begin{block}{Análise de algoritmos}
-    Estuda desempenho no papel, antes de existir código. Responde ``quanto
-    tempo para uma entrada de tamanho $n$?'' sem depender da máquina.
-  \end{block}
+	\begin{block}{Análise de algoritmos}
+		Estuda desempenho no papel, antes de existir código. Responde quanto
+		tempo o algoritmo consome para uma entrada de tamanho $n$, sem depender
+		da máquina.
+	\end{block}
 \end{frame}
 
 \begin{frame}{O problema do caixeiro viajante}
-  \begin{figure}[h]
-    \centering
-    \includegraphics[width=6.5cm]{fig/mapa.png}
-  \end{figure}
-  Visitar $n$ cidades, voltando à primeira. Qual rota minimiza a distância
-  total?
+	\begin{columns}[T]
+		\begin{column}{0.52\textwidth}
+			\vspace{-0.3cm}
+			\includegraphics[width=\textwidth]{fig/mapa.png}
+		\end{column}
+		\begin{column}{0.44\textwidth}
+			\small
+			Visitar $n$ cidades, voltando à primeira. Qual rota minimiza a
+			distância total?
+
+			\vspace{0.4cm}
+			A solução mais simples: testar todas as rotas e ficar com a menor.
+
+			\vspace{0.4cm}
+			\pause
+			Com 4 cidades, fixando $A$ como origem, são 6 rotas.
+
+			\vspace{0.3cm}
+			Em geral, \hl{$(n-1)!$} rotas.
+		\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Quantas rotas existem?}
-  \begin{center}
-    Com 4 cidades $A,B,C,D$ (fixando $A$ como origem): 6 rotas.\\[0.3cm]
-    \pause
-    E com 20 cidades?
-  \end{center}
+\begin{frame}{Fatorial contra polinomial, a 1 bilhão de adições por segundo}
+	\begin{center}
+		\small
+		\begin{tabular}{@{}lrlrl@{}}
+			\toprule
+			    & \multicolumn{2}{c}{$(n-1)!$ rotas} & \multicolumn{2}{c}{$n^5$ alternativas}                                             \\
+			\cmidrule(r){2-3}\cmidrule(l){4-5}
+			$n$ & quantas                            & tempo                                  & quantas   & tempo                        \\
+			\midrule
+			10  & 362.880                            & 0,003 s                                & 100.000   & insignificante               \\
+			15  & 87 bilhões                         & 20 min                                 & 759.375   & 0,01 s                       \\
+			20  & $1,2 \times 10^{17}$               & \hl{73 anos}                           & 3.200.000 & 0,06 s                       \\
+			25  & $6,2 \times 10^{23}$               & 470 milhões de anos                    & 9.765.625 & \textcolor{green!50!black}{\textbf{0,23 s}} \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.4cm}
+	\pause
+	Expoente 5 é alto, e o algoritmo seria considerado lento. Ainda assim resolve
+	em décimos de segundo o que o outro não resolve em milhões de anos.
+
+	\vspace{0.2cm}
+	\pause
+	Com uma máquina 1000 vezes mais rápida, os 73 anos caem para 26 dias. Some
+	\textbf{uma} cidade e o ganho desaparece.
 \end{frame}
 
-\begin{frame}{$(n-1)!$ rotas}
-  \begin{center}
-    \small
-    \begin{tabular}{@{}lll@{}}
-      \toprule
-      $n$ & $(n-1)!$ & tempo total (1 bilhão de add./s) \\
-      \midrule
-      10 & 362.880 & 0,003 s \\
-      15 & 87 bilhões & 20 min \\
-      20 & $1,2 \times 10^{17}$ & \textbf{73 anos} \\
-      25 & $6,2 \times 10^{23}$ & 470 milhões de anos \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+\begin{frame}{Modelo de custo: escolher o que contar}
+	Contar instruções de máquina não serve, porque o número depende do
+	compilador e do processador.
 
-  \vspace{0.4cm}
-  \pause
-  Com uma máquina 1000 vezes mais rápida: 73 anos caem para 26 dias. Some
-  \textbf{uma} cidade e o ganho desaparece.
-\end{frame}
+	\vspace{0.4cm}
+	Sedgewick propõe fixar um \textbf{modelo de custo}: escolher a operação
+	relevante para aquele algoritmo e contar só ela.
 
-\begin{frame}{Compare com um algoritmo $n^5$}
-  \begin{center}
-    \small
-    \begin{tabular}{@{}lll@{}}
-      \toprule
-      $n$ & $n^5$ & tempo total \\
-      \midrule
-      10 & 100.000 & insignificante \\
-      15 & 759.375 & 0,01 s \\
-      20 & 3.200.000 & 0,06 s \\
-      25 & 9.765.625 & 0,23 s \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\small
+		\begin{tabular}{@{}ll@{}}
+			\toprule
+			Ordenação  & comparações e trocas    \\
+			Busca      & comparações com a chave \\
+			Union-Find & acessos ao array        \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.4cm}
-  Expoente alto, considerado lento -- e ainda assim resolve em décimos de
-  segundo o que o outro não resolve em milhões de anos.
-
-  \vspace{0.2cm}
-  \textbf{Polinomial e fatorial são de naturezas diferentes.} A distância entre
-  $n^2$ e $n^5$ é pequena comparada a essa.
-\end{frame}
-
-% ==========================================
-\section{Notação assintótica}
-% ==========================================
-
-\begin{frame}{O que contar}
-  Contar ``instruções de máquina'' não serve -- depende do compilador e do
-  processador.
-
-  \vspace{0.4cm}
-  Sedgewick propõe o \textbf{modelo de custo}: escolher a operação relevante
-  para aquele algoritmo e contar só ela.
-
-  \begin{center}
-    \small
-    \begin{tabular}{@{}ll@{}}
-      \toprule
-      Ordenação & comparações e trocas \\
-      Busca & comparações com a chave \\
-      Union-Find & acessos ao array \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\vspace{0.3cm}
+	\footnotesize O modelo é escolha do analista e precisa ser declarado junto
+	com o resultado.
 \end{frame}
 
 \begin{frame}[fragile]{Quantas vezes \texttt{contador++} executa?}
-  \begin{minted}{go}
+	\begin{minted}{go}
 for i := 0; i < n; i++ {       // (a)
     contador++
 }
@@ -221,29 +213,29 @@ for i := 0; i < n; i++ {       // (c)
     for j := i; j < n; j++ { contador++ }
 }
   \end{minted}
-  \begin{center}
-    Responda antes de continuar.
-  \end{center}
+	\begin{center}
+		Responda antes de continuar.
+	\end{center}
 \end{frame}
 
-\begin{frame}{$n$, $n^2$ e...}
-  \begin{center}
-    (a) $n$ \qquad (b) $n^2$
-  \end{center}
+\begin{frame}{Laço interno que começa em \texttt{i}}
+	\begin{center}
+		(a) $n$ \qquad (b) $n^2$
+	\end{center}
 
-  \pause
+	\pause
 
-  \vspace{0.4cm}
-  (c) o laço interno começa em $i$: executa $n, n-1, \dots, 1$ vezes.
+	\vspace{0.4cm}
+	(c) o laço interno começa em $i$, então executa $n, n-1, \dots, 1$ vezes.
 
-  $$n + (n-1) + \cdots + 1 = \frac{n(n+1)}{2} = \frac{n^2}{2} + \frac{n}{2}$$
+	$$n + (n-1) + \cdots + 1 = \frac{n(n+1)}{2} = \frac{n^2}{2} + \frac{n}{2}$$
 
-  \vspace{0.3cm}
-  Metade do trabalho de (b) -- ainda assim, os dois caem na mesma categoria.
+	\vspace{0.3cm}
+	Metade do trabalho de (b), e ainda assim os dois caem na mesma categoria.
 \end{frame}
 
 \begin{frame}[fragile]{Bubble Sort: quantas comparações no total?}
-  \begin{minted}{go}
+	\begin{minted}{go}
 func bubbleSort(v []int) int {
     n := len(v)
     comparacoes := 0
@@ -261,184 +253,249 @@ func bubbleSort(v []int) int {
 \end{frame}
 
 \begin{frame}{Somando o laço interno}
-  Para cada $i$ de 1 a $n-1$, o laço interno roda $n-i$ vezes.
+	Para cada $i$ de 1 a $n-1$, o laço interno roda $n-i$ vezes.
 
-  \pause
-  $$
-  \begin{aligned}
-  \text{Comparações} &= \sum_{i=1}^{n-1} (n-i) \\
-  \pause
-  &= (n-1) \cdot n - \big(1 + 2 + \cdots + (n-1)\big) \\
-  \pause
-  &= (n^2-n) - \frac{n(n-1)}{2} \\
-  \pause
-  &= \frac{n^2}{2} - \frac{n}{2}
-  \end{aligned}
-  $$
+	\pause
+	$$
+		\begin{aligned}
+			\text{Comparações} & = \sum_{i=1}^{n-1} (n-i)                           \\
+			\pause
+			                   & = (n-1) \cdot n - \big(1 + 2 + \cdots + (n-1)\big) \\
+			\pause
+			                   & = (n^2-n) - \frac{n(n-1)}{2}                       \\
+			\pause
+			                   & = \frac{n^2}{2} - \frac{n}{2}
+		\end{aligned}
+	$$
+
+	\vspace{0.2cm}
+	\pause
+	\footnotesize A contagem não depende do conteúdo do vetor: este Bubble Sort
+	sempre faz o mesmo número de comparações.
 \end{frame}
+
+% ==========================================
+\section{Notação}
+% ==========================================
 
 \begin{frame}{Termo dominante}
-  \begin{center}
-    \small
-    \begin{tabular}{@{}lccc@{}}
-      \toprule
-      $n$ & $n/2$ & $n^2/2$ & $n^2/2 - n/2$ \\
-      \midrule
-      1024 & 512 & 524.288 & 523.776 \\
-      32768 & 16.384 & 536.870.912 & 536.854.528 \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\small
+		\begin{tabular}{@{}lccc@{}}
+			\toprule
+			$n$   & $n/2$  & $n^2/2$     & $n^2/2 - n/2$ \\
+			\midrule
+			1024  & 512    & 524.288     & 523.776       \\
+			32768 & 16.384 & 536.870.912 & 536.854.528   \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.4cm}
-  Na última linha, $n/2$ é três milésimos de 1\% do total: existe, e é
-  irrelevante.
+	\vspace{0.4cm}
+	Na última linha, $n/2$ é três milésimos de 1\% do total: existe, e é
+	irrelevante.
 
-  \vspace{0.3cm}
-  \begin{block}{Duas simplificações}
-    Descartar termos de ordem inferior: $n^2/2 - n/2 \to n^2/2$.\\
-    Descartar constantes multiplicativas: $n^2/2 \to n^2$.
-  \end{block}
+	\vspace{0.3cm}
+	\begin{block}{Duas simplificações}
+		Descartar termos de ordem inferior: $n^2/2 - n/2$ vira $n^2/2$.\\
+		Descartar constantes multiplicativas: $n^2/2$ vira $n^2$.
+	\end{block}
 
-  \vspace{0.2cm}
-  \footnotesize Válido \textbf{quando $n$ é grande}. Problema pequeno,
-  qualquer algoritmo resolve.
+	\vspace{0.2cm}
+	\footnotesize Válido \textbf{quando $n$ é grande}. Problema pequeno,
+	qualquer algoritmo resolve.
 \end{frame}
 
-\begin{frame}{$O$ -- limite superior}
-  \begin{block}{}
-    $f(n) = O(g(n))$ quando existem $c>0$ e $n_0 \ge 0$ tais que
-    $$f(n) \le c \cdot g(n) \quad \text{para todo } n \ge n_0$$
-  \end{block}
+\begin{frame}{Crescimento comparado das classes}
+	\begin{center}
+		\includegraphics[height=5.6cm]{fig/graf.png}
+	\end{center}
+	\vspace{-0.1cm}
+	\footnotesize $n$, $n^2$, $n^3$ e $n!$, para $n$ até 100. O fatorial sai do
+	gráfico antes de $n = 7$; o cúbico, antes de $n = 10$. Na escala em que o
+	quadrático ainda cabe, o linear é quase uma reta horizontal.
+\end{frame}
 
-  \vspace{0.3cm}
-  A partir de certo $n$, $f$ nunca ultrapassa $g$ vezes uma constante.
+\begin{frame}{$O$, limite superior}
+	\begin{block}{}
+		$f(n) = O(g(n))$ quando existem $c>0$ e $n_0 \ge 0$ tais que
+		$$f(n) \le c \cdot g(n) \quad \text{para todo } n \ge n_0$$
+	\end{block}
 
-  \vspace{0.3cm}
-  Bubble Sort: $n^2/2 - n/2 = O(n^2)$. Também é $O(n^3)$ -- um limite frouxo
-  continua sendo limite, mas informe sempre o mais justo que conhecer.
+	\vspace{0.3cm}
+	A partir de certo $n$, $f$ nunca ultrapassa $g$ vezes uma constante.
+
+	\vspace{0.3cm}
+	Bubble Sort: $n^2/2 - n/2 = O(n^2)$. Também é $O(n^3)$, porque um limite
+	frouxo continua sendo limite. Informe sempre o mais justo que conhecer.
 \end{frame}
 
 \begin{frame}{$\Omega$ e $\Theta$}
-  \begin{block}{$\Omega$ -- limite inferior}
-    $f(n) = \Omega(g(n))$: a partir de certo $n$, $f$ é \textbf{pelo menos}
-    $g$ vezes uma constante.
-  \end{block}
+	\begin{block}{$\Omega$, limite inferior}
+		$f(n) = \Omega(g(n))$: a partir de certo $n$, $f$ é \textbf{pelo menos}
+		$g$ vezes uma constante.
+	\end{block}
 
-  \begin{block}{$\Theta$ -- limite justo}
-    $f(n) = \Theta(g(n))$ quando $f(n)=O(g(n))$ \textbf{e} $f(n)=\Omega(g(n))$.
-    Bubble Sort é $\Theta(n^2)$: o custo real, não só um limite.
-  \end{block}
+	\begin{block}{$\Theta$, limite justo}
+		$f(n) = \Theta(g(n))$ quando $f(n)=O(g(n))$ \textbf{e} $f(n)=\Omega(g(n))$.
+		Bubble Sort é $\Theta(n^2)$: o custo real, e não só um limite.
+	\end{block}
 
-  \vspace{0.3cm}
-  \footnotesize No dia a dia, escreve-se $O$ quase sempre -- mesmo quando
-  $\Theta$ seria a afirmação mais forte. Saiba a diferença, use $O$.
+	\vspace{0.3cm}
+	\footnotesize No dia a dia, escreve-se $O$ quase sempre, mesmo quando
+	$\Theta$ seria a afirmação mais forte. Saiba a diferença, use $O$.
 \end{frame}
 
 \begin{frame}{Classes de crescimento}
-  \begin{center}
-    \small
-    \begin{tabular}{@{}llll@{}}
-      \toprule
-      Classe & Função & Exemplo & Ao dobrar $n$ \\
-      \midrule
-      Constante & $1$ & acesso a \texttt{v[i]} & não muda \\
-      Logarítmica & $\log n$ & busca binária & soma constante \\
-      Linear & $n$ & percorrer um slice & dobra \\
-      Linearítmica & $n \log n$ & MergeSort & pouco mais que dobra \\
-      Quadrática & $n^2$ & Bubble Sort & quadruplica \\
-      Cúbica & $n^3$ & três laços & multiplica por 8 \\
-      Exponencial & $2^n$ & subconjuntos & inviável \\
-      Fatorial & $n!$ & caixeiro viajante & inviável antes \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
-  \vspace{0.2cm}
-  \footnotesize A base do log não aparece: mudar de base só multiplica por
-  uma constante.
+	\begin{center}
+		\small
+		\begin{tabular}{@{}llll@{}}
+			\toprule
+			Classe       & Função     & Exemplo                & Ao dobrar $n$        \\
+			\midrule
+			Constante    & $1$        & acesso a \texttt{v[i]} & não muda             \\
+			Logarítmica  & $\log n$   & busca binária          & soma constante       \\
+			Linear       & $n$        & percorrer um slice     & dobra                \\
+			Linearítmica & $n \log n$ & MergeSort              & pouco mais que dobra \\
+			Quadrática   & $n^2$      & Bubble Sort            & quadruplica          \\
+			Cúbica       & $n^3$      & três laços             & multiplica por 8     \\
+			Exponencial  & $2^n$      & subconjuntos           & inviável             \\
+			Fatorial     & $n!$       & caixeiro viajante      & inviável antes       \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	\vspace{0.2cm}
+	\footnotesize A base do log não aparece: mudar de base só multiplica por
+	uma constante. A última coluna é a ferramenta da próxima seção.
 \end{frame}
 
 \begin{frame}{Melhor caso, pior caso, caso médio}
-  Comparações do Bubble Sort não dependem do vetor. \textbf{Trocas} dependem:
+	Comparações do Bubble Sort não dependem do vetor. \textbf{Trocas} dependem:
 
-  \begin{itemize}
-    \item vetor já ordenado: \tcg{0} trocas (melhor caso);
-    \item vetor decrescente: $n^2/2-n/2$ trocas (pior caso).
-  \end{itemize}
+	\begin{itemize}
+		\item vetor já ordenado: \tcg{0} trocas (melhor caso);
+		\item vetor decrescente: $n^2/2-n/2$ trocas (pior caso).
+	\end{itemize}
 
-  \vspace{0.4cm}
-  \begin{alertblock}{QuickSort: $O(n^2)$ ou $O(n \log n)$?}
-    Depende do caso. Pior caso: $O(n^2)$. Caso médio: $O(n \log n)$. Omitir
-    qual caso torna a afirmação inútil nas duas direções.
-  \end{alertblock}
+	\vspace{0.4cm}
+	\begin{alertblock}{QuickSort: $O(n^2)$ ou $O(n \log n)$?}
+		Depende do caso. Pior caso: $O(n^2)$. Caso médio: $O(n \log n)$. Omitir
+		qual caso torna a afirmação inútil nas duas direções.
+	\end{alertblock}
 \end{frame}
 
 % ==========================================
-\section{Crescimento}
+\section{Medição}
 % ==========================================
 
-\begin{frame}{Como descobrir a classe sem ler o código?}
-  \begin{block}{Teste de duplicação}
-    \begin{enumerate}
-      \item gere uma entrada aleatória de tamanho $n$;
-      \item meça o tempo;
-      \item dobre $n$ e repita;
-      \item observe para onde converge a razão entre tempos.
-    \end{enumerate}
-  \end{block}
+\begin{frame}{Teste de duplicação}
+	\begin{block}{Como descobrir a classe sem ler o código}
+		\begin{enumerate}
+			\item gere uma entrada aleatória de tamanho $n$;
+			\item meça o tempo;
+			\item dobre $n$ e repita;
+			\item observe para onde converge a razão entre tempos consecutivos.
+		\end{enumerate}
+	\end{block}
 
-  \vspace{0.3cm}
-  \footnotesize Meça o binário compilado, não \texttt{go run}. Descarte
-  medições abaixo de um décimo de segundo.
+	\vspace{0.3cm}
+	\footnotesize Meça o binário compilado, não \texttt{go run}, que inclui o
+	tempo de compilação. Descarte medições abaixo de um décimo de segundo, que
+	são dominadas por ruído do sistema operacional.
 \end{frame}
 
-\begin{frame}{Por que funciona}
-  A maioria dos programas segue uma lei de potência: $T(n) = a \cdot n^b$.
+\begin{frame}{Lei de potência e razão entre tempos}
+	A maioria dos programas segue uma lei de potência: $T(n) = a \cdot n^b$,
+	com $a$ dependente da máquina e $b$ igual à ordem de crescimento.
 
-  \vspace{0.3cm}
-  Dobrando a entrada:
-  $$\frac{T(2n)}{T(n)} = \frac{a \cdot (2n)^b}{a \cdot n^b} = 2^b$$
+	\vspace{0.3cm}
+	Dobrando a entrada:
+	$$\frac{T(2n)}{T(n)} = \frac{a \cdot (2n)^b}{a \cdot n^b} = 2^b$$
 
-  \vspace{0.3cm}
-  $a$ desaparece na divisão. Só resta $b$.
+	\vspace{0.2cm}
+	$a$ desaparece na divisão. Só resta $b = \log_2(\text{razão})$.
 
-  \begin{center}
-    \small
-    \begin{tabular}{@{}lccc@{}}
-      \toprule
-      Razão & 2 & 4 & 8 \\
-      Classe & linear & quadrática & cúbica \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\small
+		\begin{tabular}{@{}lccc@{}}
+			\toprule
+			Razão  & 2      & 4          & 8      \\
+			Classe & linear & quadrática & cúbica \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 \end{frame}
 
 % ==========================================
 \section{Union-Find}
 % ==========================================
 
-\begin{frame}[fragile]{Retomando o problema}
-  \begin{center}
-    \includegraphics[width=7cm]{../../01/dynamic-connectivity-tiny.png}
-  \end{center}
+\begin{frame}{Componentes conectadas}
+	\begin{center}
+		\begin{tikzpicture}[node/.style={draw,circle,minimum size=0.7cm,font=\small}]
+			\node[node] (n0) at (0,1)   {0};
+			\node[node] (n1) at (1,1)   {1};
+			\node[node] (n4) at (0,0)   {4};
+			\node[node] (n5) at (1,0)   {5};
+			\node[node] (n2) at (2.6,1) {2};
+			\node[node] (n3) at (3.6,1) {3};
+			\node[node] (n6) at (2.6,0) {6};
+			\node[node] (n7) at (3.6,0) {7};
+			\draw[thick] (n0)--(n4) (n1)--(n4) (n4)--(n5);
+			\draw[thick] (n2)--(n3) (n3)--(n6) (n3)--(n7);
+			\only<2->{\draw[very thick,red] (n5)--(n2);}
+		\end{tikzpicture}
+	\end{center}
 
-  \begin{minted}[fontsize=\scriptsize]{go}
+	\vspace{0.2cm}
+	\textbf{Componente conectada}: conjunto maximal de objetos mutuamente
+	conectados.
+
+	\vspace{0.3cm}
+	\only<1>{
+		Aqui, $\{0,1,4,5\}$ e $\{2,3,6,7\}$.
+		\vspace{0.4cm}
+		\begin{center}
+			\Large O que muda se unirmos 2 e 5?
+		\end{center}
+	}
+	\only<2->{
+		Uma aresta nova, e as duas componentes viram
+		$\{0,1,2,3,4,5,6,7\}$. Nenhum outro par precisou ser informado: a
+		relação é transitiva.
+	}
+\end{frame}
+
+\begin{frame}[fragile]{Retomando o problema}
+	\begin{columns}[T]
+		\begin{column}{0.32\textwidth}
+			\centering
+			\includegraphics[height=5.2cm]{../../01/dynamic-connectivity-tiny.png}
+		\end{column}
+		\begin{column}{0.65\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{go}
 func NewUF(n int) *UF
 func (uf *UF) Count() int
 func (uf *UF) Find(p int) int
 func (uf *UF) Connected(p, q int) bool
 func (uf *UF) Union(p, q int)
-  \end{minted}
+      \end{minted}
 
-  \vspace{0.1cm}
-  \footnotesize Modelo de custo: acessos ao array (leitura ou escrita).
+			\vspace{0.3cm}
+			\footnotesize Modelo de custo: acessos ao array (leitura ou escrita).
+
+			\vspace{0.2cm}
+			\footnotesize $n$ é o número de objetos; $M$ é o número de operações
+			\texttt{Union} e \texttt{Find} ao longo da vida da estrutura.
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]{Quick-Find: a estrutura}
-  \texttt{id[i]} guarda a componente de \texttt{i}. Conectados $\iff$ mesmo
-  valor em \texttt{id}.
+	\texttt{id[i]} guarda a componente de \texttt{i}. Conectados $\iff$ mesmo
+	valor em \texttt{id}.
 
-  \begin{minted}{go}
+	\begin{minted}{go}
 func (uf *UF) Find(p int) int {
     return uf.id[p]           // O(1)
 }
@@ -447,13 +504,13 @@ func (uf *UF) Connected(p, q int) bool {
 }
   \end{minted}
 
-  \begin{center}
-    \Large E \texttt{Union}, quanto custa?
-  \end{center}
+	\begin{center}
+		\Large E \texttt{Union}, quanto custa?
+	\end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Quick-Find: o preço do Union}
-  \begin{minted}{go}
+\begin{frame}[fragile]{Quick-Find: o preço do \texttt{Union}}
+	\begin{minted}{go}
 func (uf *UF) Union(p, q int) {
     pID, qID := uf.id[p], uf.id[q]
     if pID == qID { return }
@@ -466,20 +523,54 @@ func (uf *UF) Union(p, q int) {
 }
   \end{minted}
 
-  \vspace{0.2cm}
-  $O(n)$ por união, sempre -- mesmo unindo dois elementos. $M$ operações sobre
-  $n$ objetos: $O(M \cdot n)$, quadrático quando $M \propto n$.
+	\vspace{0.2cm}
+	$O(n)$ por união, sempre, mesmo unindo dois elementos isolados.
+\end{frame}
 
-  \vspace{0.2cm}
-  \footnotesize Algoritmos quadráticos não acompanham a evolução do hardware
-  (10x mais rápido resolve um problema 10x maior 10x mais lento).
+\begin{frame}{Quick-Find sobre \texttt{tinyUF.txt}}
+	\begin{center}
+		\small
+		\setlength{\tabcolsep}{4pt}
+		\begin{tabular}{@{}l|cccccccccc|rr@{}}
+			\toprule
+			                                   & 0 & 1 & 2 & 3       & 4       & 5 & 6       & 7 & 8 & 9       & escritas & leituras \\
+			\midrule
+			início                             & 0 & 1 & 2 & 3       & 4       & 5 & 6       & 7 & 8 & 9       &          &          \\
+			\ol{2}{\texttt{union(4,3)}} & \ol{2}{0} & \ol{2}{1} & \ol{2}{2} & \ol{2}{3}      & \ol{2}{\hl{3}} & \ol{2}{5} & \ol{2}{6}      & \ol{2}{7} & \ol{2}{8} & \ol{2}{9}      & \ol{2}{1} & \ol{2}{12} \\
+			\ol{3}{\texttt{union(3,8)}} & \ol{3}{0} & \ol{3}{1} & \ol{3}{2} & \ol{3}{\hl{8}} & \ol{3}{\hl{8}} & \ol{3}{5} & \ol{3}{6}      & \ol{3}{7} & \ol{3}{8} & \ol{3}{9}      & \ol{3}{2} & \ol{3}{12} \\
+			\ol{4}{\texttt{union(6,5)}} & \ol{4}{0} & \ol{4}{1} & \ol{4}{2} & \ol{4}{8}      & \ol{4}{8}      & \ol{4}{5} & \ol{4}{\hl{5}} & \ol{4}{7} & \ol{4}{8} & \ol{4}{9}      & \ol{4}{1} & \ol{4}{12} \\
+			\ol{5}{\texttt{union(9,4)}} & \ol{5}{0} & \ol{5}{1} & \ol{5}{2} & \ol{5}{8}      & \ol{5}{8}      & \ol{5}{5} & \ol{5}{5}      & \ol{5}{7} & \ol{5}{8} & \ol{5}{\hl{8}} & \ol{5}{1} & \ol{5}{12} \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.4cm}
+	\onslide<6->{
+		Poucas escritas, mas o laço \textbf{leu} as 10 posições em toda linha.
+		Com $n$ de 1 milhão, é 1 milhão de leituras por união.
+
+		\vspace{0.2cm}
+		$M$ operações sobre $n$ objetos custam $O(M \cdot n)$, quadrático quando
+		$M$ é proporcional a $n$.
+	}
+\end{frame}
+
+\begin{frame}{Algoritmo quadrático não acompanha o hardware}
+	Sedgewick: com $10^9$ objetos e $10^9$ uniões, o Quick-Find faria mais de
+	$10^{18}$ acessos, ou mais de \hl{30 anos} de processamento.
+
+	\vspace{0.5cm}
+	\pause
+	Trocar por uma máquina 10 vezes mais rápida não resolve. Ela costuma ter 10
+	vezes mais memória, e será usada num problema 10 vezes maior, que o
+	algoritmo quadrático demora \hl{100 vezes mais} para processar.
 \end{frame}
 
 \begin{frame}[fragile]{Quick-Union: adiar o trabalho}
-  Em vez de renomear tudo, muda-se \textbf{um} valor -- o custo migra para
-  \texttt{Find}.
+	Em vez de renomear a componente inteira, muda-se \textbf{um} valor. O custo
+	migra para \texttt{Find}.
 
-  \begin{minted}{go}
+	\begin{minted}{go}
 func (uf *UF) Find(p int) int {
     for p != uf.parent[p] {
         p = uf.parent[p]
@@ -494,44 +585,111 @@ func (uf *UF) Union(p, q int) {
 }
   \end{minted}
 
-  \begin{center}
-    \Large \texttt{Union} agora é uma atribuição. Qual o custo de \texttt{Find}?
-  \end{center}
+	\begin{center}
+		\Large \texttt{Union} agora é uma atribuição. Qual o custo de \texttt{Find}?
+	\end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Depende da altura da árvore}
-  \begin{minted}[fontsize=\scriptsize]{text}
-Union(0,1)      Union(1,2)      Union(2,3)
+\begin{frame}{Quick-Union: a cadeia cresce por baixo}
+	\begin{center}
+		\begin{tikzpicture}[
+				every node/.style={draw,circle,minimum size=0.62cm,font=\small,inner sep=0pt},
+				lbl/.style={draw=none,font=\scriptsize\bfseries,text=blue!60!black},
+				arw/.style={-{Latex[length=2mm]},thick}
+			]
+			\node[lbl] at (0,0.9) {\texttt{union(0,1)}};
+			\node (a1) at (0,0)    {1};
+			\node (a0) at (0,-0.9) {0};
+			\draw[arw] (a0) -- (a1);
 
-     1               2               3
-     |               |               |
-     0               1               2
-                     |               |
-                     0               1
-                                     |
-                                     0
-  \end{minted}
+			\node[lbl] at (3.0,0.9) {\texttt{union(1,2)}};
+			\node (b2) at (3.0,0)    {2};
+			\node (b1) at (3.0,-0.9) {1};
+			\node (b0) at (3.0,-1.8) {0};
+			\draw[arw] (b1) -- (b2);
+			\draw[arw] (b0) -- (b1);
 
-  \texttt{Union} sempre pendura a raiz \textbf{antiga} sob a nova -- a cadeia
-  cresce por baixo. \texttt{Find(0)} percorre 3 arestas.
+			\node[lbl] at (6.0,0.9) {\texttt{union(2,3)}};
+			\node (c3) at (6.0,0)    {3};
+			\node (c2) at (6.0,-0.9) {2};
+			\node (c1) at (6.0,-1.8) {1};
+			\node[fill=red!15] (c0) at (6.0,-2.7) {0};
+			\draw[arw] (c2) -- (c3);
+			\draw[arw] (c1) -- (c2);
+			\draw[arw] (c0) -- (c1);
+		\end{tikzpicture}
+	\end{center}
 
-  \vspace{0.2cm}
-  Pior caso: árvore degenera numa lista de $n$ nós. \texttt{Find} custa $n$ --
-  \textbf{pior que Quick-Find}, e sem nem ser acesso contíguo à memória.
+	\vspace{0.1cm}
+	\begin{center}
+		\texttt{parent} = [1 2 3 3] \qquad \texttt{Find(0)} sobe \hl{3} arestas
+	\end{center}
+
+	\vspace{0.2cm}
+	{\footnotesize A raiz \textbf{antiga} sempre passa a pender da nova. Com $n$
+		uniões nessa ordem, a árvore vira uma lista de $n$ nós e \texttt{Find}
+		custa $n$: pior que o Quick-Find, e cada passo é um salto para posição
+		arbitrária do slice, sem acesso contíguo à memória.}
 \end{frame}
 
-\begin{frame}{O defeito é identificável}
-  \texttt{Union} escolhe \textbf{arbitrariamente} qual raiz pende de qual --
-  não usa nenhuma informação sobre as árvores.
+\begin{frame}{\texttt{Union} escolhe a raiz arbitrariamente}
+	As árvores ficam fundas porque \texttt{Union} não usa \textbf{nenhuma}
+	informação sobre as duas árvores que está unindo. Qualquer uma das raízes
+	pode acabar embaixo.
 
-  \vspace{0.5cm}
-  \begin{center}
-    \Large Como você corrigiria isso?
-  \end{center}
+	\vspace{0.7cm}
+	\begin{center}
+		\Large Como você corrigiria isso?
+	\end{center}
+\end{frame}
+
+\begin{frame}{Sempre a menor sob a maior}
+	\begin{columns}[T]
+		\begin{column}{0.48\textwidth}
+			\centering
+			\begin{tikzpicture}[scale=0.9,
+					rt/.style={draw,circle,minimum size=0.45cm,font=\scriptsize,inner sep=0pt},
+					leg/.style={font=\scriptsize},
+					arw/.style={-{Latex[length=1.8mm]},thick}]
+				\node[leg,font=\scriptsize\bfseries] at (0,1.1) {Quick-Union: raiz arbitrária};
+				\node[rt] (q) at (0.9,0.4) {q};
+				\draw[fill=gray!15] (0.9,0.15) -- (0.4,-0.75) -- (1.4,-0.75) -- cycle;
+				\node[font=\tiny] at (0.9,-0.5) {menor};
+				\node[rt] (p) at (-0.9,-0.5) {p};
+				\draw[fill=gray!40] (-0.9,-0.75) -- (-1.9,-2.3) -- (0.1,-2.3) -- cycle;
+				\node[font=\tiny] at (-0.9,-1.7) {maior};
+				\draw[arw] (p) -- (q);
+				\node[leg,align=center,text width=4cm] at (0,-2.9)
+				{a árvore \tcr{maior} desce\\ um nível inteiro};
+			\end{tikzpicture}
+		\end{column}
+		\begin{column}{0.48\textwidth}
+			\centering
+			\begin{tikzpicture}[scale=0.9,
+					rt/.style={draw,circle,minimum size=0.45cm,font=\scriptsize,inner sep=0pt},
+					leg/.style={font=\scriptsize},
+					arw/.style={-{Latex[length=1.8mm]},thick}]
+				\node[leg,font=\scriptsize\bfseries] at (0.4,1.1) {Weighted: sempre a mesma escolha};
+				\node[rt] (p) at (-0.6,0.4) {p};
+				\draw[fill=gray!40] (-0.6,0.15) -- (-1.6,-1.4) -- (0.4,-1.4) -- cycle;
+				\node[font=\tiny] at (-0.6,-0.9) {maior};
+				\node[rt] (q) at (1.5,-0.2) {q};
+				\draw[fill=gray!15] (1.5,-0.45) -- (1.0,-1.35) -- (2.0,-1.35) -- cycle;
+				\node[font=\tiny] at (1.5,-1.1) {menor};
+				\draw[arw] (q) -- (p);
+				\node[leg,align=center,text width=4cm] at (0.4,-2.0)
+				{só a árvore \tcg{menor} desce};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
+
+	\vspace{0.5cm}
+	Guardar o tamanho de cada árvore e pendurar sempre a menor sob a raiz da
+	maior, nunca o contrário.
 \end{frame}
 
 \begin{frame}[fragile]{Pendurar a menor sob a maior}
-  \begin{minted}{go}
+	\begin{minted}{go}
 if uf.size[rootP] < uf.size[rootQ] {
     uf.parent[rootP] = rootQ
     uf.size[rootQ] += uf.size[rootP]
@@ -541,109 +699,240 @@ if uf.size[rootP] < uf.size[rootQ] {
 }
   \end{minted}
 
-  Três linhas a mais que o Quick-Union.
+	Três linhas a mais que o Quick-Union. \texttt{Find} é idêntico.
 
-  \vspace{0.3cm}
-  \begin{block}{Proposição}
-    A profundidade de qualquer nó é no máximo $\log_2 n$.
-  \end{block}
+	\vspace{0.3cm}
+	\begin{block}{Proposição}
+		No Weighted Quick-Union, a profundidade de qualquer nó é no máximo
+		$\log_2 n$.
+	\end{block}
 
-  \footnotesize A profundidade de $x$ só aumenta quando a árvore de $x$ é a
-  \textbf{menor} das duas -- e nesse momento o tamanho da árvore de $x$ pelo
-  menos dobra. Dobrar no máximo $\log_2 n$ vezes.
+	\footnotesize Com $n = 1.000.000$, isso são 20 níveis, contra o milhão de
+	acessos que uma união do Quick-Find faria.
 \end{frame}
 
-% ==========================================
-\section{Lado a lado}
-% ==========================================
+\begin{frame}{Por que a profundidade cresce tão pouco}
+	\begin{center}
+		\begin{tikzpicture}[scale=0.95,
+				rt/.style={draw,circle,minimum size=0.4cm,font=\scriptsize,inner sep=0pt},
+				arw/.style={-{Latex[length=2mm]},thick}]
+			% T2, maior, à esquerda
+			\node[rt] (r2) at (0,0) {};
+			\draw[fill=gray!40] (0,-0.22) -- (-1.5,-2.4) -- (1.5,-2.4) -- cycle;
+			\node[font=\bfseries] at (0,-1.5) {$T_2$};
+			% T1, menor, à direita, separada
+			\node[rt] (r1) at (3.4,-0.9) {};
+			\draw[fill=gray!15] (3.4,-1.12) -- (2.5,-2.6) -- (4.3,-2.6) -- cycle;
+			\node[font=\bfseries] at (3.4,-1.7) {$T_1$};
+			\node[draw,circle,fill=blue!70!black,text=white,minimum size=0.55cm,font=\small\bfseries,inner sep=0pt] at (3.4,-2.25) {$x$};
+			% ligação
+			\draw[arw] (r1) -- (r2);
+			\node[font=\scriptsize,text=red] at (1.9,-0.15) {$|T_2| \ge |T_1|$};
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.2cm}
+	A profundidade de $x$ só aumenta quando a árvore que o contém ($T_1$) é
+	pendurada sob outra ($T_2$), e isso só acontece quando $T_1$ é a menor das
+	duas.
+
+	\vspace{0.2cm}
+	Nesse momento a árvore resultante tem \textbf{pelo menos o dobro} de
+	elementos. Como uma árvore não passa de $n$ elementos, dobrar acontece no
+	máximo $\log_2 n$ vezes.
+\end{frame}
+
+\begin{frame}{A mesma sequência nas duas implementações}
+	\begin{columns}[T]
+		\begin{column}{0.5\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
+					leg/.style={font=\scriptsize},
+					arw/.style={-{Latex[length=1.6mm]},thick}]
+				\node[leg,font=\scriptsize\bfseries] at (0,0.7) {Quick-Union};
+				\node[nd] (d3) at (0,0)    {3};
+				\node[nd] (d2) at (0,-0.8) {2};
+				\node[nd] (d1) at (0,-1.6) {1};
+				\node[nd] (d0) at (0,-2.4) {0};
+				\draw[arw] (d2)--(d3);
+				\draw[arw] (d1)--(d2);
+				\draw[arw] (d0)--(d1);
+				\node[leg] at (0,-3.1) {altura \tcr{3}};
+			\end{tikzpicture}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
+					leg/.style={font=\scriptsize},
+					arw/.style={-{Latex[length=1.6mm]},thick}]
+				\node[leg,font=\scriptsize\bfseries] at (0,0.7) {Weighted Quick-Union};
+				\node[nd] (e0) at (0,0)       {0};
+				\node[nd] (e1) at (-0.9,-1.0) {1};
+				\node[nd] (e2) at (0,-1.0)    {2};
+				\node[nd] (e3) at (0.9,-1.0)  {3};
+				\draw[arw] (e1)--(e0);
+				\draw[arw] (e2)--(e0);
+				\draw[arw] (e3)--(e0);
+				\node[leg] at (0,-1.7) {altura \tcg{1}};
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
+
+	\vspace{0.4cm}
+	\begin{center}
+		\small \texttt{union(0,1)}, \texttt{union(1,2)}, \texttt{union(2,3)}
+	\end{center}
+
+	\vspace{0.2cm}
+	Mesmos pares, mesma ordem, mesma resposta a \texttt{Connected}. O que mudou
+	foi qual raiz pende de qual.
+\end{frame}
 
 \begin{frame}{Custo de $M$ operações sobre $n$ objetos}
-  \begin{center}
-    \begin{tabular}{@{}lll@{}}
-      \toprule
-      Implementação & Custo & Ordem \\
-      \midrule
-      Quick-Find & $M \cdot n$ & quadrática \\
-      Quick-Union & $M \cdot n$ & quadrática (pior caso) \\
-      Weighted Quick-Union & $n + M\log n$ & linearítmica \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\begin{tabular}{@{}lll@{}}
+			\toprule
+			Implementação        & Custo         & Ordem                  \\
+			\midrule
+			Quick-Find           & $M \cdot n$   & quadrática             \\
+			Quick-Union          & $M \cdot n$   & quadrática (pior caso) \\
+			Weighted Quick-Union & $n + M\log n$ & linearítmica           \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.5cm}
-  \begin{center}
-    \Large Você mediria essas três com o teste de duplicação. Que razão
-    esperaria ver?
-  \end{center}
+	\vspace{0.5cm}
+	\begin{center}
+		\Large Você mediria essas três com o teste de duplicação. Que razão
+		esperaria ver?
+	\end{center}
 \end{frame}
 
-\begin{frame}{Medido de verdade}
-  \begin{center}
-    \small
-    \begin{tabular}{@{}lccc@{}}
-      \toprule
-      $n$ & Quick-Find & razão & Weighted \\
-      \midrule
-      40.000 & 1,23 s & & 0,02 s \\
-      80.000 & 4,96 s & 4,0 & 0,06 s \\
-      160.000 & 19,63 s & 4,0 & 0,12 s \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+\begin{frame}{Tempos medidos, três implementações}
+	\begin{center}
+		\small
+		\begin{tabular}{@{}lrcrcr@{}}
+			\toprule
+			$n$     & Quick-Find & razão   & Quick-Union & razão   & Weighted \\
+			\midrule
+			20.000  & 0,31 s     &         & 0,30 s      &         & 0,01 s   \\
+			40.000  & 1,23 s     & \hl{4,0} & 1,48 s     & 4,9     & 0,02 s   \\
+			80.000  & 4,96 s     & \hl{4,0} & 6,95 s     & 4,7     & 0,06 s   \\
+			160.000 & 19,63 s    & \hl{4,0} & 35,28 s    & 5,1     & 0,12 s   \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.4cm}
-  Razão 4 confirma quadrático ($b = \log_2 4 = 2$), exatamente como a análise
-  previu.
+	\vspace{0.3cm}
+	Razão 4 confirma quadrático ($b = \log_2 4 = 2$), exatamente como a contagem
+	de acessos previa. No Quick-Union a razão passa de 4, porque o custo de cada
+	operação também cresce com $n$.
 
-  \vspace{0.3cm}
-  Em \texttt{largeUF.txt} (1 milhão de objetos): Weighted leva
-  \textbf{1,07 s}. Quick-Find, \textbf{829 s} -- os mesmos 14 minutos do
-  início da aula, agora explicados.
+	\vspace{0.2cm}
+	\footnotesize Go 1.26, Intel Core i5-1345U, entradas com $n$ objetos e $2n$
+	pares aleatórios. Os tempos do Weighted são pequenos demais para render
+	razão confiável nesses tamanhos.
+\end{frame}
+
+\begin{frame}{Extrapolar cinco medições para uma execução de 14 minutos}
+	De 160.000 para 1.000.000 de objetos, $n$ é multiplicado por 6,25. Sendo
+	quadrático, o tempo deve ser multiplicado por $6{,}25^2 = 39$:
+
+	$$19{,}63 \text{ s} \times 39 = 766 \text{ s} = 12\text{min}46\text{s}$$
+
+	\pause
+	\vspace{0.3cm}
+	\begin{center}
+		\begin{tabular}{@{}lrr@{}}
+			\toprule
+			\texttt{largeUF.txt} ($10^6$ objetos) & previsto & medido            \\
+			\midrule
+			Quick-Find                            & 766 s    & \hl{829 s}        \\
+			Weighted Quick-Union                  &          & \tcg{\textbf{1,07 s}} \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.3cm}
+	Erro de 8\% numa extrapolação seis vezes além do maior tamanho medido. São
+	os mesmos 14 minutos do início da aula, agora previstos sem executá-los.
+\end{frame}
+
+\begin{frame}{A forma da árvore explica o número}
+	\begin{center}
+		\includegraphics[width=\textwidth]{fig/sedgewick_tree_shapes.png}
+	\end{center}
+	\vspace{0.1cm}
+	\footnotesize 100 sites, 88 uniões. Quick-Union produz árvores altas
+	(distância média à raiz: 5,11); Weighted mantém tudo raso (1,52).
+	\tiny Figura: Sedgewick \& Wayne, \textit{Algorithms, 4th ed.}, slides do
+	capítulo 1.5.
 \end{frame}
 
 \begin{frame}{Qual implementação usar}
-  \begin{itemize}
-    \item Dezenas ou centenas de objetos: qualquer uma responde em
-          microssegundos -- escolha pela simplicidade do código;
-    \item Milhares de objetos com uso intenso de \texttt{Union}: a ordem de
-          crescimento domina, e Weighted Quick-Union é a escolha.
-  \end{itemize}
+	\begin{itemize}
+		\item Dezenas ou centenas de objetos: qualquer uma responde em
+		      microssegundos, e a escolha pode seguir a simplicidade do código;
+		\item Milhares de objetos com uso intenso de \texttt{Union}: a ordem de
+		      crescimento domina, e Weighted Quick-Union é a escolha.
+	\end{itemize}
 
-  \vspace{0.4cm}
-  \begin{block}{}
-    O ganho não vem de código mais rápido -- as três têm o mesmo tipo de laço.
-    Vem de escolher a estrutura de dados certa.
-  \end{block}
+	\vspace{0.4cm}
+	\begin{block}{}
+		O ganho não vem de código mais rápido. As três têm o mesmo tipo de laço,
+		sobre o mesmo tipo de slice. Vem de escolher a estrutura de dados que
+		evita trabalho.
+	\end{block}
 \end{frame}
 
 % ==========================================
-\section*{Resumo}
+\section*{Fechamento}
 % ==========================================
 
 \begin{frame}{Resumo}
-  \small
-  \begin{itemize}
-    \item Medição depende de máquina, dados e implementação. Análise
-          assintótica não depende de nenhum dos três;
-    \item Analisar começa por declarar o modelo de custo;
-    \item Termos de ordem inferior e constantes somem quando $n$ cresce -- para
-          $n$ pequeno, eles dominam;
-    \item $O$ é limite superior, $\Omega$ inferior, $\Theta$ os dois. Diga
-          sempre qual caso;
-    \item Razão ao dobrar $n$: 2 linear, 4 quadrática, 8 cúbica;
-    \item Quick-Find: \texttt{Find} $O(1)$, \texttt{Union} $O(n)$. Quick-Union
-          inverte, e degenera em árvore torta;
-    \item Pendurar a menor sob a maior limita a profundidade a $\log_2 n$.
-  \end{itemize}
+	\small
+	\begin{itemize}
+		\item Medição depende de máquina, dados e implementação. Análise
+		      assintótica não depende de nenhum dos três;
+		\item Analisar começa por declarar o modelo de custo;
+		\item Termos de ordem inferior e constantes somem quando $n$ cresce. Para
+		      $n$ pequeno, eles dominam;
+		\item $O$ é limite superior, $\Omega$ inferior, $\Theta$ os dois. Diga
+		      sempre qual caso;
+		\item Razão ao dobrar $n$: 2 linear, 4 quadrática, 8 cúbica;
+		\item Quick-Find: \texttt{Find} $O(1)$, \texttt{Union} $O(n)$. Quick-Union
+		      inverte, e degenera em árvore torta;
+		\item Pendurar a menor sob a maior limita a profundidade a $\log_2 n$, e
+		      separa 14 minutos de 1 segundo em \texttt{largeUF.txt}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Compressão de caminho}
+	Toda vez que \texttt{Find(p)} sobe até a raiz, ele passa por \textbf{todos}
+	os nós do caminho e descobre a raiz de cada um. Hoje essa informação é
+	jogada fora.
+
+	\vspace{0.4cm}
+	Aproveitá-la deixa a estrutura mais plana a cada consulta, e leva o custo de
+	$M$ operações a $n + M \lg^{*} n$.
+
+	\vspace{0.5cm}
+	\begin{alertblock}{Leitura, não vista em aula}
+		A seção 15 do texto trata de compressão de caminho, do limite de
+		Hopcroft-Ulman-Tarjan e das aplicações do Union-Find. Não cai na prova, e
+		é ponto de partida para o desafio da lista.
+	\end{alertblock}
 \end{frame}
 
 \begin{frame}{Bibliografia}
-  \begin{itemize}
-    \item SEDGEWICK, R.; WAYNE, K. \textbf{Algorithms}, 4th ed., seções 1.4 e 1.5.
-    \item \url{https://algs4.cs.princeton.edu/14analysis/}
-    \item \url{https://algs4.cs.princeton.edu/15uf/}
-    \item BHARGAVA, A. Y. \textbf{Entendendo Algoritmos}, cap. 1 e 4.
-  \end{itemize}
+	\begin{itemize}
+		\item SEDGEWICK, R.; WAYNE, K. \textbf{Algorithms}, 4th ed., seções 1.4 e 1.5.
+		\item \url{https://algs4.cs.princeton.edu/14analysis/}
+		\item \url{https://algs4.cs.princeton.edu/15uf/}
+		\item BHARGAVA, A. Y. \textbf{Entendendo Algoritmos}, cap. 1 e 4.
+	\end{itemize}
 \end{frame}
 
 \end{document}
