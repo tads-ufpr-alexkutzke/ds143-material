@@ -569,6 +569,54 @@ func (uf *UF) Union(p, q int) {
 	algoritmo quadrático demora \hl{100 vezes mais} para processar.
 \end{frame}
 
+\begin{frame}{Quick-Union: a estrutura}
+	\texttt{parent[i]} guarda o \textbf{pai} de \texttt{i}, e não a componente.
+	Quando \texttt{parent[i] == i}, \texttt{i} é \textbf{raiz}. Cada árvore é
+	uma componente, e o slice representa uma floresta.
+
+	\vspace{0.3cm}
+	\begin{center}
+		\small
+		\setlength{\tabcolsep}{4pt}
+		\begin{tabular}{@{}l|cccccccccc@{}}
+			\toprule
+			                & 0 & 1 & 2 & 3      & 4      & 5 & 6      & 7 & 8      & 9      \\
+			\midrule
+			\texttt{parent} & 0 & 1 & 2 & \hl{8} & \hl{3} & 5 & \hl{5} & 7 & 8      & \hl{8} \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.2cm}
+	\begin{center}
+		\begin{tikzpicture}[
+				nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
+				rz/.style={nd,very thick},
+				arw/.style={-{Latex[length=1.6mm]},thick}]
+			\node[rz] (t8) at (0,0)     {8};
+			\node[nd] (t3) at (-0.7,-0.9) {3};
+			\node[nd] (t9) at (0.7,-0.9)  {9};
+			\node[nd] (t4) at (-0.7,-1.8) {4};
+			\draw[arw] (t3)--(t8); \draw[arw] (t9)--(t8); \draw[arw] (t4)--(t3);
+
+			\node[rz] (t5) at (2.6,0)    {5};
+			\node[nd] (t6) at (2.6,-0.9) {6};
+			\draw[arw] (t6)--(t5);
+
+			\node[rz] (t0) at (4.4,0) {0};
+			\node[rz] (t1) at (5.2,0) {1};
+			\node[rz] (t2) at (6.0,0) {2};
+			\node[rz] (t7) at (6.8,0) {7};
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.1cm}
+	\footnotesize Depois de \texttt{union(4,3)}, \texttt{union(3,8)},
+	\texttt{union(6,5)} e \texttt{union(9,4)}. Raízes em traço grosso.
+	\textbf{Invariante}: \texttt{p} e \texttt{q} estão conectados se, e somente
+	se, têm a mesma raiz. \texttt{Find(4)} sobe 4, 3, 8.
+\end{frame}
+
 \begin{frame}[fragile]{Quick-Union: adiar o trabalho}
 	Em vez de renomear a componente inteira, muda-se \textbf{um} valor. O custo
 	migra para \texttt{Find}.
@@ -740,9 +788,13 @@ if uf.size[rootP] < uf.size[rootQ] {
 	duas.
 
 	\vspace{0.2cm}
-	Nesse momento a árvore resultante tem \textbf{pelo menos o dobro} de
-	elementos. Como uma árvore não passa de $n$ elementos, dobrar acontece no
-	máximo $\log_2 n$ vezes.
+	A árvore resultante tem $|T_1| + |T_2|$ elementos. Como $T_1$ é a menor,
+	$|T_2| \ge |T_1|$, e portanto
+	$$|T_1| + |T_2| \;\ge\; |T_1| + |T_1| \;=\; 2\,|T_1|$$
+
+	\vspace{-0.2cm}
+	A árvore de $x$ \textbf{pelo menos dobrou}. Como nenhuma árvore passa de $n$
+	elementos, dobrar acontece no máximo $\log_2 n$ vezes.
 \end{frame}
 
 \begin{frame}{A mesma sequência nas duas implementações}
@@ -913,13 +965,42 @@ if uf.size[rootP] < uf.size[rootQ] {
 \end{frame}
 
 \begin{frame}{Compressão de caminho}
-	Toda vez que \texttt{Find(p)} sobe até a raiz, ele passa por \textbf{todos}
-	os nós do caminho e descobre a raiz de cada um. Hoje essa informação é
-	jogada fora.
+	Ao subir até a raiz, \texttt{Find(p)} passa por \textbf{todos} os nós do
+	caminho e descobre a raiz de cada um. Apontar cada um deles direto para a
+	raiz custa pouco e deixa a árvore plana.
 
-	\vspace{0.4cm}
-	Aproveitá-la deixa a estrutura mais plana a cada consulta, e leva o custo de
-	$M$ operações a $n + M \lg^{*} n$.
+	\vspace{0.2cm}
+	\begin{columns}[b]
+		\begin{column}{0.36\textwidth}
+			\centering
+			\includegraphics[height=4.0cm]{fig/compressao_antes.png}\\[0.1cm]
+			{\scriptsize antes}
+		\end{column}
+		\begin{column}{0.6\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{fig/compressao_depois.png}\\[0.1cm]
+			{\scriptsize depois de \texttt{Find(9)}}
+		\end{column}
+	\end{columns}
+
+	\vspace{0.2cm}
+	{\footnotesize \texttt{Find(9)} examina 9, 6, 3, 1 e 0. Os quatro primeiros
+		passam a apontar direto para a raiz, e as consultas seguintes a qualquer
+		um deles ficam mais baratas.}
+
+	\vspace{0.1cm}
+	{\tiny Figuras: Sedgewick \& Wayne, \textit{Algorithms, 4th ed.}, slides do
+		capítulo 1.5.}
+\end{frame}
+
+\begin{frame}{Quão barato o Union-Find fica}
+	Com compressão de caminho, o custo de $M$ operações sobre $n$ objetos cai
+	para $n + M \lg^{*} n$, onde $\lg^{*} n$ é o logaritmo iterado: quantas
+	vezes é preciso aplicar $\log_2$ a $n$ até chegar a 1.
+
+	\vspace{0.3cm}
+	Ele vale 5 para $n = 2^{65536}$, número maior que a quantidade de átomos no
+	universo observável. Para qualquer entrada concebível, $\lg^{*} n \le 5$.
 
 	\vspace{0.5cm}
 	\begin{alertblock}{Leitura, não vista em aula}
