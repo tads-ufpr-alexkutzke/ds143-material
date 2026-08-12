@@ -438,8 +438,9 @@ análises são possíveis:
   exige assumir como as entradas se distribuem.
 
 Ao apresentar uma complexidade, diga de qual caso se trata. O QuickSort é
-$O(n^2)$ no pior caso e $O(n \log n)$ no caso médio, e omitir isso torna a afirmação
-inútil nas duas direções.
+$O(n^2)$ no pior caso e $O(n \log n)$ no caso médio. Dizer só $O(n^2)$ faz o
+algoritmo parecer pior do que ele costuma ser; dizer só $O(n \log n)$ promete
+uma garantia que ele não dá.
 
 Existe ainda a **análise amortizada**, que distribui o custo de uma operação
 cara pela sequência inteira de operações. Ela responde à pergunta "qual o custo

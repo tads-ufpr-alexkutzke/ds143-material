@@ -154,13 +154,13 @@ go build -o weighted weighted_quick_union.go
 		\small
 		\begin{tabular}{@{}lrlrl@{}}
 			\toprule
-			    & \multicolumn{2}{c}{$(n-1)!$ rotas} & \multicolumn{2}{c}{$n^5$ alternativas}                                             \\
+			    & \multicolumn{2}{c}{$(n-1)!$ rotas} & \multicolumn{2}{c}{$n^5$ alternativas}                                                           \\
 			\cmidrule(r){2-3}\cmidrule(l){4-5}
-			$n$ & quantas                            & tempo                                  & quantas   & tempo                        \\
+			$n$ & quantas                            & tempo                                  & quantas   & tempo                                       \\
 			\midrule
-			10  & 362.880                            & 0,003 s                                & 100.000   & insignificante               \\
-			15  & 87 bilhões                         & 20 min                                 & 759.375   & 0,01 s                       \\
-			20  & $1,2 \times 10^{17}$               & \hl{73 anos}                           & 3.200.000 & 0,06 s                       \\
+			10  & 362.880                            & 0,003 s                              & 100.000   & insignificante                              \\
+			15  & 87 bilhões                         & 20 min                                 & 759.375   & 0,01 s                                      \\
+			20  & $1,2 \times 10^{17}$               & \hl{73 anos}                           & 3.200.000 & 0,06 s                                      \\
 			25  & $6,2 \times 10^{23}$               & 470 milhões de anos                    & 9.765.625 & \textcolor{green!50!black}{\textbf{0,23 s}} \\
 			\bottomrule
 		\end{tabular}
@@ -308,12 +308,12 @@ func bubbleSort(v []int) int {
 
 \begin{frame}{Crescimento comparado das classes}
 	\begin{center}
-		\includegraphics[height=5.6cm]{fig/graf.png}
+		\includegraphics[width=\textwidth]{fig/graf.png}
 	\end{center}
 	\vspace{-0.1cm}
-	\footnotesize $n$, $n^2$, $n^3$ e $n!$, para $n$ até 100. O fatorial sai do
-	gráfico antes de $n = 7$; o cúbico, antes de $n = 10$. Na escala em que o
-	quadrático ainda cabe, o linear é quase uma reta horizontal.
+	\footnotesize $n$, $n^2$, $n^3$ e $n!$, para $n$ até 40. O fatorial sai do
+	gráfico antes de $n = 7$; o cúbico, em $n = 10$; o quadrático, perto de
+	$n = 32$.
 \end{frame}
 
 \begin{frame}{$O$, limite superior}
@@ -379,8 +379,11 @@ func bubbleSort(v []int) int {
 
 	\vspace{0.4cm}
 	\begin{alertblock}{QuickSort: $O(n^2)$ ou $O(n \log n)$?}
-		Depende do caso. Pior caso: $O(n^2)$. Caso médio: $O(n \log n)$. Omitir
-		qual caso torna a afirmação inútil nas duas direções.
+		Depende do caso. Pior caso: $O(n^2)$. Caso médio: $O(n \log n)$.
+
+		\vspace{0.15cm}
+		Dizer só $O(n^2)$ faz o algoritmo parecer pior do que ele costuma ser.
+		Dizer só $O(n \log n)$ promete uma garantia que ele não dá.
 	\end{alertblock}
 \end{frame}
 
@@ -533,9 +536,9 @@ func (uf *UF) Union(p, q int) {
 		\setlength{\tabcolsep}{4pt}
 		\begin{tabular}{@{}l|cccccccccc|rr@{}}
 			\toprule
-			                                   & 0 & 1 & 2 & 3       & 4       & 5 & 6       & 7 & 8 & 9       & escritas & leituras \\
+			                            & 0         & 1         & 2         & 3              & 4              & 5         & 6              & 7         & 8         & 9              & escritas  & leituras   \\
 			\midrule
-			início                             & 0 & 1 & 2 & 3       & 4       & 5 & 6       & 7 & 8 & 9       &          &          \\
+			início                      & 0         & 1         & 2         & 3              & 4              & 5         & 6              & 7         & 8         & 9              &           &            \\
 			\ol{2}{\texttt{union(4,3)}} & \ol{2}{0} & \ol{2}{1} & \ol{2}{2} & \ol{2}{3}      & \ol{2}{\hl{3}} & \ol{2}{5} & \ol{2}{6}      & \ol{2}{7} & \ol{2}{8} & \ol{2}{9}      & \ol{2}{1} & \ol{2}{12} \\
 			\ol{3}{\texttt{union(3,8)}} & \ol{3}{0} & \ol{3}{1} & \ol{3}{2} & \ol{3}{\hl{8}} & \ol{3}{\hl{8}} & \ol{3}{5} & \ol{3}{6}      & \ol{3}{7} & \ol{3}{8} & \ol{3}{9}      & \ol{3}{2} & \ol{3}{12} \\
 			\ol{4}{\texttt{union(6,5)}} & \ol{4}{0} & \ol{4}{1} & \ol{4}{2} & \ol{4}{8}      & \ol{4}{8}      & \ol{4}{5} & \ol{4}{\hl{5}} & \ol{4}{7} & \ol{4}{8} & \ol{4}{9}      & \ol{4}{1} & \ol{4}{12} \\
@@ -593,9 +596,9 @@ func (uf *UF) Union(p, q int) {
 \begin{frame}{Quick-Union: a cadeia cresce por baixo}
 	\begin{center}
 		\begin{tikzpicture}[
-				every node/.style={draw,circle,minimum size=0.62cm,font=\small,inner sep=0pt},
-				lbl/.style={draw=none,font=\scriptsize\bfseries,text=blue!60!black},
-				arw/.style={-{Latex[length=2mm]},thick}
+			every node/.style={draw,circle,minimum size=0.62cm,font=\small,inner sep=0pt},
+			lbl/.style={draw=none,font=\scriptsize\bfseries,text=blue!60!black},
+			arw/.style={-{Latex[length=2mm]},thick}
 			]
 			\node[lbl] at (0,0.9) {\texttt{union(0,1)}};
 			\node (a1) at (0,0)    {1};
@@ -648,9 +651,9 @@ func (uf *UF) Union(p, q int) {
 		\begin{column}{0.48\textwidth}
 			\centering
 			\begin{tikzpicture}[scale=0.9,
-					rt/.style={draw,circle,minimum size=0.45cm,font=\scriptsize,inner sep=0pt},
-					leg/.style={font=\scriptsize},
-					arw/.style={-{Latex[length=1.8mm]},thick}]
+				rt/.style={draw,circle,minimum size=0.45cm,font=\scriptsize,inner sep=0pt},
+				leg/.style={font=\scriptsize},
+				arw/.style={-{Latex[length=1.8mm]},thick}]
 				\node[leg,font=\scriptsize\bfseries] at (0,1.1) {Quick-Union: raiz arbitrária};
 				\node[rt] (q) at (0.9,0.4) {q};
 				\draw[fill=gray!15] (0.9,0.15) -- (0.4,-0.75) -- (1.4,-0.75) -- cycle;
@@ -666,9 +669,9 @@ func (uf *UF) Union(p, q int) {
 		\begin{column}{0.48\textwidth}
 			\centering
 			\begin{tikzpicture}[scale=0.9,
-					rt/.style={draw,circle,minimum size=0.45cm,font=\scriptsize,inner sep=0pt},
-					leg/.style={font=\scriptsize},
-					arw/.style={-{Latex[length=1.8mm]},thick}]
+				rt/.style={draw,circle,minimum size=0.45cm,font=\scriptsize,inner sep=0pt},
+				leg/.style={font=\scriptsize},
+				arw/.style={-{Latex[length=1.8mm]},thick}]
 				\node[leg,font=\scriptsize\bfseries] at (0.4,1.1) {Weighted: sempre a mesma escolha};
 				\node[rt] (p) at (-0.6,0.4) {p};
 				\draw[fill=gray!40] (-0.6,0.15) -- (-1.6,-1.4) -- (0.4,-1.4) -- cycle;
@@ -714,8 +717,8 @@ if uf.size[rootP] < uf.size[rootQ] {
 \begin{frame}{Por que a profundidade cresce tão pouco}
 	\begin{center}
 		\begin{tikzpicture}[scale=0.95,
-				rt/.style={draw,circle,minimum size=0.4cm,font=\scriptsize,inner sep=0pt},
-				arw/.style={-{Latex[length=2mm]},thick}]
+			rt/.style={draw,circle,minimum size=0.4cm,font=\scriptsize,inner sep=0pt},
+			arw/.style={-{Latex[length=2mm]},thick}]
 			% T2, maior, à esquerda
 			\node[rt] (r2) at (0,0) {};
 			\draw[fill=gray!40] (0,-0.22) -- (-1.5,-2.4) -- (1.5,-2.4) -- cycle;
@@ -747,9 +750,9 @@ if uf.size[rootP] < uf.size[rootQ] {
 		\begin{column}{0.5\textwidth}
 			\centering
 			\begin{tikzpicture}[
-					nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
-					leg/.style={font=\scriptsize},
-					arw/.style={-{Latex[length=1.6mm]},thick}]
+				nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
+				leg/.style={font=\scriptsize},
+				arw/.style={-{Latex[length=1.6mm]},thick}]
 				\node[leg,font=\scriptsize\bfseries] at (0,0.7) {Quick-Union};
 				\node[nd] (d3) at (0,0)    {3};
 				\node[nd] (d2) at (0,-0.8) {2};
@@ -764,9 +767,9 @@ if uf.size[rootP] < uf.size[rootQ] {
 		\begin{column}{0.5\textwidth}
 			\centering
 			\begin{tikzpicture}[
-					nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
-					leg/.style={font=\scriptsize},
-					arw/.style={-{Latex[length=1.6mm]},thick}]
+				nd/.style={draw,circle,minimum size=0.55cm,font=\scriptsize,inner sep=0pt},
+				leg/.style={font=\scriptsize},
+				arw/.style={-{Latex[length=1.6mm]},thick}]
 				\node[leg,font=\scriptsize\bfseries] at (0,0.7) {Weighted Quick-Union};
 				\node[nd] (e0) at (0,0)       {0};
 				\node[nd] (e1) at (-0.9,-1.0) {1};
@@ -815,12 +818,12 @@ if uf.size[rootP] < uf.size[rootQ] {
 		\small
 		\begin{tabular}{@{}lrcrcr@{}}
 			\toprule
-			$n$     & Quick-Find & razão   & Quick-Union & razão   & Weighted \\
+			$n$     & Quick-Find & razão    & Quick-Union & razão & Weighted \\
 			\midrule
-			20.000  & 0,31 s     &         & 0,30 s      &         & 0,01 s   \\
-			40.000  & 1,23 s     & \hl{4,0} & 1,48 s     & 4,9     & 0,02 s   \\
-			80.000  & 4,96 s     & \hl{4,0} & 6,95 s     & 4,7     & 0,06 s   \\
-			160.000 & 19,63 s    & \hl{4,0} & 35,28 s    & 5,1     & 0,12 s   \\
+			20.000  & 0,31 s     &          & 0,30 s      &       & 0,01 s   \\
+			40.000  & 1,23 s     & \hl{4,0} & 1,48 s      & 4,9   & 0,02 s   \\
+			80.000  & 4,96 s     & \hl{4,0} & 6,95 s      & 4,7   & 0,06 s   \\
+			160.000 & 19,63 s    & \hl{4,0} & 35,28 s     & 5,1   & 0,12 s   \\
 			\bottomrule
 		\end{tabular}
 	\end{center}
@@ -847,9 +850,9 @@ if uf.size[rootP] < uf.size[rootQ] {
 	\begin{center}
 		\begin{tabular}{@{}lrr@{}}
 			\toprule
-			\texttt{largeUF.txt} ($10^6$ objetos) & previsto & medido            \\
+			\texttt{largeUF.txt} ($10^6$ objetos) & previsto & medido                \\
 			\midrule
-			Quick-Find                            & 766 s    & \hl{829 s}        \\
+			Quick-Find                            & 766 s    & \hl{829 s}            \\
 			Weighted Quick-Union                  &          & \tcg{\textbf{1,07 s}} \\
 			\bottomrule
 		\end{tabular}
