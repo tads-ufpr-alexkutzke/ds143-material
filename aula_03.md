@@ -8,8 +8,7 @@ viagem nesta data, disponível por e-mail institucional e Microsoft Teams das 19
 |---|---|
 | **Peso** | 5% da nota final |
 | **Formato** | individual |
-| **Prazo** | 26/08/2026, 23h59, na UFPR Virtual |
-| **Esforço estimado** | 1h30, o horário da aula |
+| **Prazo** | 25/08/2026, 23h59, na UFPR Virtual |
 
 O conteúdo é o das seções 9 a 15 da [aula de Análise de Algoritmos e
 Conectividade Dinâmica](aula_02.md).
@@ -30,7 +29,7 @@ Confirme o Go instalado com `go version` (a partir da 1.21). Baixe o esqueleto
 do projeto na pasta [03/esqueleto](03/esqueleto), também disponível como `.zip`
 na UFPR Virtual. O pacote `unionfind` já vem com `QuickFind`, `QuickUnion` e
 `WeightedQuickUnion` implementados: leia os três antes de escrever qualquer
-coisa, porque eles definem o idioma esperado.
+coisa, porque eles definem como o restante deve ser escrito.
 
 O esqueleto compila desde o início e os testes falham. É o estado esperado:
 
@@ -52,17 +51,17 @@ da aula anterior mostra o laço do `Find`, e o restante sai do
 A linha `var _ UF = (*WeightedPathCompression)(nil)` faz o compilador recusar o
 programa enquanto faltar método ou a assinatura estiver errada. Não a remova, e
 não altere `uf.go` nem `uf_test.go`, que são os arquivos usados na correção. Ao
-final, `go vet ./...`, `go test ./...` e `gofmt -l .` devem passar limpos.
+final, `go vet ./...`, `go test ./...` e `gofmt -l .` devem passar sem problemas.
 
 ## Parte 2: um teste seu
 
 Os testes fornecidos verificam o contrato da interface. Acrescente um teste seu
 em um arquivo novo, `unionfind/meus_testes_test.go`: um **oráculo cruzado**, que
 processa a mesma sequência de pares aleatórios, com semente fixa, nas quatro
-implementações e verifica que todas concordam em `Count` e em `Connected`. Um
-erro na sua implementação aparece contra as outras três.
+implementações e verifica que todas concordam em `Count` e em `Connected`. Assim,
+caso sua implementação tenha um erro, ele aparecerá contra os resultados das outras três.
 
-O teste leva um comentário de uma linha dizendo que defeito ele detecta. Um
+O teste tem um comentário de uma linha dizendo que defeito ele detecta. Um
 teste que passa em qualquer implementação, correta ou não, não vale nota.
 
 ## Parte 3: medição empírica
@@ -88,7 +87,7 @@ quase todo gasto pelo Quick-Find e pelo Quick-Union nos dois maiores tamanhos.
 
 Um `relatorio.md` de no máximo uma página, com o ambiente de medição
 (processador, memória, sistema operacional, versão do Go), a tabela em Markdown
-e duas respostas de até cinco linhas cada:
+e duas respostas de até cinco linhas cada para as seguintes perguntas:
 
 1. As razões medidas confirmam a ordem de crescimento prevista na seção 14 da
    aula anterior para cada implementação? Cite os números que você obteve.
@@ -97,9 +96,7 @@ e duas respostas de até cinco linhas cada:
    mudar na medição para a diferença entre os dois aparecer.
 
 O relatório termina com uma seção `## Uso de IA`, informando se você usou
-ferramentas de IA generativa e em que partes. **A declaração não altera a nota
-aqui**: serve para criar o hábito antes do Trabalho Prático, onde ela é
-irrevogável e define a forma de avaliação. Declaração ausente custa 0,5%.
+ferramentas de IA generativa e em que partes (não influencia na nota). 
 
 ## Entrega
 
@@ -113,11 +110,11 @@ pasta que será enviada.
 
 | Critério | Valor |
 |---|---|
-| Compila, `go vet` limpo, testes fornecidos e teste próprio passam | 2,0% |
-| `WeightedPathCompression` correto, com a compressão encurtando o caminho de fato | 1,5% |
-| Tabela de medição com tempos e razões | 1,0% |
-| Relatório com as duas respostas e declaração de uso de IA | 0,5% |
-| **Total** | **5,0%** |
+| Compila, `go vet` limpo, testes fornecidos e teste próprio passam | 40 |
+| `WeightedPathCompression` correto, com a compressão encurtando o caminho de fato | 30 |
+| Tabela de medição com tempos e razões                                            | 20 |
+| Relatório com as duas respostas e declaração de uso de IA                        | 10 |
+| **Total** | **100** |
 
 Entrega que não compila perde o primeiro item inteiro; os demais são avaliados
 pelo que for verificável no código.
