@@ -26,8 +26,8 @@ Ao final da aula você deve ser capaz de:
 
 ## Antes de começar
 
-Baixe o projeto da pasta [04/lab](04/lab), também disponível como `.zip` na
-UFPR Virtual, e confirme que ele compila:
+Baixe o projeto da pasta [04/lab](https://github.com/tads-ufpr-alexkutzke/ds143-material/tree/main/src/04/lab), também disponível
+como `.zip` na UFPR Virtual, e confirme que ele compila:
 
 ```bash
 cd lab

@@ -26,10 +26,11 @@ Ao final desta atividade você deve ser capaz de:
 ## Antes de começar
 
 Confirme o Go instalado com `go version` (a partir da 1.21). Baixe o esqueleto
-do projeto na pasta [03/esqueleto](03/esqueleto), também disponível como `.zip`
-na UFPR Virtual. O pacote `unionfind` já vem com `QuickFind`, `QuickUnion` e
-`WeightedQuickUnion` implementados: leia os três antes de escrever qualquer
-coisa, porque eles definem como o restante deve ser escrito.
+do projeto na pasta [03/esqueleto](https://github.com/tads-ufpr-alexkutzke/ds143-material/tree/main/src/03/esqueleto), também
+disponível como `.zip` na UFPR Virtual. O pacote `unionfind` já vem com
+`QuickFind`, `QuickUnion` e `WeightedQuickUnion` implementados: leia os três
+antes de escrever qualquer coisa, porque eles definem como o restante deve ser
+escrito.
 
 O esqueleto compila desde o início e os testes falham. É o estado esperado:
 

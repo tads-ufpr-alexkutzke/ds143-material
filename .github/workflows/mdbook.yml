@@ -1,0 +1,62 @@
+# Publica o material com mdBook no GitHub Pages a cada push na main.
+name: mdBook deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MDBOOK_VERSION: 0.5.4
+    steps:
+      - uses: actions/checkout@v4
+
+      # mdBook e os pré-processadores são compilados a partir do fonte, o que
+      # leva alguns minutos. O cache guarda os binários prontos entre execuções.
+      - name: Cache dos binários do mdBook
+        id: cache-mdbook
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: mdbook-${{ env.MDBOOK_VERSION }}-katex-v1
+
+      - name: Instalar mdBook e pré-processadores
+        if: steps.cache-mdbook.outputs.cache-hit != 'true'
+        run: |
+          cargo install --locked --version ${MDBOOK_VERSION} mdbook
+          cargo install --locked mdbook-katex
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build com mdBook
+        run: mdbook build
+
+      - name: Upload do artefato
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./book
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

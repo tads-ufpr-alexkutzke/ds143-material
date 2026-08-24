@@ -1,0 +1,16 @@
+[book]
+authors = ["Alex Kutzke"]
+language = "pt-br"
+src = "src"
+title = "DS143 - Estruturas de Dados II - Prof. Alex Kutzke"
+
+[output.html]
+default-theme = "light"
+git-repository-url = "https://github.com/tads-ufpr-alexkutzke/ds143-material"
+edit-url-template = "https://github.com/tads-ufpr-alexkutzke/ds143-material/edit/main/{path}"
+
+[output.html.fold]
+enable = true
+level = 1
+
+[preprocessor.katex]
