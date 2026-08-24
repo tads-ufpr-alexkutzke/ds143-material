@@ -1,68 +1,114 @@
-# Aula 04 - Implementação Busca
+# Aula 04: Aula prática de fundamentos
 
-Do livro "Algorithms", Robert Sedgewick, página 366:
+**Presencial, 26/08/2026.** Traga o notebook com Go instalado, ou use uma das
+máquinas do laboratório.
 
-> Em aplicações típicas, as chaves são objetos **comparáveis**, então
-> existe a opção de usar o código `a > b`, por exemplo, para comparar duas chaves `a` e `b`.
-> Diversas implementações de tabela de símbolos aproveitam a ordem entre as chaves que são
-> de estruturas Comparáveis para fornecer implementações eficientes das operações `put()` e `get()`. 
-> Mais importante, em tais implementações, podemos pensar na tabela de símbolos como uma
-> forma de manter as chaves em ordem e produzir uma API significativamente expandida que define
-> numerosas operações naturais e úteis envolvendo a ordem de chaves armazenadas. Por exemplo,
-> considere que suas chaves são horas do dia. Você pode estar interessado em conhecer a primeira
-> ou a última hora armazenadas, o conjunto de chaves que caem entre dois momentos, e assim por diante. 
-> Na maioria dos casos, essas operações não são difíceis de implementar com as mesmas estruturas de dados e
-> métodos subjacentes às implementações `put()` e `get()`.
+| | |
+|---|---|
+| **Peso** | sem nota |
+| **Formato** | individual, com discussão em sala |
+| **Entrega** | `respostas.md` na UFPR Virtual, até o final da aula |
 
-O objetivo deste exercício é implementar duas estruturas de dados:
+O conteúdo é o do [autoestudo de recursão, busca e
+ordenação](aula_02_autoestudo.md) e o teste de duplicação da [aula de Análise
+de Algoritmos](aula_02.md), seção 9. Tudo isso cai na Prova 1.
 
-* `t_time`: Estrutura para trabalhar com horas, minutos e segundos; e
-* `t_timetable`: Tabela de símbolos eficiente para armazenar valores associados à chaves no formato `hora`
+## Objetivos
 
-## Estrutura `t_time`
+Ao final da aula você deve ser capaz de:
 
-A estrutura hora deve armazenar valores para horas, minutos e segundos e possuir uma função
-para comparar duas horas. Por exemplo:
+1. Localizar e corrigir defeitos em implementações de busca binária, merge e
+   particionamento, a partir da mensagem de um teste que falha;
+2. Classificar um algoritmo pela ordem de crescimento usando apenas as razões
+   entre tempos medidos;
+3. Explicar por que o mesmo algoritmo muda de custo conforme a entrada, e
+   decidir, com número na mão, quando compensa ordenar antes de buscar.
 
-```c
-int time_cmp(t_time h1, t_time h2)
+## Antes de começar
 
-// Retorna:
-// 1  se h1 >  h2
-// 0  se h1 == h2
-// -1 se h1 <  h2
+Baixe o projeto da pasta [04/lab](04/lab), também disponível como `.zip` na
+UFPR Virtual, e confirme que ele compila:
+
+```bash
+cd lab
+go vet ./...     # sem erros
+go test ./algoritmos    # FAIL, em quatro funções
 ```
 
-## Estrutura `t_timetable`
+O `algoritmos/algoritmos_test.go` é o mesmo arquivo usado na devolutiva. Não o
+altere.
 
-A estrutura `t_timetable` deve ser uma tabela de símbolos eficiente, capaz de armazenar valores do tipo `char *` e chaves do tipo
-`t_time`. Essa estrutura deve atender às seguintes operações:
+## Parte 1: corrigir as quatro funções (35 min)
 
-| Retorno    | Operação                           | Descrição                                                          |
-|-----------:|:----------------------------------:|--------------------------------------------------------------------|
-| void       | `put(t_time key, char * val)`      | insere par key-value na tabela (remove elemento se valor for null) |
-| char *     | `get(t_time key)`                  | valor armazenado com a chave key (null se key não existe)          |
-| void       | `delete(t_time key)`               | remove chave e seu valor da tabela                                 |
-| boolean    | `contains(t_time key)`             | existe um valor com a chave key?                                   |
-| boolean    | `is_empty()`                       | a tabela está vazia?                                               |
-| inte       | `size()`                           | número de pares key-value armazenados na tabela                    |
-| t_time     | `min()`                            | menor chave armazenada                                             |
-| t_time     | `max()`                            | maior chave armazenada                                             |
-| t_time     | `floor(t_time key)`                | maior chave armazenada menor ou igual à key                        |
-| t_time     | `ceiling(t_time key)`              | menor chave armazenada maior ou igual à key                        |
-| int        | `rank(t_time key)`                 | número de chaves armazenadas menores do que key                    |
-| t_time     | `select(int k)`                    | chave de rank igual a k                                            |
-| void       | `delete_min()`                     | remove a menor chave                                               |
-| void       | `delete_max()`                     | remove a maior chave                                               |
-| int        | `size_range(t_time lo, t_time hi)` | número de chaves armazenadas entre `[lo..hi]`                      |
-| t_time *   | `keys(t_time lo, t_time hi)`       | chaves armazenadas entre `[lo..hi]`                                |
+Quatro funções de `algoritmos/` estão incorretas:
 
-## Exemplo
+- `BuscaBinaria`, em [busca.go](04/lab/algoritmos/busca.go);
+- `InsertionSort`, `Merge` e `Particiona`, em
+  [ordenacao.go](04/lab/algoritmos/ordenacao.go).
 
-![](04/ordered_st.png)
+`BuscaSequencial`, `SelectionSort`, `MergeSort` e `QuickSort` estão corretas.
+As duas últimas chamam `Merge` e `Particiona`, então erram enquanto essas duas
+estiverem erradas.
 
-# Entrega
+Cada correção tem entre uma e quatro linhas. Comece rodando `go test -v
+./algoritmos` e leia a mensagem: ela diz qual entrada quebrou e o que saiu no
+lugar do esperado. O `TestParticiona` é o mais informativo, porque verifica a
+pós-condição do particionamento em vez do resultado final da ordenação.
 
-* Criar repositório no gitlab com o código;
-* Enviar link do repositório como resposta na tarefa do moodle.
+Ao terminar, `go test ./algoritmos` passa e `gofmt -l .` não lista nada.
+Anote em `respostas.md` qual era o defeito de cada função, em uma linha.
 
+## Parte 2: medir (40 min)
+
+Com as funções corretas, compile e rode o programa de medição:
+
+```bash
+go build -o benchmark ./cmd/benchmark
+./benchmark
+```
+
+Cada linha é um algoritmo, cada par de colunas é um tamanho `n` com o tempo e a
+razão em relação ao tamanho anterior. `ERRO` na linha indica que aquele
+algoritmo devolveu vetor não ordenado, ou seja, que a Parte 1 ainda não está
+completa.
+
+Rode depois sobre um vetor que já chega ordenado:
+
+```bash
+./benchmark -ordenada
+```
+
+Cole as duas saídas em `respostas.md` e responda às perguntas 1 e 2.
+
+## Parte 3: buscar muitas vezes (20 min)
+
+Um vetor de 200.000 elementos e `k` consultas a responder. Duas estratégias:
+buscar sequencialmente `k` vezes no vetor como ele está, ou ordenar uma vez e
+fazer `k` buscas binárias. O programa mede as duas:
+
+```bash
+go build -o consultas ./cmd/consultas
+./consultas
+```
+
+A coluna `B: ord+bin` inclui o tempo de ordenar. Ache na tabela a faixa de `k`
+em que a segunda estratégia passa a ganhar e responda à pergunta 3.
+
+## Entrega
+
+`respostas.md` preenchido, enviado na UFPR Virtual até o final da aula. Não
+vale nota e não precisa do código; a devolutiva é coletiva, no início da Aula
+05.
+
+## Problemas comuns
+
+**`go: cannot find main module`**: rode os comandos de dentro da pasta `lab`,
+onde está o `go.mod`.
+
+**O `benchmark` demora demais**: o `SelectionSort` e o `InsertionSort` são
+O(n²) e o último tamanho da Tabela 1 é 40.000. Cerca de 10 segundos no total é
+o esperado.
+
+**Razões estranhas nos tempos pequenos**: tempos abaixo de 0,0001 s aparecem
+como `0.0000` e suas razões não significam nada. Compare as razões nas linhas
+em que o tempo é grande o bastante para ser medido.
