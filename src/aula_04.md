@@ -22,7 +22,7 @@ Ao final da aula você deve ser capaz de:
 2. Classificar um algoritmo pela ordem de crescimento usando apenas as razões
    entre tempos medidos;
 3. Explicar por que o mesmo algoritmo muda de custo conforme a entrada, e
-   decidir, com número na mão, quando compensa ordenar antes de buscar.
+   decidir quando compensa ordenar antes de buscar.
 
 ## Antes de começar
 
@@ -82,7 +82,7 @@ Cole as duas saídas em `respostas.md` e responda às perguntas 1 e 2.
 
 ## Parte 3: buscar muitas vezes (20 min)
 
-Um vetor de 200.000 elementos e `k` consultas a responder. Duas estratégias:
+Um vetor de 200.000 elementos e `k` consultas. Duas estratégias:
 buscar sequencialmente `k` vezes no vetor como ele está, ou ordenar uma vez e
 fazer `k` buscas binárias. O programa mede as duas:
 
@@ -97,8 +97,7 @@ em que a segunda estratégia passa a ganhar e responda à pergunta 3.
 ## Entrega
 
 `respostas.md` preenchido, enviado na UFPR Virtual até o final da aula. Não
-vale nota e não precisa do código; a devolutiva é coletiva, no início da Aula
-05.
+vale nota e não precisa do código.
 
 ## Problemas comuns
 
