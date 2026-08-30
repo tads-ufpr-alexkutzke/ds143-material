@@ -10,6 +10,10 @@
 - [Aula 03: Atividade Avaliativa 1](./aula_03.md)
 - [Aula 04: Aula prática de fundamentos](./aula_04.md)
 
+# Árvores
+
+- [Aula 05: Árvores e percursos](./aula_05.md)
+
 # Material anterior (em C, numeração antiga)
 
 - [Árvores e percursos](./aula_07.md)

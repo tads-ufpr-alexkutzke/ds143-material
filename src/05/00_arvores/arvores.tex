@@ -1,0 +1,948 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric}
+
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\tcg}[1]{\textcolor{green!50!black}{#1}}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily\small},
+  arn_b/.style = {treenode, circle, black, draw=black,
+    fill=white, text width=1.7em},
+  arn_d/.style = {treenode, circle, white, draw=black,
+    fill=blue!60, text width=1.7em},
+  arn_x/.style = {treenode, rectangle, draw=black, fill=black!10,
+    minimum width=0.6em, minimum height=0.6em}
+}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+\title{05 - Árvores e percursos}
+\author{Prof. Alex Kutzke}
+\date{Setembro de 2026}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+  \begin{center}
+    \large{Setor de Educação Profissional e Tecnológica}\\
+    Tecnologia em Análise e Desenvolvimento de Sistemas\\
+    \vspace{1cm}
+    \small{DS143 - Estruturas de Dados II}
+  \end{center}
+  \titlepage
+\end{frame}
+
+% ==========================================
+\begin{frame}{Objetivos da aula}
+  Ao final desta aula você deve ser capaz de:
+  \begin{enumerate}
+    \item Enunciar a definição recursiva de árvore e aplicar a terminologia;
+    \item Representar uma árvore binária em Go com uma \texttt{struct} e dois
+          ponteiros;
+    \item Escrever os percursos em pré-ordem, in-ordem e pós-ordem, e produzir à
+          mão a sequência de visitas de cada um;
+    \item Escolher o percurso adequado a uma tarefa, justificando pela ordem em
+          que a informação fica disponível;
+    \item Implementar o percurso em largura com uma fila;
+    \item Relacionar altura, número de nós e custo de alcançar um nó.
+  \end{enumerate}
+
+  \vspace{0.3cm}
+  \footnotesize Este conteúdo cai na Prova 1.
+\end{frame}
+
+% ==========================================
+\begin{frame}{Roteiro}
+  \tableofcontents
+\end{frame}
+
+% ==========================================
+\section{Motivação e definição}
+% ==========================================
+
+\begin{frame}[fragile]{Uma hierarquia que você usa todo dia}
+  \begin{minted}{text}
+$ tree --charset=ascii 05/demo
+
+05/demo
+|-- curso
+|   |-- ds122
+|   |   `-- aula_01.txt
+|   `-- ds143
+|       |-- aula_01.txt
+|       `-- aula_02.txt
+`-- leia-me.txt
+  \end{minted}
+
+  \vspace{0.2cm}
+  A regra que descreve \texttt{05/demo} é a mesma que descreve
+  \texttt{05/demo/curso} e a mesma que descreve
+  \texttt{05/demo/curso/ds143}.
+\end{frame}
+
+\begin{frame}[fragile]{O tamanho de cada item}
+  \begin{minted}{text}
+$ du -ab 05/demo
+
+30	05/demo/curso/ds143/aula_01.txt
+48	05/demo/curso/ds143/aula_02.txt
+78	05/demo/curso/ds143
+32	05/demo/curso/ds122/aula_01.txt
+32	05/demo/curso/ds122
+110	05/demo/curso
+46	05/demo/leia-me.txt
+156	05/demo
+  \end{minted}
+
+  \begin{itemize}
+    \item \tcb{Ordem}: o diretório aparece depois do que está dentro dele;
+    \item \tcb{Aritmética}: $30 + 48 = 78$, $78 + 32 = 110$, $110 + 46 = 156$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{O tamanho do diretório não existe antes do conteúdo}
+  \begin{block}{}
+    O \texttt{du} não tinha alternativa. O tamanho de um diretório é a soma dos
+    tamanhos do que está dentro, e essa soma só pode ser calculada depois que as
+    partes forem conhecidas.
+  \end{block}
+
+  \vspace{0.6cm}
+  Ao final da aula essas duas observações voltam com nome: o \texttt{du}
+  percorre o sistema de arquivos em \tcb{pós-ordem}, e o \texttt{tree} o
+  percorre em \tcb{pré-ordem}.
+\end{frame}
+
+\begin{frame}{Você já construiu árvores nesta disciplina}
+  \textbf{Quick-Union}, na aula de análise de algoritmos:
+
+  \begin{itemize}
+    \item \texttt{id[i]} guardava o \tcb{pai} do elemento \texttt{i};
+    \item cada componente conexa era uma árvore, e o conjunto delas uma
+          floresta;
+    \item \texttt{Find} subia da folha até a raiz.
+  \end{itemize}
+
+  \vspace{0.4cm}
+  A diferença entre o Quick-Union e o Weighted Quick-Union foi a \tcr{altura}
+  dessas árvores: pendurar a menor sob a maior mantém a altura em
+  $O(\log n)$; pendurar sem critério permite que chegue a $O(n)$.
+\end{frame}
+
+\begin{frame}[fragile]{Você já percorreu árvores nesta disciplina}
+  \textbf{Parser de expressões prefixadas}, na aula de recursão:
+
+  \begin{minted}{go}
+if pos < len(expr) && expr[pos] == '+' {
+    pos++
+    return eval() + eval()
+}
+  \end{minted}
+
+  \vspace{0.3cm}
+  \begin{itemize}
+    \item cada chamada de \texttt{eval} tratava uma subexpressão;
+    \item as chamadas aninhadas formavam uma árvore;
+    \item ali a árvore \textbf{nunca foi construída na memória}: existia apenas
+          como o desenho das chamadas recursivas.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Definição}
+  Uma árvore é um conjunto finito de $n$ nós, tal que, se $n > 0$:
+
+  \begin{itemize}
+    \item existe um nó distinguido $r$, chamado \tcb{raiz} da árvore;
+    \item os $n-1$ nós restantes são divididos em $m \geq 0$ conjuntos
+          disjuntos, cada um deles também uma árvore, chamados \tcb{subárvores}
+          de $r$.
+  \end{itemize}
+
+  \vspace{0.5cm}
+  A definição é \tcr{recursiva}, e é assim que vamos programar todas as
+  operações de hoje. O caso base é $n = 0$: a \textbf{árvore vazia}, que não tem
+  raiz.
+\end{frame}
+
+\begin{frame}{Duas consequências da definição}
+  \begin{block}{Existe exatamente um caminho da raiz até cada nó}
+    Se houvesse dois, algum nó teria dois pais, e os conjuntos deixariam de ser
+    disjuntos. A estrutura ainda seria útil, mas seria um \textit{grafo},
+    assunto do final do semestre.
+  \end{block}
+
+  \begin{block}{A definição não distingue árvore de subárvore}
+    Toda subárvore é uma árvore completa por direito próprio. Uma função que
+    recebe uma árvore pode ser chamada sobre uma subárvore sem nenhuma
+    adaptação.
+  \end{block}
+\end{frame}
+
+% ==========================================
+\section{Terminologia}
+% ==========================================
+
+\begin{frame}{A árvore de exemplo}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=1.1cm,
+        level 1/.style={sibling distance=4cm},
+        level 2/.style={sibling distance=2cm},
+        level 3/.style={sibling distance=1.4cm}]
+      \node [arn_b] {50}
+      child { node [arn_b] {30}
+          child { node [arn_b] {20}
+              child { node [arn_b] {10} }
+              child [missing]
+            }
+          child { node [arn_b] {40}
+              child { node [arn_b] {35} }
+              child { node [arn_b] {45} }
+            }
+        }
+      child { node [arn_b] {90}
+          child [missing]
+          child { node [arn_b] {95} }
+        };
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2cm}
+  Desenhamos a raiz em cima e as folhas embaixo. As ligações apontam sempre do
+  pai para os filhos, e por isso as setas não são desenhadas.
+\end{frame}
+
+\begin{frame}{Raiz, pai, filho, folha, nó interno}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=2.6cm},
+          level 2/.style={sibling distance=1.3cm},
+          level 3/.style={sibling distance=1cm},
+          every node/.style={font=\sffamily\scriptsize}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_d] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_d] {35} }
+                child { node [arn_d] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_d] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \small
+      \begin{description}
+        \item[Raiz] o único nó sem pai: 50
+        \item[Pai de $x$] o nó imediatamente acima: o pai de 35 é 40
+        \item[Filho de $x$] nó imediatamente abaixo: 20 e 40 são filhos de 30
+        \item[Folha] nó sem filhos: \tcb{10, 35, 45, 95}
+        \item[Nó interno] nó com pelo menos um filho: 50, 30, 20, 40, 90
+      \end{description}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Grau, nível e altura}
+  \begin{description}
+    \item[Grau de um nó] número de subárvores do nó. Grau de 30 é 2, de 20 é 1,
+          de 10 é 0;
+    \item[Grau da árvore] maior grau entre todos os nós. Aqui, 2;
+    \item[Nível (profundidade)] número de arestas da raiz até o nó. 50 está no
+          nível 0, e 35 no nível 3;
+    \item[Altura] comprimento do caminho mais longo da raiz até uma folha. Aqui,
+          3;
+    \item[Floresta] conjunto de árvores disjuntas, como as componentes do
+          Quick-Union.
+  \end{description}
+
+  \vspace{0.3cm}
+  \begin{block}{Duas convenções desta disciplina}
+    A altura é contada em \tcr{arestas}: a árvore com um único nó tem altura 0.
+    A árvore \tcr{vazia tem altura $-1$}, valor escolhido para que
+    $1 + \max(\text{esq}, \text{dir})$ devolva 0 para uma folha.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Árvores binárias}
+  Árvore de grau máximo 2, com uma exigência a mais: cada subárvore é
+  identificada como sendo a da \tcb{esquerda} ou a da \tcb{direita}. Qualquer
+  uma das duas pode ser vazia.
+
+  \vspace{0.5cm}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm]
+        \node [arn_b] {a}
+        child { node [arn_b] {b} }
+        child [missing];
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm]
+        \node [arn_b] {a}
+        child [missing]
+        child { node [arn_b] {b} };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5cm}
+  Iguais enquanto árvores de grau 2, \tcr{diferentes} enquanto árvores binárias.
+  A partir da próxima aula a posição do filho carrega informação: à esquerda o
+  que é menor, à direita o que é maior.
+\end{frame}
+
+% ==========================================
+\section{Representação em Go}
+% ==========================================
+
+\begin{frame}[fragile]{A estrutura de um nó}
+  \begin{minted}{go}
+type No struct {
+    Info int
+    Esq  *No
+    Dir  *No
+}
+  \end{minted}
+
+  \vspace{0.3cm}
+  \begin{itemize}
+    \item O tipo se refere a si mesmo, o que só é possível através de
+          \tcb{ponteiros}. Um campo \texttt{Esq No} daria um tipo de tamanho
+          infinito, e o compilador recusa
+          (\texttt{invalid recursive type No});
+    \item A árvore inteira é o \tcb{ponteiro para o nó raiz}. Um \texttt{*No} é
+          ao mesmo tempo um nó e a subárvore que começa nele;
+    \item A árvore vazia é \texttt{nil}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Sem criar vazia, sem liberar}
+  Em C seriam necessárias duas funções a mais:
+
+  \begin{minted}{c}
+Arvore* cria_arv_vazia (void) { return NULL; }
+
+Arvore* arv_libera (Arvore* a) {
+  if (a != NULL) {
+    arv_libera(a->esq);
+    arv_libera(a->dir);
+    free(a);
+  }
+  return NULL;
+}
+  \end{minted}
+
+  \vspace{0.2cm}
+  Em Go, a árvore vazia é \texttt{nil} e o coletor de lixo recolhe os nós que
+  ficam sem referência. \footnotesize Note, de passagem, a ordem das chamadas na
+  \texttt{arv\_libera}: os filhos antes do \texttt{free} do pai.
+\end{frame}
+
+\begin{frame}[fragile]{Duas funções de construção}
+  \begin{minted}{go}
+func Constroi(info int, esq, dir *No) *No {
+    return &No{Info: info, Esq: esq, Dir: dir}
+}
+
+func Folha(info int) *No {
+    return Constroi(info, nil, nil)
+}
+  \end{minted}
+
+  \vspace{0.3cm}
+  \texttt{\&No\{...\}} cria o nó e devolve o endereço dele. Em Go isso é seguro
+  mesmo com a variável saindo de escopo: o compilador percebe que o endereço
+  escapa da função e aloca o valor onde ele sobreviva.
+\end{frame}
+
+\begin{frame}[fragile]{A árvore de exemplo em uma expressão}
+  \begin{minted}{go}
+func ArvoreExemplo() *No {
+    return Constroi(50,
+        Constroi(30,
+            Constroi(20,
+                Folha(10),
+                nil),
+            Constroi(40,
+                Folha(35),
+                Folha(45))),
+        Constroi(90,
+            nil,
+            Folha(95)))
+}
+  \end{minted}
+
+  \vspace{0.2cm}
+  O recuo do código reproduz o desenho da árvore.
+\end{frame}
+
+\begin{frame}[fragile]{Procurar um valor}
+  \begin{minted}{go}
+func Pertence(a *No, procurado int) bool {
+    if a == nil {
+        return false
+    }
+    if a.Info == procurado {
+        return true
+    }
+    return Pertence(a.Esq, procurado) ||
+        Pertence(a.Dir, procurado)
+}
+  \end{minted}
+
+  \vspace{0.3cm}
+  No pior caso, visita todos os $n$ nós, e não há como fazer melhor: nada nesta
+  árvore diz de que lado procurar. Essa é a lacuna que a \tcb{árvore binária de
+    busca} preenche na próxima aula.
+\end{frame}
+
+% ==========================================
+\section{Percursos em profundidade}
+% ==========================================
+
+\begin{frame}{Percorrer e visitar}
+  \begin{block}{}
+    \textbf{Percorrer} uma árvore é visitar sistematicamente cada um dos seus
+    nós, uma vez cada. \textbf{Visitar} um nó é fazer alguma coisa com a
+    informação dele: imprimir, somar, alterar, comparar.
+  \end{block}
+
+  \vspace{0.4cm}
+  Durante um percurso é comum \textit{passar} por um nó várias vezes sem
+  \textit{visitá-lo}.
+
+  \vspace{0.4cm}
+  Para aplicar um reajuste de 5\% em todos os salários guardados na árvore,
+  qualquer ordem serve. Para o \texttt{du} da abertura, a ordem era o problema
+  inteiro.
+\end{frame}
+
+\begin{frame}{Três ordens, uma diferença}
+  Os três percursos em profundidade descem por um ramo até o fim antes de tentar
+  o ramo seguinte. Diferem apenas em \tcr{quando a raiz é visitada}:
+
+  \vspace{0.5cm}
+  \begin{center}
+    \begin{tabular}{lll}
+      \toprule
+      \textbf{Percurso} & \textbf{Ordem}           & \textbf{Sigla} \\
+      \midrule
+      Pré-ordem         & raiz, esquerda, direita  & R, E, D        \\
+      In-ordem          & esquerda, raiz, direita  & E, R, D        \\
+      Pós-ordem         & esquerda, direita, raiz  & E, D, R        \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.5cm}
+  Os três códigos têm as mesmas três linhas, em ordens diferentes.
+\end{frame}
+
+\begin{frame}[fragile]{Pré-ordem (R, E, D)}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{minted}{go}
+func PreOrdem(a *No) {
+    if a == nil {
+        return
+    }
+    fmt.Print(a.Info, " ")
+    PreOrdem(a.Esq)
+    PreOrdem(a.Dir)
+}
+      \end{minted}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.85cm,
+          level 1/.style={sibling distance=2.2cm},
+          level 2/.style={sibling distance=1.1cm},
+          level 3/.style={sibling distance=0.9cm},
+          every node/.style={font=\sffamily\scriptsize}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3cm}
+  \texttt{50 30 20 10 40 35 45 90 95}
+
+  \footnotesize O \texttt{if a == nil} é o caso base, e corresponde à árvore
+  vazia da definição. Sem ele o programa quebra na primeira folha.
+\end{frame}
+
+\begin{frame}[fragile]{In-ordem (E, R, D)}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{minted}{go}
+func InOrdem(a *No) {
+    if a == nil {
+        return
+    }
+    InOrdem(a.Esq)
+    fmt.Print(a.Info, " ")
+    InOrdem(a.Dir)
+}
+      \end{minted}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.85cm,
+          level 1/.style={sibling distance=2.2cm},
+          level 2/.style={sibling distance=1.1cm},
+          level 3/.style={sibling distance=0.9cm},
+          every node/.style={font=\sffamily\scriptsize}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3cm}
+  \texttt{10 20 30 35 40 45 50 90 95}
+
+  \footnotesize A saída veio em ordem crescente. Isso é propriedade
+  \textbf{desta} árvore, montada com os menores à esquerda, e não de toda árvore
+  binária. A próxima aula parte exatamente daí.
+\end{frame}
+
+\begin{frame}[fragile]{Pós-ordem (E, D, R)}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{minted}{go}
+func PosOrdem(a *No) {
+    if a == nil {
+        return
+    }
+    PosOrdem(a.Esq)
+    PosOrdem(a.Dir)
+    fmt.Print(a.Info, " ")
+}
+      \end{minted}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.85cm,
+          level 1/.style={sibling distance=2.2cm},
+          level 2/.style={sibling distance=1.1cm},
+          level 3/.style={sibling distance=0.9cm},
+          every node/.style={font=\sffamily\scriptsize}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3cm}
+  \texttt{10 20 35 45 40 30 95 90 50}
+
+  \footnotesize É o percurso do \texttt{du}: 10 e 20 antes de 30, e a raiz 50 no
+  fim de tudo.
+\end{frame}
+
+\begin{frame}{Escolhendo o percurso pela tarefa}
+  \small
+  \begin{center}
+    \begin{tabular}{p{3.6cm}p{2cm}p{4.4cm}}
+      \toprule
+      \textbf{Tarefa}                                  & \textbf{Percurso} & \textbf{Por quê}                                                  \\
+      \midrule
+      Copiar a árvore preservando a forma              & pré-ordem         & a raiz precisa existir antes que os filhos sejam pendurados nela  \\
+      Listar os valores de uma ABB em ordem            & in-ordem          & é a ordem que a organização da ABB garante                        \\
+      Somar tamanhos, calcular altura, liberar memória & pós-ordem         & o resultado do nó depende dos resultados dos filhos               \\
+      Achar o nó mais próximo da raiz                  & em largura        & os níveis são visitados em ordem crescente de profundidade        \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.3cm}
+  A pós-ordem é o caso mais rígido: trocar a ordem das linhas não muda o
+  resultado por gosto, \tcr{quebra a função}.
+\end{frame}
+
+\begin{frame}{Árvore de expressão}
+  O parser da aula de recursão, agora com a árvore construída de fato:
+  $2 \times (3 + 4)$.
+
+  \vspace{0.4cm}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=1.1cm,
+        level 1/.style={sibling distance=2.6cm},
+        level 2/.style={sibling distance=1.6cm}]
+      \node [arn_b] {*}
+      child { node [arn_b] {2} }
+      child { node [arn_b] {+}
+          child { node [arn_b] {3} }
+          child { node [arn_b] {4} }
+        };
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3cm}
+  Operadores nos nós internos, números nas folhas.
+\end{frame}
+
+\begin{frame}[fragile]{Os três percursos dão as três notações}
+  \begin{minted}{text}
+pré-ordem (prefixa)       : * 2 + 3 4
+in-ordem  (sem parênteses): 2 * 3 + 4
+in-ordem  (com parênteses): (2 * (3 + 4))
+pós-ordem (pós-fixa)      : 2 3 4 + *
+valor                     : 14
+  \end{minted}
+
+  \vspace{0.3cm}
+  \begin{itemize}
+    \item A primeira linha é exatamente a entrada que o
+          \texttt{prefix\_parser.go} lê;
+    \item Prefixa e pós-fixa dispensam parênteses: a posição do operador já
+          determina a estrutura;
+    \item O in-ordem puro perde essa informação. \texttt{2 * 3 + 4} lido com a
+          precedência usual vale \tcr{10}, e não 14.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Avaliar é um percurso em pós-ordem}
+  \begin{minted}{go}
+func Avalia(a *No) int {
+    if a.Esq == nil && a.Dir == nil {
+        valor, _ := strconv.Atoi(a.Info)
+        return valor
+    }
+
+    esq := Avalia(a.Esq)
+    dir := Avalia(a.Dir)
+
+    switch a.Info {
+    case "+":
+        return esq + dir
+    case "*":
+        return esq * dir
+    }
+    return 0
+}
+  \end{minted}
+\end{frame}
+
+% ==========================================
+\section{Percurso em largura}
+% ==========================================
+
+\begin{frame}[fragile]{Nível a nível}
+  Os três percursos anteriores descem até o fim de um ramo antes de olhar o
+  seguinte. O percurso em largura visita todos os nós do nível 0, depois todos
+  os do nível 1, e assim por diante.
+
+  \vspace{0.4cm}
+  \begin{minted}{text}
+em largura: 50 30 90 20 40 95 10 35 45
+pré-ordem : 50 30 20 10 40 35 45 90 95
+  \end{minted}
+
+  \vspace{0.3cm}
+  A pré-ordem alcança o 10, que está no nível 3, antes de alcançar o 90, que
+  está no nível 1.
+\end{frame}
+
+\begin{frame}{Por que a recursão não resolve}
+  \begin{block}{}
+    A recursão dá acesso natural aos \textbf{filhos} de quem está sendo
+    visitado. O percurso em largura precisa dos \textbf{irmãos}, que estão em
+    outro ramo.
+  \end{block}
+
+  \vspace{0.5cm}
+  A solução é guardar explicitamente os nós ainda por visitar, em uma
+  \tcb{fila}: retira-se um nó da frente, visita-se, e seus filhos entram no fim.
+\end{frame}
+
+\begin{frame}[fragile]{Percurso em largura com uma fila}
+  \begin{minted}[fontsize=\scriptsize]{go}
+func EmLargura(a *No) {
+    if a == nil {
+        return
+    }
+
+    fila := []*No{a}
+
+    for len(fila) > 0 {
+        atual := fila[0]
+        fila = fila[1:]
+
+        fmt.Print(atual.Info, " ")
+
+        if atual.Esq != nil {
+            fila = append(fila, atual.Esq)
+        }
+        if atual.Dir != nil {
+            fila = append(fila, atual.Dir)
+        }
+    }
+}
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Trocar a fila por uma pilha devolve a pré-ordem}
+  \begin{minted}[fontsize=\scriptsize]{go}
+pilha := []*No{a}
+
+for len(pilha) > 0 {
+    topo := pilha[len(pilha)-1]
+    pilha = pilha[:len(pilha)-1]
+
+    fmt.Print(topo.Info, " ")
+
+    if topo.Dir != nil {
+        pilha = append(pilha, topo.Dir)
+    }
+    if topo.Esq != nil {
+        pilha = append(pilha, topo.Esq)
+    }
+}
+  \end{minted}
+
+  \footnotesize O filho da direita é empilhado primeiro para que o da esquerda
+  saia antes. É o que a recursão vinha fazendo na pilha de chamadas do programa.
+\end{frame}
+
+\begin{frame}{Custo dos percursos}
+  \begin{itemize}
+    \item \textbf{Tempo}: $\Theta(n)$ nos quatro. Cada nó é visitado uma vez e
+          cada ponteiro é examinado uma vez;
+    \item \textbf{Espaço, em profundidade}: a pilha de chamadas, proporcional à
+          \tcb{altura}. $O(\log n)$ na árvore cheia, $O(n)$ na degenerada;
+    \item \textbf{Espaço, em largura}: a fila chega a conter um nível inteiro,
+          até $n/2$ nós no último nível de uma árvore cheia.
+  \end{itemize}
+
+  \vspace{0.5cm}
+  O percurso em largura é o mesmo \textbf{BFS} que aparecerá em grafos, no final
+  do semestre, com a mesma fila e a mesma estrutura de laço.
+\end{frame}
+
+% ==========================================
+\section{Altura e desempenho}
+% ==========================================
+
+\begin{frame}[fragile]{Calcular a altura}
+  \begin{minted}{go}
+func Altura(a *No) int {
+    if a == nil {
+        return -1
+    }
+
+    esq := Altura(a.Esq)
+    dir := Altura(a.Dir)
+
+    if esq > dir {
+        return 1 + esq
+    }
+    return 1 + dir
+}
+  \end{minted}
+
+  \vspace{0.2cm}
+  O $-1$ da árvore vazia é o que faz uma folha devolver $1 + (-1) = 0$, sem caso
+  especial.
+\end{frame}
+
+\begin{frame}{Árvore cheia}
+  Todo nó interno tem duas subárvores e todas as folhas estão no último nível.
+
+  \vspace{0.3cm}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=0.9cm,
+        level 1/.style={sibling distance=3cm},
+        level 2/.style={sibling distance=1.5cm}]
+      \node [arn_b] {}
+      child { node [arn_b] {}
+          child { node [arn_b] {} }
+          child { node [arn_b] {} }
+        }
+      child { node [arn_b] {}
+          child { node [arn_b] {} }
+          child { node [arn_b] {} }
+        };
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3cm}
+  No nível $k$ há $2^k$ nós. Somando todos os níveis de uma árvore cheia de
+  altura $h$:
+
+  \[ n = 2^0 + 2^1 + \cdots + 2^h = 2^{h+1} - 1 \]
+
+  Isolando $h$: uma árvore cheia com $n$ nós tem altura
+  $h = \log_2(n+1) - 1$, ou seja, $\Theta(\log n)$.
+\end{frame}
+
+\begin{frame}{Árvore degenerada}
+  Um único filho por nó interno, um nó por nível. Com $n$ nós, a altura é
+  $n - 1$.
+
+  \vspace{0.3cm}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=0.8cm]
+      \node [arn_b] {}
+      child { node [arn_b] {}
+          child { node [arn_b] {}
+              child { node [arn_b] {} }
+              child [missing]
+            }
+          child [missing]
+        }
+      child [missing];
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3cm}
+  A forma é a de uma \tcr{lista encadeada}, e o desempenho também.
+\end{frame}
+
+\begin{frame}[fragile]{Mesmo número de nós, duas formas}
+  \begin{minted}{text}
+$ go run propriedades.go
+
+     nós |    cheia | degenerada
+---------+----------+-----------
+      15 |        3 |         14
+      63 |        5 |         62
+     255 |        7 |        254
+    1023 |        9 |       1022
+  \end{minted}
+
+  \vspace{0.3cm}
+  Com 1023 nós, o caminho até o nó mais distante é mais de cem vezes mais longo
+  na árvore degenerada, com a mesma quantidade de informação armazenada.
+\end{frame}
+
+\begin{frame}{Altura mínima e altura máxima}
+  \begin{block}{}
+    Uma árvore binária com $n$ nós tem altura mínima proporcional a $\log_2 n$,
+    no caso da árvore cheia, e altura máxima proporcional a $n$, no caso da
+    degenerada. A altura indica o esforço para alcançar qualquer nó.
+  \end{block}
+
+  \vspace{0.5cm}
+  É a mesma diferença entre o Quick-Union e o Weighted Quick-Union, e pela mesma
+  razão. Garantir que a árvore fique perto do primeiro caso, e não do segundo, é
+  o assunto das duas próximas aulas.
+\end{frame}
+
+\begin{frame}{De volta ao \texttt{tree} e ao \texttt{du}}
+  \begin{itemize}
+    \item O \texttt{tree} imprime cada diretório \textbf{antes} do seu conteúdo:
+          percorre em \tcb{pré-ordem}. Quem lê precisa saber em que diretório
+          está antes de ver os arquivos;
+    \item O \texttt{du} imprime cada diretório \textbf{depois} do seu conteúdo:
+          percorre em \tcb{pós-ordem}. O número do diretório é a soma dos
+          números dos filhos, e não existe antes deles.
+  \end{itemize}
+
+  \vspace{0.5cm}
+  O sistema de arquivos não é uma árvore binária: um diretório tem quantos
+  filhos quiser. É o caso geral da definição, com $m$ subárvores. Os percursos
+  continuam valendo, com um laço sobre os filhos no lugar das duas chamadas
+  fixas.
+\end{frame}
+
+\begin{frame}{Exercícios}
+  Os exercícios estão no texto da aula. \textbf{Não valem nota} e não têm
+  entrega: são a preparação para a aula prática de árvores, essa sim avaliada.
+  O conteúdo cai na Prova 1.
+
+  \vspace{0.4cm}
+  \begin{itemize}
+    \item grau, folhas, altura e nível sobre uma árvore dada;
+    \item as quatro sequências de percurso, à mão;
+    \item \texttt{ContaNos}, \texttt{Maximo}, \texttt{Espelha},
+          \texttt{Iguais}, \texttt{NoNoNivel};
+    \item impressão na notação \texttt{<raiz esq dir>};
+    \item desafio: reconstruir a árvore a partir da pré-ordem e do in-ordem.
+  \end{itemize}
+
+  \vspace{0.4cm}
+  Resolva antes da próxima aula, que começa pela árvore binária de busca.
+\end{frame}
+
+\end{document}
