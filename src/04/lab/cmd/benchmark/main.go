@@ -112,9 +112,13 @@ func tabela(titulo string, tamanhos []int, escolhidos []algoritmo, ordenada bool
 		for i := range tamanhos {
 			gasto := medir(a.ordenar, entradas[i])
 			if gasto < 0 {
-				fmt.Printf("%9s%6s", "ERRO", "")
-				anterior = 0
-				continue
+				// Uma vez que o algoritmo erra, os tamanhos maiores são
+				// pulados: um QuickSort com particionamento errado degenera
+				// para tempo quadrático e levaria minutos nos maiores.
+				for range tamanhos[i:] {
+					fmt.Printf("%9s%6s", "ERRO", "")
+				}
+				break
 			}
 			fmt.Printf("%9.4f", gasto.Seconds())
 			if anterior > 0 {

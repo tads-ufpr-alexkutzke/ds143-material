@@ -34,6 +34,7 @@ go build -o consultas ./cmd/consultas
 ./consultas
 ```
 
-O `benchmark` leva cerca de 10 segundos, quase todos gastos pelo
-`SelectionSort` e pelo `InsertionSort` no maior tamanho. Tempos abaixo de
+O `benchmark` leva entre 7 e 10 segundos, quase todos gastos pelo
+`SelectionSort` e pelo `InsertionSort` no maior tamanho. Com `-ordenada` cai
+para 3 segundos, porque a Tabela 2 não roda. Tempos abaixo de
 0,0001 s aparecem como `0.0000`.

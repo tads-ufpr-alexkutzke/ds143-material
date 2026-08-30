@@ -105,8 +105,8 @@ vale nota e não precisa do código.
 onde está o `go.mod`.
 
 **O `benchmark` demora demais**: o `SelectionSort` e o `InsertionSort` são
-O(n²) e o último tamanho da Tabela 1 é 40.000. Cerca de 10 segundos no total é
-o esperado.
+O(n²) e o último tamanho da Tabela 1 é 40.000. Entre 7 e 10 segundos no total é
+o esperado, e cerca de 3 segundos com `-ordenada`, que não roda a Tabela 2.
 
 **Razões estranhas nos tempos pequenos**: tempos abaixo de 0,0001 s aparecem
 como `0.0000` e suas razões não significam nada. Compare as razões nas linhas
