@@ -29,10 +29,10 @@ Ao final desta aula você deve ser capaz de:
 
 Este conteúdo cai na Prova 1.
 
-## 1. Uma hierarquia que você usa todo dia
+## 1. Uma hierarquia comum
 
-Antes de qualquer definição, olhe para uma árvore que já está na sua máquina. Na
-pasta do material, entre em `src` e rode:
+Antes de qualquer definição, olhe para uma árvore de diretórios que já está na sua máquina.
+Por exemplo, na pasta do material, entre em `src` e rode:
 
 ```bash
 tree 05/demo
@@ -73,7 +73,7 @@ du -ab 05/demo
 156	05/demo
 ```
 
-Duas coisas nessa saída importam para a aula inteira.
+Duas coisas nessa saída importam para a aula.
 
 A primeira é a **ordem das linhas**. `05/demo/curso/ds143` aparece depois dos
 dois arquivos que estão dentro dele, e `05/demo` aparece por último. O `du` não
@@ -87,7 +87,7 @@ Cada linha de diretório é a soma das linhas que a precedem no seu ramo.
 > diretório ocupa alguns bytes por si só, e as somas ficam maiores do que as
 > mostradas acima. A ordem das linhas, que é o ponto aqui, não muda.
 
-Essas duas observações voltam com nome na seção 14: o `du` percorre o sistema de
+Esses dois exemplos (`tree` e `du`) voltam com nomes específicos na seção 14: o `du` percorre o sistema de
 arquivos em **pós-ordem**, e o `tree` o percorre em **pré-ordem**.
 
 ## 2. Árvores que você já construiu nesta disciplina
@@ -103,7 +103,7 @@ justamente a **altura** dessas árvores que fez a diferença entre o Quick-Union
 o Weighted Quick-Union: pendurar a árvore menor sob a maior mantém a altura em
 $O(\log n)$, enquanto pendurar sem critério permite que ela chegue a $O(n)$.
 
-Na aula de recursão, o parser de expressões prefixadas
+No material de recursão, o parser de expressões prefixadas
 ([prefix_parser.go](02/codes/recursao/prefix_parser.go)) lia `* 2 + 3 4` e
 devolvia 14. Cada chamada de `eval` tratava uma subexpressão, e as chamadas
 aninhadas formavam uma árvore. Diferente do Quick-Union, ali a árvore nunca foi
@@ -122,13 +122,13 @@ $n > 0$:
 A definição é recursiva, e é assim que vamos programar todas as operações desta
 aula. O caso base é $n = 0$: a **árvore vazia**, que não tem raiz.
 
-Duas consequências valem a pena registrar agora, porque voltam mais tarde:
+Duas consequências importantes:
 
 * **existe exatamente um caminho da raiz até cada nó.** Se houvesse dois, algum
   nó teria dois pais, e os conjuntos da definição deixariam de ser disjuntos. A
   estrutura ainda seria útil, mas seria um grafo, assunto do final do semestre;
-* **a definição não distingue árvore de subárvore.** Toda subárvore é uma árvore
-  completa por direito próprio. É por isso que uma função que recebe uma árvore
+* **a definição não distingue árvore de subárvore.** Toda subárvore é, também, uma árvore
+  completa. É por isso que uma função que recebe uma árvore
   pode ser chamada sobre uma subárvore sem nenhuma adaptação.
 
 Na computação, árvores são desenhadas com a raiz em cima e as folhas embaixo. As
@@ -162,7 +162,7 @@ Sobre a árvore que vamos usar o resto da aula:
 | Altura da árvore | comprimento do caminho mais longo da raiz até uma folha | 3 |
 | Floresta | conjunto de árvores disjuntas | as componentes do Quick-Union |
 
-Duas convenções que causam confusão em prova, e que valem para esta disciplina:
+Duas convenções que causam confusão, e que valem para esta disciplina:
 
 * a **altura é contada em arestas**, não em nós. A árvore com um único nó tem
   altura 0;
@@ -176,7 +176,7 @@ Uma **árvore binária** é uma árvore de grau máximo 2, com uma exigência a 
 cada subárvore é identificada como sendo a da **esquerda** ou a da **direita**.
 Qualquer uma das duas pode ser vazia.
 
-A distinção importa. Estas duas árvores são iguais enquanto árvores de grau 2, e
+A distinção é importante. Estas duas árvores são iguais enquanto árvores de grau 2, e
 diferentes enquanto árvores binárias:
 
 ```
@@ -210,8 +210,9 @@ campo `Esq No` daria um tipo de tamanho infinito, e o compilador recusa
 A árvore inteira é representada pelo **ponteiro para o nó raiz**. Um `*No` é,
 ao mesmo tempo, um nó e a subárvore que começa nele, e a árvore vazia é o
 ponteiro `nil`. Essa coincidência entre a definição matemática e o tipo da
-linguagem é o que faz as funções recursivas desta aula ficarem tão curtas: onde
-a definição diz "cada subárvore também é uma árvore", o código diz `Percorre(a.Esq)`.
+linguagem é o que faz as funções recursivas desta aula ficarem tão curtas: se
+a definição diz "cada subárvore também é uma árvore", o código pode ter construções
+recursivas como `Percorre(a.Esq)` com pouca, ou nenhuma, adaptação.
 
 Não existe função para criar árvore vazia nem para liberar a árvore. Em C seria
 preciso escrever `cria_arv_vazia` devolvendo `NULL` e uma `arv_libera` recursiva
@@ -236,8 +237,8 @@ aloca o valor onde ele sobreviva.
 
 ## 7. Construindo a árvore de exemplo
 
-Com `Constroi` e `Folha`, a árvore da seção 4 sai em uma única expressão, cujo
-recuo reproduz o desenho:
+Com `Constroi` e `Folha`, a árvore da seção 4 sai em uma única expressão (aqui, o
+recuo do código ajuda a enxergar o desenho da árvore):
 
 ```go
 func ArvoreExemplo() *No {
@@ -363,17 +364,17 @@ no `du`: 10 e 20 antes de 30, e a raiz 50 no fim de tudo.
 O resultado do in-ordem sobre **esta** árvore veio em ordem crescente. Isso não é
 propriedade de toda árvore binária: é propriedade desta árvore, que foi montada
 com todos os valores menores à esquerda e maiores à direita. A próxima aula parte
-exatamente daí.
+desse fato.
 
 Custo dos três percursos: cada nó é visitado uma vez e cada ponteiro é
 examinado uma vez, então o tempo é $\Theta(n)$ para uma árvore com $n$ nós. O
 espaço é o da pilha de chamadas, proporcional à **altura** da árvore, o que dá
-$O(\log n)$ para uma árvore cheia e $O(n)$ para uma degenerada.
+$O(\log n)$ para uma árvore cheia e $O(n)$ para uma degenerada (ver seção 13).
 
 ## 10. Escolhendo o percurso pela tarefa
 
-A escolha não é estilística. Cada percurso deixa a informação disponível em um
-momento diferente, e a tarefa decide qual momento serve.
+A escolha do percurso não é pela aparência da saída. Cada percurso deixa a
+informação disponível em um momento diferente, e a tarefa indica qual momento é o correto.
 
 | Tarefa | Percurso | Por quê |
 |---|---|---|
@@ -384,8 +385,7 @@ momento diferente, e a tarefa decide qual momento serve.
 
 O caso da pós-ordem é o mais rígido dos quatro. Em `Altura`, na seção 13, as
 chamadas às subárvores **têm** que preceder a conta do nó, porque a conta usa os
-dois valores devolvidos. Trocar a ordem das linhas não muda o resultado por
-gosto: quebra a função.
+dois valores devolvidos. Trocar a ordem das linhas quebra a função.
 
 ## 11. Árvore de expressão
 
@@ -429,7 +429,7 @@ echo "* 2 + 3 4" | go run 02/codes/recursao/prefix_parser.go
 A notação prefixa e a pós-fixa dispensam parênteses, porque a posição do
 operador já determina a estrutura. O in-ordem puro, sem parênteses, perde essa
 informação: `2 * 3 + 4` lido com a precedência usual vale 10, e não 14. Os
-parênteses da terceira linha repõem o que o percurso deixou cair.
+parênteses da terceira linha restabelecem a ordem de prioridade perdida por esse percurso.
 
 A avaliação é um percurso em pós-ordem, pela razão da seção anterior:
 
@@ -469,7 +469,7 @@ Compare com a pré-ordem, `50 30 20 10 40 35 45 90 95`. A pré-ordem alcança o 
 que está no nível 3, antes de alcançar o 90, que está no nível 1.
 
 Esse percurso não sai de uma função recursiva de três linhas. A recursão dá
-acesso natural aos filhos de quem está sendo visitado, e o que se precisa aqui é
+acesso direto aos filhos de quem está sendo visitado, e o que se precisa aqui é
 dos **irmãos**, que estão em outro ramo. A solução é guardar explicitamente os
 nós ainda por visitar, em uma **fila**: retira-se um nó da frente, visita-se, e
 seus filhos entram no fim.
@@ -510,7 +510,7 @@ mesma fila e a mesma estrutura de laço.
 ### Percurso em profundidade sem recursão
 
 Trocar a fila por uma **pilha** transforma o percurso em largura em pré-ordem.
-É a mesma ideia com outra disciplina de retirada, e é o que a recursão vinha
+É a mesma ideia com outra regra de retirada, e é o que a recursão vinha
 fazendo por baixo dos panos, na pilha de chamadas do programa:
 
 ```go

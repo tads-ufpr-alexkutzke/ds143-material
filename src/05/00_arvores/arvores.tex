@@ -89,7 +89,7 @@
 \section{Motivação e definição}
 % ==========================================
 
-\begin{frame}[fragile]{Uma hierarquia que você usa todo dia}
+\begin{frame}[fragile]{Uma hierarquia comum}
   \begin{minted}{text}
 $ tree --charset=ascii 05/demo
 
@@ -137,7 +137,7 @@ $ du -ab 05/demo
   \end{block}
 
   \vspace{0.6cm}
-  Ao final da aula essas duas observações voltam com nome: o \texttt{du}
+  Ao final da aula, esses dois exemplos voltam com nomes específicos: o \texttt{du}
   percorre o sistema de arquivos em \tcb{pós-ordem}, e o \texttt{tree} o
   percorre em \tcb{pré-ordem}.
 \end{frame}
@@ -159,7 +159,7 @@ $ du -ab 05/demo
 \end{frame}
 
 \begin{frame}[fragile]{Você já percorreu árvores nesta disciplina}
-  \textbf{Parser de expressões prefixadas}, na aula de recursão:
+  \textbf{Parser de expressões prefixadas}, no material de recursão:
 
   \begin{minted}{go}
 if pos < len(expr) && expr[pos] == '+' {
@@ -201,7 +201,7 @@ if pos < len(expr) && expr[pos] == '+' {
   \end{block}
 
   \begin{block}{A definição não distingue árvore de subárvore}
-    Toda subárvore é uma árvore completa por direito próprio. Uma função que
+    Toda subárvore é, também, uma árvore completa. Uma função que
     recebe uma árvore pode ser chamada sobre uma subárvore sem nenhuma
     adaptação.
   \end{block}
@@ -413,7 +413,7 @@ func ArvoreExemplo() *No {
   \end{minted}
 
   \vspace{0.2cm}
-  O recuo do código reproduz o desenho da árvore.
+  O recuo do código ajuda a enxergar o desenho da árvore.
 \end{frame}
 
 \begin{frame}[fragile]{Procurar um valor}
@@ -570,7 +570,7 @@ func InOrdem(a *No) {
 
   \footnotesize A saída veio em ordem crescente. Isso é propriedade
   \textbf{desta} árvore, montada com os menores à esquerda, e não de toda árvore
-  binária. A próxima aula parte exatamente daí.
+  binária. A próxima aula parte desse fato.
 \end{frame}
 
 \begin{frame}[fragile]{Pós-ordem (E, D, R)}
@@ -636,12 +636,12 @@ func PosOrdem(a *No) {
   \end{center}
 
   \vspace{0.3cm}
-  A pós-ordem é o caso mais rígido: trocar a ordem das linhas não muda o
-  resultado por gosto, \tcr{quebra a função}.
+  A pós-ordem é o caso mais rígido: trocar a ordem das linhas
+  \tcr{quebra a função}.
 \end{frame}
 
 \begin{frame}{Árvore de expressão}
-  O parser da aula de recursão, agora com a árvore construída de fato:
+  O parser do material de recursão, agora com a árvore construída de fato:
   $2 \times (3 + 4)$.
 
   \vspace{0.4cm}
@@ -726,7 +726,7 @@ pré-ordem : 50 30 20 10 40 35 45 90 95
 
 \begin{frame}{Por que a recursão não resolve}
   \begin{block}{}
-    A recursão dá acesso natural aos \textbf{filhos} de quem está sendo
+    A recursão dá acesso direto aos \textbf{filhos} de quem está sendo
     visitado. O percurso em largura precisa dos \textbf{irmãos}, que estão em
     outro ramo.
   \end{block}
