@@ -1,0 +1,1235 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric}
+
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\tcg}[1]{\textcolor{green!50!black}{#1}}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily\small},
+  arn_b/.style = {treenode, circle, black, draw=black,
+    fill=white, text width=1.7em},
+  arn_d/.style = {treenode, circle, white, draw=black,
+    fill=blue!60, text width=1.7em},
+  arn_r/.style = {treenode, circle, white, draw=black,
+    fill=red!70!black, text width=1.7em},
+  arn_t/.style = {treenode, regular polygon, regular polygon sides=3,
+    draw=black, fill=black!8, minimum size=1.1cm, inner sep=0pt,
+    font=\sffamily\footnotesize}
+}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+\title{06 - Árvores binárias de busca e AVL}
+\author{Prof. Alex Kutzke}
+\date{Setembro de 2026}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+  \begin{center}
+    \large{Setor de Educação Profissional e Tecnológica}\\
+    Tecnologia em Análise e Desenvolvimento de Sistemas\\
+    \vspace{1cm}
+    \small{DS143 - Estruturas de Dados II}
+  \end{center}
+  \titlepage
+\end{frame}
+
+% ==========================================
+\begin{frame}{Objetivos da aula}
+  Ao final desta aula você deve ser capaz de:
+  \begin{enumerate}
+    \item Enunciar a propriedade da árvore binária de busca e verificar se uma
+          árvore dada a satisfaz;
+    \item Implementar busca, inserção, mínimo e máximo em Go, e justificar por
+          que o custo das quatro operações é a altura da árvore;
+    \item Executar à mão a remoção nos três casos;
+    \item Explicar por que a ordem de inserção determina a forma da árvore;
+    \item Calcular o fator de balanceamento e identificar qual dos quatro casos
+          de desbalanceamento ocorreu;
+    \item Aplicar rotações simples e duplas;
+    \item Comparar os custos de ABB e AVL no melhor caso, no caso médio e no
+          pior caso.
+  \end{enumerate}
+
+  \vspace{0.3cm}
+  \footnotesize Este conteúdo cai na Prova 1.
+\end{frame}
+
+% ==========================================
+\begin{frame}{Roteiro}
+  \tableofcontents
+\end{frame}
+
+% ==========================================
+\section{Motivação e definição}
+
+\begin{frame}{Guardar um conjunto de chaves}
+  Duas operações: inserir uma chave nova, e responder se uma chave está no
+  conjunto.
+
+  \vspace{0.5cm}
+  \begin{center}
+    \begin{tabular}{lll}
+      \toprule
+      \textbf{Estrutura} & \textbf{Inserção} & \textbf{Busca} \\
+      \midrule
+      Slice sem ordem & $O(1)$ amortizado & $\Theta(n)$ \\
+      Slice ordenado  & $\Theta(n)$ & $\Theta(\log n)$ busca binária \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.5cm}
+  No slice ordenado, inserir no meio obriga a empurrar para a direita, uma a
+  uma, todas as chaves que vêm depois da chave nova.
+\end{frame}
+
+\begin{frame}[fragile]{A medição: 200 mil inserções, 10 mil buscas}
+\begin{minted}{text}
+$ go run motivacao.go
+200000 chaves inseridas, 10000 buscas
+
+estrutura        | inserção | busca
+-----------------+----------+---------
+slice sem ordem  |      3ms | 325ms
+slice ordenado   |   2.334s | 1ms
+árvore de busca  |     54ms | 2ms
+\end{minted}
+
+  \vspace{0.2cm}
+  A árvore de busca fica perto do melhor das duas colunas. Ela não precisa
+  manter as chaves contíguas na memória: a ordem está na forma da árvore, e
+  mudar a forma custa alterar um ponteiro.
+\end{frame}
+
+\begin{frame}[fragile]{A busca que a aula anterior deixou em aberto}
+\begin{minted}{go}
+func Pertence(a *No, procurado int) bool {
+	if a == nil {
+		return false
+	}
+	if a.Info == procurado {
+		return true
+	}
+	return Pertence(a.Esq, procurado) ||
+		Pertence(a.Dir, procurado)
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  Visita todos os nós no pior caso: nada na árvore diz de que lado continuar.
+
+  \vspace{0.2cm}
+  Mas o in-ordem da árvore de exemplo saiu crescente:
+  \texttt{10 20 30 35 40 45 50 90 95}. Aquela árvore tinha sido montada com os
+  menores à esquerda e os maiores à direita.
+\end{frame}
+
+\begin{frame}{Árvore binária de busca}
+  \begin{columns}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=2.6cm},
+          level 2/.style={sibling distance=1.3cm},
+          level 3/.style={sibling distance=1cm}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      Árvore binária em que, para \tcr{todo} nó $x$:
+      \begin{itemize}
+        \item as chaves da subárvore esquerda de $x$ são menores que a chave de
+              $x$;
+        \item as chaves da subárvore direita de $x$ são maiores que a chave de
+              $x$.
+      \end{itemize}
+
+      \vspace{0.3cm}
+      Nesta aula, chaves distintas.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{A exigência vale para todos os nós}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=2.4cm},
+          level 2/.style={sibling distance=1.4cm}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child [missing]
+            child { node [arn_r] {60} }
+          }
+        child { node [arn_b] {90} };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      Cada nó está do lado certo em relação ao \textbf{seu pai}, e ainda assim
+      esta árvore \tcr{não é uma ABB}: o 60 está na subárvore esquerda do 50.
+
+      \vspace{0.3cm}
+      O erro clássico na função que verifica a propriedade é comparar cada nó
+      apenas com os seus dois filhos. Esse teste aceita a árvore ao lado.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Duas consequências da definição}
+  \begin{block}{O percurso in-ordem devolve as chaves em ordem crescente}
+    A garantia que a árvore da aula anterior tinha por construção agora é
+    obrigatória. É o teste mais rápido para saber se uma operação preservou a
+    propriedade de busca.
+  \end{block}
+
+  \begin{block}{A busca nunca precisa voltar atrás}
+    Em cada nó, a comparação descarta uma subárvore inteira. O caminho
+    percorrido é único, e tem no máximo a altura da árvore mais um nó.
+  \end{block}
+\end{frame}
+
+% ==========================================
+\section{Operações}
+
+\begin{frame}[fragile]{Busca}
+\begin{minted}{go}
+func Busca(a *No, procurado int) bool {
+	if a == nil {
+		return false
+	}
+	if procurado < a.Info {
+		return Busca(a.Esq, procurado)
+	}
+	if procurado > a.Info {
+		return Busca(a.Dir, procurado)
+	}
+	return true
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  Três resultados na comparação, e cada um decide o passo seguinte.
+\end{frame}
+
+\begin{frame}[fragile]{A mesma busca, sem recursão}
+\begin{minted}{go}
+func BuscaIterativa(a *No, procurado int) bool {
+	for a != nil {
+		if procurado < a.Info {
+			a = a.Esq
+		} else if procurado > a.Info {
+			a = a.Dir
+		} else {
+			return true
+		}
+	}
+	return false
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  As chamadas recursivas estavam na posição final e nenhuma precisava do
+  resultado da outra. A \texttt{Pertence} do slide anterior precisa das duas
+  subárvores, e não vira laço com a mesma facilidade.
+\end{frame}
+
+\begin{frame}{O caminho da busca por 35}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=1.1cm,
+        level 1/.style={sibling distance=4cm},
+        level 2/.style={sibling distance=2cm},
+        level 3/.style={sibling distance=1.4cm}]
+      \node [arn_d] {50}
+      child { node [arn_d] {30}
+          child { node [arn_b] {20}
+              child { node [arn_b] {10} }
+              child [missing]
+            }
+          child { node [arn_d] {40}
+              child { node [arn_d] {35} }
+              child { node [arn_b] {45} }
+            }
+        }
+      child { node [arn_b] {90}
+          child [missing]
+          child { node [arn_b] {95} }
+        };
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2cm}
+  Quatro comparações, quatro nós visitados de nove. Em cada nó, metade do que
+  restava é descartada sem ser olhada.
+\end{frame}
+
+\begin{frame}[fragile]{Inserção}
+\begin{minted}{go}
+func Insere(a *No, v int) *No {
+	if a == nil {
+		return &No{Info: v}
+	}
+	if v < a.Info {
+		a.Esq = Insere(a.Esq, v)
+	} else if v > a.Info {
+		a.Dir = Insere(a.Dir, v)
+	}
+	return a
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  O nó novo entra como \textbf{folha}, na posição em que a busca por aquela
+  chave terminaria. Quem chama escreve \texttt{a = Insere(a, v)}, o que cobre
+  também a árvore vazia.
+\end{frame}
+
+\begin{frame}{Onde entra o 37}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.95cm,
+          level 1/.style={sibling distance=2.8cm},
+          level 2/.style={sibling distance=1.5cm},
+          level 3/.style={sibling distance=1.1cm}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \begin{block}{}
+        \texttt{a = Insere(a, 37)}
+
+        \vspace{0.3cm}
+        De qual nó o 37 vira filho, e de que lado?
+
+        \vspace{0.2cm}
+        Quantas comparações até chegar lá?
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Onde entra o 37}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.95cm,
+          level 1/.style={sibling distance=2.8cm},
+          level 2/.style={sibling distance=1.5cm},
+          level 3/.style={sibling distance=1.1cm}]
+        \node [arn_d] {50}
+        child { node [arn_d] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_d] {40}
+                child { node [arn_d] {35}
+                    child [missing]
+                    child { node [arn_r] {37} }
+                  }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      $37 < 50$: esquerda.\\
+      $37 > 30$: direita.\\
+      $37 < 40$: esquerda.\\
+      $37 > 35$: direita, e ali está o \texttt{nil}.
+
+      \vspace{0.4cm}
+      A linha \texttt{a.Esq = Insere(a.Esq, v)} reatribui o ponteiro em todos os
+      nós do caminho, embora só um deles mude. É o preço de não guardar o
+      ponteiro para o pai.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Mínimo, máximo e listagem em ordem}
+\begin{minted}{go}
+func Minimo(a *No) (int, bool) {
+	if a == nil {
+		return 0, false
+	}
+	for a.Esq != nil {
+		a = a.Esq
+	}
+	return a.Info, true
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  O menor valor está no nó mais à esquerda, o maior no mais à direita. Nenhuma
+  comparação de chaves é necessária.
+
+  \vspace{0.2cm}
+  O segundo valor devolvido diz se a resposta existe. A árvore vazia não tem
+  mínimo, e devolver 0 sozinho a confundiria com uma árvore que contém o 0.
+\end{frame}
+
+\begin{frame}{Remoção: dois casos fáceis}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \centering
+      \textbf{Caso 1: folha}\\[0.2cm]
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=1.6cm}]
+        \node [arn_b] {40}
+        child { node [arn_b] {35} }
+        child { node [arn_r] {45} };
+      \end{tikzpicture}\\[0.2cm]
+      O nó some, e o pai passa a apontar para \texttt{nil}.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \textbf{Caso 2: uma subárvore só}\\[0.2cm]
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=1.6cm}]
+        \node [arn_b] {30}
+        child { node [arn_r] {20}
+            child { node [arn_b] {10} }
+            child [missing]
+          }
+        child { node [arn_b] {40} };
+      \end{tikzpicture}\\[0.2cm]
+      O filho sobe para o lugar do nó removido, com toda a sua subárvore.
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4cm}
+  No caso 2 a propriedade continua valendo: tudo o que subiu já estava do lado
+  certo em relação ao avô.
+\end{frame}
+
+\begin{frame}{Remoção: duas subárvores}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.95cm,
+          level 1/.style={sibling distance=2.6cm},
+          level 2/.style={sibling distance=1.4cm},
+          level 3/.style={sibling distance=1.1cm}]
+        \node [arn_r] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \begin{block}{}
+        \texttt{a = Remove(a, 50)}
+
+        \vspace{0.3cm}
+        Nenhum dos dois filhos pode simplesmente subir.
+
+        \vspace{0.3cm}
+        Que chave da árvore pode ocupar o lugar do 50? Quantas servem?
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remoção: duas subárvores}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.95cm,
+          level 1/.style={sibling distance=2.6cm},
+          level 2/.style={sibling distance=1.4cm},
+          level 3/.style={sibling distance=1.1cm}]
+        \node [arn_r] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_d] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      O lugar do 50 comporta uma chave maior que tudo à esquerda e menor que
+      tudo à direita. Existem duas assim:
+      \begin{itemize}
+        \item o \tcb{antecessor}, maior valor da subárvore esquerda (45);
+        \item o \textbf{sucessor}, menor valor da subárvore direita (90).
+      \end{itemize}
+
+      \vspace{0.3cm}
+      Copiamos uma das duas para o nó e removemos o nó de onde ela veio.
+
+      \vspace{0.3cm}
+      O antecessor não tem filho à direita, então essa segunda remoção cai no
+      caso 1 ou no caso 2. \tcr{Nunca no caso 3.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Remoção em Go}
+\begin{minted}{go}
+	// achou o nó: três casos
+	if a.Esq == nil && a.Dir == nil {
+		return nil
+	}
+	if a.Esq == nil {
+		return a.Dir
+	}
+	if a.Dir == nil {
+		return a.Esq
+	}
+
+	antecessor := a.Esq
+	for antecessor.Dir != nil {
+		antecessor = antecessor.Dir
+	}
+	a.Info = antecessor.Info
+	a.Esq = Remove(a.Esq, antecessor.Info)
+	return a
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Remoção: as três saídas}
+\begin{minted}{text}
+Remove(a, 45), caso 1: folha
+in-ordem: 10 20 30 35 40 50 90 95
+
+Remove(a, 20), caso 2: uma subárvore só
+in-ordem: 10 30 35 40 50 90 95
+
+Remove(a, 50), caso 3: duas subárvores (a raiz)
+        95
+    90
+40
+        35
+    30
+        10
+in-ordem: 10 30 35 40 90 95
+\end{minted}
+
+  \vspace{0.2cm}
+  O 40, maior valor da subárvore esquerda, tomou o lugar do 50 na raiz. O
+  in-ordem continua crescente em todas as saídas.
+\end{frame}
+
+% ==========================================
+\section{Forma e desempenho}
+
+\begin{frame}{A ordem de inserção determina a forma}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \footnotesize \texttt{50 30 90 20 40 95 10 35 45}\\[0.2cm]
+      \begin{tikzpicture}[-, level distance=0.8cm,
+          level 1/.style={sibling distance=2.2cm},
+          level 2/.style={sibling distance=1.1cm},
+          level 3/.style={sibling distance=0.9cm},
+          every node/.style={font=\sffamily\scriptsize}]
+        \node [arn_b] {50}
+        child { node [arn_b] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_b] {40}
+                child { node [arn_b] {35} }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}\\[0.2cm]
+      altura 3
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \footnotesize \texttt{10 20 30 35 40 45 50 90 95}\\[0.2cm]
+      \begin{tikzpicture}[-, level distance=0.55cm,
+          level/.style={sibling distance=0.7cm},
+          every node/.style={font=\sffamily\scriptsize}]
+        \node [arn_b] {10}
+        child [missing]
+        child { node [arn_b] {20}
+            child [missing]
+            child { node [arn_b] {30}
+                child [missing]
+                child { node [arn_b] {35}
+                    child [missing]
+                    child { node [arn_b] {40}
+                        child [missing]
+                        child { node [arn_b] {45}
+                            child [missing]
+                            child { node [arn_b] {50}
+                                child [missing]
+                                child { node [arn_b] {90}
+                                    child [missing]
+                                    child { node [arn_b] {95} }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          };
+      \end{tikzpicture}\\[0.2cm]
+      altura 8
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3cm}
+  \centering
+  Mesmos nove valores. A segunda é uma lista encadeada com passos extras.
+\end{frame}
+
+\begin{frame}{Entrada ordenada é comum}
+  Chaves lidas de um arquivo já ordenado, códigos sequenciais e carimbos de
+  tempo produzem a árvore degenerada, justamente nos casos em que a árvore
+  seria mais útil.
+
+  \vspace{0.5cm}
+  Entre os dois extremos está o caso médio, com as chaves chegando em ordem
+  aleatória:
+
+  \vspace{0.3cm}
+  \begin{center}
+    \footnotesize
+    \begin{tabular}{rrrrr}
+      \toprule
+      $n$ & mínima & aleatória & degenerada & comparações médias \\
+      \midrule
+      1.000 & 9 & 21,1 & 999 & 12,0 \\
+      10.000 & 13 & 30,6 & 9.999 & 16,6 \\
+      100.000 & 16 & 40,6 & 99.999 & 21,0 \\
+      1.000.000 & 19 & 46,8 & 999.999 & 25,3 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.3cm}
+  O número médio de comparações de uma busca bem sucedida tende a
+  $2 \ln n \approx 1{,}39 \log_2 n$, cerca de 39\% acima da árvore
+  perfeitamente balanceada.
+\end{frame}
+
+\begin{frame}{O custo de todas as operações é a altura}
+  Busca, inserção, remoção, mínimo e máximo percorrem um único caminho da raiz
+  para baixo: $O(h)$.
+
+  \vspace{0.4cm}
+  \begin{center}
+    \footnotesize
+    \begin{tabular}{lll}
+      \toprule
+      \textbf{Situação} & \textbf{Altura} & \textbf{Custo} \\
+      \midrule
+      Árvore cheia (melhor caso) & $\log_2(n+1) - 1$ & $\Theta(\log n)$ \\
+      Ordem aleatória (caso médio) & $\Theta(\log n)$ & $\Theta(\log n)$ \\
+      Ordem crescente (pior caso) & $n - 1$ & $\Theta(n)$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.5cm}
+  O caso médio supõe que a ordem de chegada das chaves seja aleatória, e quem
+  escreve a estrutura não controla essa ordem.
+\end{frame}
+
+% ==========================================
+\section{Balanceamento AVL}
+
+\begin{frame}{O critério AVL}
+  Manter a árvore perfeitamente balanceada custaria caro: uma única inserção
+  pode obrigar a reconstruir quase tudo. Adelson-Velsky e Landis, em 1962,
+  exigiram menos.
+
+  \vspace{0.4cm}
+  \begin{block}{Árvore AVL}
+    Árvore binária de busca em que, para todo nó, as alturas das duas
+    subárvores diferem em no máximo 1.
+  \end{block}
+
+  \vspace{0.4cm}
+  \textbf{Fator de balanceamento} de um nó:
+  $$\mathrm{fb}(x) = \mathrm{altura}(x.\mathrm{Esq}) - \mathrm{altura}(x.\mathrm{Dir})$$
+
+  Em uma AVL, todo nó tem fb igual a $-1$, 0 ou $+1$. Com fb $= +2$, o nó está
+  pesado à esquerda; com fb $= -2$, à direita. A árvore vazia tem altura $-1$.
+\end{frame}
+
+\begin{frame}{Fator de balanceamento na árvore de exemplo}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=1.1cm,
+        level 1/.style={sibling distance=4cm},
+        level 2/.style={sibling distance=2cm},
+        level 3/.style={sibling distance=1.4cm}]
+      \node [arn_b] {50}
+      child { node [arn_b] {30}
+          child { node [arn_b] {20}
+              child { node [arn_b] {10} }
+              child [missing]
+            }
+          child { node [arn_b] {40}
+              child { node [arn_b] {35} }
+              child { node [arn_b] {45} }
+            }
+        }
+      child { node [arn_b] {90}
+          child [missing]
+          child { node [arn_b] {95} }
+        };
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2cm}
+  Qual é o fator de balanceamento de cada um dos cinco nós internos? A árvore é
+  AVL?
+\end{frame}
+
+\begin{frame}{Fator de balanceamento na árvore de exemplo}
+  \begin{center}
+    \begin{tikzpicture}[-, level distance=1.1cm,
+        level 1/.style={sibling distance=4cm},
+        level 2/.style={sibling distance=2cm},
+        level 3/.style={sibling distance=1.4cm}]
+      \node [arn_b, label=right:{\scriptsize fb $+1$}] {50}
+      child { node [arn_b, label=left:{\scriptsize fb $0$}] {30}
+          child { node [arn_b, label=left:{\scriptsize fb $+1$}] {20}
+              child { node [arn_b] {10} }
+              child [missing]
+            }
+          child { node [arn_b, label=right:{\scriptsize fb $0$}] {40}
+              child { node [arn_b] {35} }
+              child { node [arn_b] {45} }
+            }
+        }
+      child { node [arn_b, label=right:{\scriptsize fb $-1$}] {90}
+          child [missing]
+          child { node [arn_b] {95} }
+        };
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2cm}
+  Todos os fatores estão em $\{-1, 0, +1\}$: a árvore de exemplo é AVL. A
+  degenerada do slide anterior não é, a raiz dela tem fb $= -8$.
+\end{frame}
+
+\begin{frame}[fragile]{A altura guardada no nó}
+\begin{minted}[fontsize=\scriptsize]{go}
+type No struct {
+	Info int
+	Alt  int
+	Esq  *No
+	Dir  *No
+}
+
+func altura(a *No) int {
+	if a == nil {
+		return -1
+	}
+	return a.Alt
+}
+
+func atualizaAltura(a *No) {
+	a.Alt = 1 + maior(altura(a.Esq), altura(a.Dir))
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  Recalcular a altura a cada verificação custaria $\Theta(n)$. Com o campo
+  \texttt{Alt}, calcular o fator de balanceamento custa tempo constante.
+\end{frame}
+
+\begin{frame}{Por que o critério fraco basta}
+  Seja $N(h)$ o \tcr{menor} número de nós de uma AVL de altura $h$. A árvore
+  mais esguia possível tem uma raiz, uma subárvore de altura $h-1$ e outra tão
+  pequena quanto o critério permite, de altura $h-2$:
+
+  $$N(h) = N(h-1) + N(h-2) + 1, \quad N(0) = 1, \quad N(1) = 2$$
+
+  \vspace{0.2cm}
+  \begin{center}
+    \footnotesize
+    \begin{tabular}{lrrrrrrrrrrr}
+      \toprule
+      $h$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+      $N(h)$ & 1 & 2 & 4 & 7 & 12 & 20 & 33 & 54 & 88 & 143 & 232 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.3cm}
+  É a recorrência de Fibonacci deslocada, $N(h) = F(h+3) - 1$, e cresce
+  exponencialmente com $h$. Invertendo:
+
+  $$h < 1{,}44 \log_2 (n + 2)$$
+
+  Uma AVL com 10 mil chaves tem altura no máximo 17: a menor AVL de altura 18
+  já precisaria de 10.945 nós.
+\end{frame}
+
+% ==========================================
+\section{Rotações}
+
+\begin{frame}{Rotação à direita}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=2cm},
+          level 2/.style={sibling distance=1.4cm}]
+        \node [arn_b] {a}
+        child { node [arn_b] {b}
+            child { node [arn_t] {x} }
+            child { node [arn_t] {y} }
+          }
+        child { node [arn_t] {z} };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \begin{block}{}
+        A subárvore está pesada à esquerda. Queremos que \textbf{b} suba para a
+        raiz e \textbf{a} desça para a direita.
+
+        \vspace{0.3cm}
+        Onde ficam $x$, $y$ e $z$ depois disso?
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4cm}
+  Só uma das três subárvores muda de pai. Qual, e por quê?
+\end{frame}
+
+\begin{frame}{Rotação à direita}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=2cm},
+          level 2/.style={sibling distance=1.4cm}]
+        \node [arn_b] {a}
+        child { node [arn_b] {b}
+            child { node [arn_t] {x} }
+            child { node [arn_t] {y} }
+          }
+        child { node [arn_t] {z} };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.1\textwidth}
+      \centering
+      \scriptsize rotação\\ à direita
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=2cm},
+          level 2/.style={sibling distance=1.4cm}]
+        \node [arn_b] {b}
+        child { node [arn_t] {x} }
+        child { node [arn_b] {a}
+            child { node [arn_t] {y} }
+            child { node [arn_t] {z} }
+          };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5cm}
+  In-ordem da árvore da esquerda: $x$, b, $y$, a, $z$.\\
+  In-ordem da árvore da direita: $x$, b, $y$, a, $z$.
+
+  \vspace{0.3cm}
+  As duas sequências são iguais, e por isso a rotação nunca viola a propriedade
+  de busca. O que muda é a altura: b sobe um nível com $x$, a desce um nível
+  com $z$.
+\end{frame}
+
+\begin{frame}[fragile]{Rotação à direita em Go}
+\begin{minted}{go}
+func RotacaoDireita(a *No) *No {
+	b := a.Esq
+	a.Esq = b.Dir
+	b.Dir = a
+
+	atualizaAltura(a)
+	atualizaAltura(b)
+	return b
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  Três atribuições de ponteiro, e a ordem entre elas importa: \texttt{b.Dir} é
+  lido para dentro de \texttt{a.Esq} antes de ser sobrescrito com \texttt{a}.
+
+  \vspace{0.2cm}
+  As alturas são atualizadas de baixo para cima. A função devolve a nova raiz da
+  subárvore, e quem chamou reatribui o ponteiro.
+  \texttt{RotacaoEsquerda} é a imagem espelhada.
+\end{frame}
+
+\begin{frame}{Os quatro casos}
+  Depois de uma inserção, o primeiro nó desbalanceado na volta da recursão tem
+  fb $= +2$ ou fb $= -2$. A rotação a aplicar depende também do lado em que o
+  filho pesado cresceu.
+
+  \vspace{0.3cm}
+  \begin{center}
+    \footnotesize
+    \begin{tabular}{llll}
+      \toprule
+      \textbf{Caso} & \textbf{fb do nó} & \textbf{fb do filho} & \textbf{Correção} \\
+      \midrule
+      Esquerda-esquerda & $+2$ & $+1$ & simples à direita \\
+      Direita-direita & $-2$ & $-1$ & simples à esquerda \\
+      Esquerda-direita & $+2$ & $-1$ & esquerda no filho, direita no nó \\
+      Direita-esquerda & $-2$ & $+1$ & direita no filho, esquerda no nó \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.4cm}
+  Nos dois primeiros casos o nó e o filho pendem para o mesmo lado, e uma
+  rotação resolve. Nos dois últimos o desequilíbrio faz um zigue-zague, e uma
+  rotação simples apenas o inverteria.
+\end{frame}
+
+\begin{frame}{Caso esquerda-esquerda: inserir 30, 20, 10}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=1.6cm}]
+        \node [arn_b, label=right:{\scriptsize fb $+2$}] {30}
+        child { node [arn_b, label=right:{\scriptsize fb $+1$}] {20}
+            child { node [arn_r] {10} }
+            child [missing]
+          }
+        child [missing];
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.1\textwidth}
+      \centering
+      \scriptsize rotação\\ à direita
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=1.8cm}]
+        \node [arn_b, label=right:{\scriptsize fb $0$}] {20}
+        child { node [arn_b] {10} }
+        child { node [arn_b] {30} };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.6cm}
+  \centering
+  Uma rotação simples à direita no 30. Altura 2 antes, altura 1 depois.
+\end{frame}
+
+\begin{frame}{Caso esquerda-direita: inserir 30, 10, 20}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=1.6cm}]
+        \node [arn_b, label=right:{\scriptsize fb $+2$}] {30}
+        child { node [arn_b] {10}
+            child [missing]
+            child { node [arn_r] {20} }
+          }
+        child [missing];
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \begin{block}{}
+        O 30 está pesado à esquerda, como no caso anterior.
+
+        \vspace{0.3cm}
+        Uma rotação simples à direita no 30 resolve?
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5cm}
+  \centering
+  Compare o fator do 30 com o do filho 10. No caso anterior os dois tinham o
+  mesmo sinal.
+\end{frame}
+
+\begin{frame}{Caso esquerda-direita: inserir 30, 10, 20}
+  \begin{columns}
+    \begin{column}{0.24\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=1.3cm}]
+        \node [arn_b, label=right:{\scriptsize fb $+2$}] {30}
+        child { node [arn_b] {10}
+            child [missing]
+            child { node [arn_r] {20} }
+          }
+        child [missing];
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.13\textwidth}
+      \centering \scriptsize à esquerda\\ no 10
+    \end{column}
+    \begin{column}{0.24\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=1.3cm}]
+        \node [arn_b, label=right:{\scriptsize fb $+2$}] {30}
+        child { node [arn_b] {20}
+            child { node [arn_b] {10} }
+            child [missing]
+          }
+        child [missing];
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.13\textwidth}
+      \centering \scriptsize à direita\\ no 30
+    \end{column}
+    \begin{column}{0.24\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=0.9cm,
+          level 1/.style={sibling distance=1.5cm}]
+        \node [arn_b, label=right:{\scriptsize fb $0$}] {20}
+        child { node [arn_b] {10} }
+        child { node [arn_b] {30} };
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.6cm}
+  \centering
+  O 30 tem fb $+2$ e o filho 10 tem fb $-1$, sinais contrários: é o
+  zigue-zague. Rotação à esquerda no filho, que o alinha, e rotação à direita no
+  nó.
+\end{frame}
+
+\begin{frame}[fragile]{Rebalancear}
+\begin{minted}[fontsize=\scriptsize]{go}
+func rebalanceia(a *No) *No {
+	fb := fator(a)
+
+	if fb > 1 { // pesada à esquerda
+		if fator(a.Esq) < 0 { // caso esquerda-direita
+			a.Esq = RotacaoEsquerda(a.Esq)
+		}
+		return RotacaoDireita(a)
+	}
+
+	if fb < -1 { // pesada à direita
+		if fator(a.Dir) > 0 { // caso direita-esquerda
+			a.Dir = RotacaoDireita(a.Dir)
+		}
+		return RotacaoEsquerda(a)
+	}
+
+	return a
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Inserção em AVL}
+\begin{minted}[fontsize=\scriptsize]{go}
+func Insere(a *No, v int) *No {
+	if a == nil {
+		return &No{Info: v}
+	}
+
+	if v < a.Info {
+		a.Esq = Insere(a.Esq, v)
+	} else if v > a.Info {
+		a.Dir = Insere(a.Dir, v)
+	} else {
+		return a
+	}
+
+	atualizaAltura(a)
+	return rebalanceia(a)
+}
+\end{minted}
+
+  \vspace{0.2cm}
+  A inserção da ABB com duas linhas a mais, executadas na volta da recursão em
+  cada nó do caminho da folha nova até a raiz.
+\end{frame}
+
+\begin{frame}{Uma rotação por inserção}
+  Uma inserção estraga o balanceamento de no máximo um nó. A rotação, simples ou
+  dupla, devolve à subárvore a altura que ela tinha \textbf{antes} da inserção.
+
+  \vspace{0.3cm}
+  Como a altura da subárvore não mudou, nenhum nó acima dela precisa ser tocado:
+  a inserção em AVL faz \tcr{no máximo uma} rotação.
+
+  \vspace{0.5cm}
+  A remoção não tem essa propriedade. Ela pode exigir rotações em todos os nós
+  do caminho até a raiz, e é escrita do mesmo jeito: a remoção da ABB, seguida
+  de \texttt{atualizaAltura} e \texttt{rebalanceia}.
+\end{frame}
+
+% ==========================================
+\section{Custos}
+
+\begin{frame}[fragile]{Entrada ordenada nas duas estruturas}
+\begin{minted}{text}
+Inserindo 1, 2, 3, ..., n em ordem crescente:
+       n | altura na ABB | altura na AVL
+---------+---------------+--------------
+      10 |             9 |             3
+     100 |            99 |             6
+    1000 |           999 |             9
+   10000 |          9999 |            13
+\end{minted}
+
+  \vspace{0.3cm}
+  Com 10 mil chaves em ordem crescente, a busca na ABB percorre até 10 mil nós,
+  e na AVL até 14. A altura 13 é a menor possível para 10 mil nós.
+\end{frame}
+
+\begin{frame}{ABB e AVL}
+  \begin{center}
+    \footnotesize
+    \begin{tabular}{lll}
+      \toprule
+       & \textbf{ABB} & \textbf{AVL} \\
+      \midrule
+      Operações no caso médio & $\Theta(\log n)$ & $\Theta(\log n)$ \\
+      Operações no pior caso & $\Theta(n)$ & $\Theta(\log n)$ \\
+      Memória por nó & chave e 2 ponteiros & chave, 2 ponteiros e altura \\
+      Rotações por inserção & nenhuma & no máximo 1 \\
+      Rotações por remoção & nenhuma & até $O(\log n)$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.5cm}
+  As árvores rubro-negras, na segunda metade da disciplina, admitem árvores um
+  pouco mais desbalanceadas e fazem menos rotações na remoção, o que as torna a
+  escolha mais comum em bibliotecas de uso geral. O critério de decisão é a
+  proporção entre buscas e alterações na aplicação.
+\end{frame}
+
+\begin{frame}{De volta à medição da abertura}
+  O slice ordenado é rápido na busca porque as chaves estão em ordem, e lento na
+  inserção porque manter a ordem exige mover as chaves.
+
+  \vspace{0.3cm}
+  A árvore de busca guarda a mesma informação de ordem na forma da árvore, e por
+  isso inserir custa descer até uma folha e pendurar um nó.
+
+  \vspace{0.5cm}
+  Aquela medição usou chaves em ordem aleatória, que é o caso médio. Com as
+  mesmas 200 mil chaves em ordem crescente, a ABB daria uma coluna de 200 mil
+  níveis, e as duas medições ficariam piores que as do slice.
+
+  \vspace{0.3cm}
+  A AVL remove a dependência da ordem de chegada.
+\end{frame}
+
+\begin{frame}{Exercícios}
+  Os exercícios estão no roteiro da aula, na página do material. Eles
+  \textbf{não valem nota} e não têm entrega: preparam a aula prática de
+  árvores, essa sim avaliada, e o conteúdo cai na Prova 1.
+
+  \vspace{0.4cm}
+  Códigos da aula, para executar com \texttt{go run}:
+
+  \begin{itemize}
+    \item \texttt{06/codes/motivacao.go}: a medição da abertura;
+    \item \texttt{06/codes/abb.go}: busca, inserção, mínimo e máximo;
+    \item \texttt{06/codes/remocao.go}: os três casos da remoção;
+    \item \texttt{06/codes/forma.go}: ordem de inserção e altura;
+    \item \texttt{06/codes/avl.go}: rotações, os quatro casos e a comparação
+          com a ABB.
+  \end{itemize}
+\end{frame}
+
+\end{document}
