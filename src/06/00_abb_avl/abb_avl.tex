@@ -101,7 +101,7 @@
   \begin{center}
     \begin{tabular}{lll}
       \toprule
-      \textbf{Estrutura} & \textbf{Inserção} & \textbf{Busca} \\
+      \textbf{Estrutura} & \textbf{Inserção} & \textbf{Busca (pior caso)} \\
       \midrule
       Slice sem ordem & $O(1)$ amortizado & $\Theta(n)$ \\
       Slice ordenado  & $\Theta(n)$ & $\Theta(\log n)$ busca binária \\
@@ -548,9 +548,32 @@ func Minimo(a *No) (int, bool) {
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Remoção em Go}
+\begin{frame}[fragile]{Remoção: achar o nó}
 \begin{minted}{go}
-	// achou o nó: três casos
+func Remove(a *No, v int) *No {
+	if a == nil {
+		return nil
+	}
+	if v < a.Info {
+		a.Esq = Remove(a.Esq, v)
+		return a
+	}
+	if v > a.Info {
+		a.Dir = Remove(a.Dir, v)
+		return a
+	}
+	// daqui em diante: a.Info == v, o nó a remover é este
+\end{minted}
+
+  \vspace{0.2cm}
+  A descida é a mesma da busca. Cada chamada devolve a subárvore já corrigida, e
+  o pai a reatribui em \texttt{a.Esq} ou \texttt{a.Dir}. Quem chama de fora
+  escreve \texttt{a = Remove(a, v)}.
+\end{frame}
+
+\begin{frame}[fragile]{Remoção: os três casos}
+\begin{minted}[fontsize=\scriptsize]{go}
+	// continuação de Remove, com a.Info == v
 	if a.Esq == nil && a.Dir == nil {
 		return nil
 	}
@@ -568,6 +591,7 @@ func Minimo(a *No) (int, bool) {
 	a.Info = antecessor.Info
 	a.Esq = Remove(a.Esq, antecessor.Info)
 	return a
+}
 \end{minted}
 \end{frame}
 
