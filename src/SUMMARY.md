@@ -17,7 +17,7 @@
 
 # Material anterior (em C, numeração antiga)
 
-- [Árvores e percursos](./aula_07.md)
+- [Árvores e percursos](./aula_07_old.md)
 - [Árvores binárias de busca](./aula_08.md)
 - [Árvores balanceadas](./aula_09.md)
 - [Tabelas hash](./aula_10.md)
