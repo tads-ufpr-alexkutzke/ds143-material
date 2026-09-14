@@ -14,6 +14,7 @@
 
 - [Aula 05: Árvores e percursos](./aula_05.md)
 - [Aula 06: Árvores binárias de busca e AVL](./aula_06.md)
+- [Aula 07: Atividade Avaliativa 2](./aula_07.md)
 
 # Material anterior (em C, numeração antiga)
 
