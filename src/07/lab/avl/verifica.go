@@ -5,7 +5,7 @@ package avl
 // vazia tem altura -1.
 //
 // Esta função está pronta. Ela é a Altura da Aula 05, e é o que permite
-// desconfiar do campo Alt: se os dois valores divergem em algum nó, a
+// conferir o campo Alt: se os dois valores divergem em algum nó, a
 // árvore está inconsistente.
 func AlturaRecalculada(a *No) int {
 	if a == nil {
@@ -31,6 +31,11 @@ func AlturaRecalculada(a *No) int {
 // custa O(n²); para esta atividade isso basta, e as árvores dos testes
 // são pequenas. Se quiser a versão O(n), faça a recursão devolver a
 // altura recalculada junto com o resultado.
+//
+// É esta função que diz se uma AVL está consistente. As operações do
+// pacote avl mantêm o campo Alt e o critério de balanceamento a cada
+// inserção e a cada remoção, e a VerificaAVL é o que permite conferir
+// isso em vez de supor.
 func VerificaAVL(a *No) (bool, *No) {
 	if a == nil {
 		return true, nil

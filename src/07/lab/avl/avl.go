@@ -1,10 +1,9 @@
 // Pacote avl: árvore binária de busca com rebalanceamento.
 //
-// O código é o da Aula 06, com duas diferenças, ambas tratadas na Parte
-// 2 da atividade:
-//
-//  1. RotacaoEsquerda está por escrever;
-//  2. RotacaoDireita tem um defeito de uma linha.
+// O código é o da Aula 06 e está pronto. A Parte 2 da atividade não
+// altera nada aqui: ela pede a VerificaAVL, em verifica.go, que confere
+// se as árvores construídas por este pacote respeitam o critério de
+// balanceamento.
 package avl
 
 import "fmt"
@@ -58,17 +57,17 @@ func Fator(a *No) int {
 //	 / \                / \
 //	x   y              y   z
 //
-// ATENÇÃO: esta função tem um defeito de uma linha. As três atribuições
-// de ponteiro estão corretas, e a árvore resultante tem a forma certa;
-// o que sai errado é o campo Alt. Encontre o defeito com a sua
-// VerificaAVL e corrija-o.
+// A ordem in-ordem x b y a z é a mesma antes e depois: a rotação muda a
+// forma da árvore sem violar a propriedade de busca. As alturas são
+// atualizadas de baixo para cima, primeiro a de a, que passou a ser
+// filho, depois a de b.
 func RotacaoDireita(a *No) *No {
 	b := a.Esq
 	a.Esq = b.Dir
 	b.Dir = a
 
-	atualizaAltura(b)
 	atualizaAltura(a)
+	atualizaAltura(b)
 	return b
 }
 
@@ -79,12 +78,14 @@ func RotacaoDireita(a *No) *No {
 //	x   b      -->     a   z
 //	   / \            / \
 //	  y   z          x   y
-//
-// Escreva-a espelhando a rotação à direita, trocando Esq por Dir. Cuide
-// da ordem das atribuições e da ordem das atualizações de altura, que é
-// justamente onde está o defeito da outra.
 func RotacaoEsquerda(a *No) *No {
-	panic("TODO: implementar RotacaoEsquerda")
+	b := a.Dir
+	a.Dir = b.Esq
+	b.Esq = a
+
+	atualizaAltura(a)
+	atualizaAltura(b)
+	return b
 }
 
 // rebalanceia devolve a raiz da subárvore já corrigida. São os quatro

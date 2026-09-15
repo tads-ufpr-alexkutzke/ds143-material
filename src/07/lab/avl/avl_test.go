@@ -3,9 +3,9 @@ package avl
 // Testes fornecidos. NÃO ALTERE ESTE ARQUIVO: ele é o mesmo usado na
 // correção.
 //
-// Estes testes não conferem o campo Alt das árvores construídas por
-// Insere. Passar aqui, portanto, não é prova de que a AVL está
-// consistente: essa conferência é a VerificaAVL que você vai escrever.
+// Os testes de Insere e Remove conferem a ordem das chaves, e não o
+// campo Alt nem o balanceamento. Quem confere esses dois é a VerificaAVL
+// que você vai escrever.
 
 import (
 	"reflect"
