@@ -1224,20 +1224,52 @@ func Insere(a *No, v int) *No {
 \end{frame}
 
 \begin{frame}{O 37: rotação dupla na raiz}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
+  \begin{columns}[t]
+    \begin{column}{0.33\textwidth}
       \centering
-      {\scriptsize à esquerda no 30}
+      {\scriptsize depois de inserir o 37}
 
-      \begin{tikzpicture}[-, level distance=0.8cm, scale=0.78,
+      \vspace{0.1cm}
+      \begin{tikzpicture}[-, level distance=1.25cm, scale=0.58,
           every node/.style={transform shape},
-          level 1/.style={sibling distance=3.0cm},
-          level 2/.style={sibling distance=1.6cm},
-          level 3/.style={sibling distance=1.0cm},
-          level 4/.style={sibling distance=1.0cm}]
-        \node [arn_b] {50}
+          level 1/.style={sibling distance=3.1cm},
+          level 2/.style={sibling distance=1.8cm},
+          level 3/.style={sibling distance=1.2cm},
+          level 4/.style={sibling distance=1.2cm}]
+        \node [arn_b, label=above right:{\scriptsize fb $+2$}] {50}
+        child { node [arn_d] {30}
+            child { node [arn_b] {20}
+                child { node [arn_b] {10} }
+                child [missing]
+              }
+            child { node [arn_d] {40}
+                child { node [arn_b] {35}
+                    child [missing]
+                    child { node [arn_r] {37} }
+                  }
+                child { node [arn_b] {45} }
+              }
+          }
+        child { node [arn_b] {90}
+            child [missing]
+            child { node [arn_b] {95} }
+          };
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.33\textwidth}
+      \centering
+      {\scriptsize rotação à esquerda no 30}
+
+      \vspace{0.1cm}
+      \begin{tikzpicture}[-, level distance=1.25cm, scale=0.58,
+          every node/.style={transform shape},
+          level 1/.style={sibling distance=3.1cm},
+          level 2/.style={sibling distance=1.8cm},
+          level 3/.style={sibling distance=1.2cm},
+          level 4/.style={sibling distance=1.2cm}]
+        \node [arn_d, label=above right:{\scriptsize fb $+2$}] {50}
         child { node [arn_d] {40}
-            child { node [arn_d] {30}
+            child { node [arn_b] {30}
                 child { node [arn_b] {20}
                     child { node [arn_b] {10} }
                     child [missing]
@@ -1255,16 +1287,17 @@ func Insere(a *No, v int) *No {
           };
       \end{tikzpicture}
     \end{column}
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.33\textwidth}
       \centering
-      {\scriptsize e à direita no 50}
+      {\scriptsize rotação à direita no 50}
 
-      \begin{tikzpicture}[-, level distance=0.8cm, scale=0.78,
+      \vspace{0.1cm}
+      \begin{tikzpicture}[-, level distance=1.25cm, scale=0.58,
           every node/.style={transform shape},
-          level 1/.style={sibling distance=3.0cm},
-          level 2/.style={sibling distance=1.6cm},
-          level 3/.style={sibling distance=1.0cm}]
-        \node [arn_d] {40}
+          level 1/.style={sibling distance=3.1cm},
+          level 2/.style={sibling distance=1.8cm},
+          level 3/.style={sibling distance=1.2cm}]
+        \node [arn_d, label=above right:{\scriptsize fb $0$}] {40}
         child { node [arn_b] {30}
             child { node [arn_b] {20}
                 child { node [arn_b] {10} }
@@ -1275,7 +1308,7 @@ func Insere(a *No, v int) *No {
                 child { node [arn_r] {37} }
               }
           }
-        child { node [arn_b] {50}
+        child { node [arn_d] {50}
             child { node [arn_b] {45} }
             child { node [arn_b] {90}
                 child [missing]
@@ -1286,11 +1319,11 @@ func Insere(a *No, v int) *No {
     \end{column}
   \end{columns}
 
-  \vspace{0.3cm}
+  \vspace{0.2cm}
   \centering
   Raiz com fb $+2$ e filho pesado com fb $-1$: caso esquerda-direita.
 
-  \vspace{0.15cm}
+  \vspace{0.1cm}
   {\scriptsize A árvore volta à altura 3, e o in-ordem continua
   \texttt{10 20 30 35 37 40 45 50 90 95}.}
 \end{frame}
