@@ -15,12 +15,12 @@
 - [Aula 05: Árvores e percursos](./aula_05.md)
 - [Aula 06: Árvores binárias de busca e AVL](./aula_06.md)
 - [Aula 07: Atividade Avaliativa 2](./aula_07.md)
+- [Aula 09: Árvores rubro-negras, árvores B e tries](./aula_09.md)
 
 # Material anterior (em C, numeração antiga)
 
 - [Árvores e percursos](./aula_07_old.md)
 - [Árvores binárias de busca](./aula_08.md)
-- [Árvores balanceadas](./aula_09.md)
 - [Tabelas hash](./aula_10.md)
 - [Grafos não direcionados](./aula_11.md)
 - [Grafos direcionados e caminhos mínimos](./aula_12.md)

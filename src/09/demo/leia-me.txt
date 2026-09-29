@@ -1,0 +1,13 @@
+Demonstração do início da aula de árvores rubro-negras, B e tries.
+
+O indice.sql cria uma tabela de dois milhões de linhas no SQLite, consulta
+uma linha sem índice e depois com índice, e mostra o plano de execução das
+duas consultas. O ponto é o plano: SCAN vira SEARCH USING INDEX quando o
+índice existe, e esse índice é uma árvore B.
+
+Requisitos: sqlite3 3.8.3 ou mais novo, que é quando entrou o WITH
+RECURSIVE. Testado com a 3.50.6.
+Tempos medidos em 27/09/2026, em disco NVMe: carga de 2 milhões de linhas
+em 0,63 s, consulta sem índice em 69 ms, criação do índice em 0,43 s,
+consulta com índice abaixo de 1 ms. Os números variam de máquina para
+máquina; o que não varia é o plano de execução.
