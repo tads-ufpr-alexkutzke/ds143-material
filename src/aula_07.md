@@ -67,7 +67,7 @@ comparação entre pai e filhos aceita a árvore, e a sua função precisa rejei
 maior que `v`, e um booleano dizendo se ela existe. O valor `v` não precisa
 estar na árvore. Desça por um único caminho, sem percorrer a árvore inteira.
 
-Ao terminar, `go test ./abb` passa.
+Ao terminar, `go test ./abb` deve passar.
 
 ## Parte 2: o verificador da AVL (30 min)
 
