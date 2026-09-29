@@ -13,7 +13,9 @@
 \usepackage{amsmath}
 \usepackage{minted}
 \usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, shapes.geometric}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, calc}
+% Figuras da inserção em árvore 2-3, compartilhadas com o roteiro.
+\input{../img/arv23.tex}
 
 \newcommand{\tcb}[1]{\textcolor{blue}{#1}}
 \newcommand{\tcr}[1]{\textcolor{red}{#1}}
@@ -305,6 +307,60 @@ Run Time: real 0.000
   O Cormen (cap. 13) admite vermelho à direita e nó preto com os dois filhos
   vermelhos, que é um nó de três chaves: as cores dele codificam uma árvore
   \textbf{2-3-4}.
+\end{frame}
+
+\begin{frame}{Inserção na árvore 2-3}
+  \begin{itemize}
+    \item a chave nova entra sempre em uma \textbf{folha};
+    \item exemplo: 20, 30, 40, 50, 60, 70 e 80, nessa ordem, a sequência que
+      degenera a ABB em uma lista.
+  \end{itemize}
+
+  \vspace{0.5cm}
+  \begin{center}
+    \arvDoisTresA
+  \end{center}
+
+  \vspace{0.3cm}
+  Folha com uma chave: a nova entra ao lado dela, e acabou.
+\end{frame}
+
+\begin{frame}{Folha com duas chaves: o nó temporário}
+  \begin{center}
+    \resizebox{\textwidth}{!}{\arvDoisTresB}
+  \end{center}
+
+  \vspace{0.3cm}
+  \begin{itemize}
+    \item por um momento, o nó fica com \tcr{três chaves} e quatro filhos: um nó
+      que a árvore 2-3 não admite e a \textbf{2-3-4} admite;
+    \item ele se divide: a chave do meio sobe, e as outras duas ficam em dois
+      nós de uma chave;
+    \item se o nó é a raiz, a chave do meio vira uma raiz nova.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{A chave que sobe entra no pai}
+  \begin{center}
+    \resizebox{\textwidth}{!}{\arvDoisTresC}
+  \end{center}
+
+  \vspace{0.3cm}
+  Depois de inserir o 70, que só completa a folha do 60, a árvore tem pai e
+  folha com duas chaves.
+\end{frame}
+
+\begin{frame}{A divisão pode subir até a raiz}
+  \begin{center}
+    \resizebox{!}{0.6\textheight}{\arvDoisTresD}
+  \end{center}
+
+  \begin{itemize}
+    \item a árvore cresce pela raiz, e todas as folhas ficam no mesmo nível;
+    \item na rubro-negra, depois das rotações, o nó temporário é o nó com
+      duas ligações \tcr{vermelhas} para os filhos, e a divisão é a inversão
+      de cores.
+  \end{itemize}
 \end{frame}
 
 % ==========================================

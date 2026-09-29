@@ -1,0 +1,127 @@
+% Inserção em árvore 2-3, com as chaves 20, 30, ..., 80 inseridas em ordem.
+% Fonte única das figuras: o figuras.tex (SVG do roteiro) e os slides em
+% ../00_rn_b_tries/rn_b_tries.tex dão \input neste arquivo e usam as macros
+% \arvDoisTresA a \arvDoisTresD, uma por caso.
+%
+% O nó temporário de três chaves, que a árvore 2-3 não admite e a 2-3-4
+% admite, tem borda vermelha tracejada. A chave que sobe está em vermelho.
+
+\tikzset{
+  a23/.style = {draw=black, fill=black!5, font=\sffamily\small,
+    inner sep=4pt, line width=0.6pt},
+  a23tmp/.style = {a23, draw=red!80!black, fill=red!6, dashed,
+    line width=1pt},
+  a23lig/.style = {draw=black, line width=0.6pt},
+  a23seta/.style = {-{Stealth[length=3mm]}, line width=1.2pt, draw=black!45},
+  a23rot/.style = {font=\sffamily\footnotesize, align=center}
+}
+
+\newcommand{\aS}{\,\textbar\,}
+\newcommand{\aV}[1]{\textcolor{red!80!black}{\textbf{#1}}}
+
+% Caso A: folha com uma chave recebe o 30.
+\newcommand{\arvDoisTresA}{%
+\begin{tikzpicture}
+  \node [a23] (a) at (0,0) {20};
+  \node [a23rot, below=3mm of a] {folha com uma chave\\recebe o 30};
+  \draw [a23seta] (1.2,0) -- (2.2,0);
+  \node [a23] (b) at (3.4,0) {20\aS 30};
+  \node [a23rot, below=3mm of b] {folha com\\duas chaves};
+\end{tikzpicture}}
+
+% Caso B: raiz com duas chaves recebe o 40 e se divide.
+\newcommand{\arvDoisTresB}{%
+\begin{tikzpicture}
+  \node [a23] (a) at (0,0) {20\aS 30};
+  \node [a23rot, below=3mm of a] {raiz com duas chaves\\recebe o 40};
+  \draw [a23seta] (1.4,0) -- (2.4,0);
+  \node [a23tmp] (b) at (3.9,0) {20\aS \aV{30}\aS 40};
+  \node [a23rot, below=3mm of b] {nó temporário de\\três chaves; o 30 sobe};
+  \draw [a23seta] (5.4,0) -- (6.4,0);
+  \node [a23] (r) at (7.6,0.6) {30};
+  \node [a23] (e) at (7,-0.6) {20};
+  \node [a23] (d) at (8.2,-0.6) {40};
+  \draw [a23lig] (r.south) -- (e.north);
+  \draw [a23lig] (r.south) -- (d.north);
+  \node [a23rot, below=2mm of $(e.south)!0.5!(d.south)$] {raiz nova:\\a árvore ganha um nível};
+\end{tikzpicture}}
+
+% Caso C: folha com duas chaves e pai com uma; entra o 60.
+\newcommand{\arvDoisTresC}{%
+\begin{tikzpicture}
+  \begin{scope}
+    \node [a23] (r) at (0.6,0.6) {30};
+    \node [a23] (e) at (0,-0.6) {20};
+    \node [a23] (d) at (1.3,-0.6) {40\aS 50};
+    \draw [a23lig] (r.south) -- (e.north);
+    \draw [a23lig] (r.south) -- (d.north);
+    \node [a23rot, below=2mm of $(e.south)!0.5!(d.south)$] {a folha com duas\\chaves recebe o 60};
+  \end{scope}
+  \draw [a23seta] (2.3,0) -- (3.3,0);
+  \begin{scope}[xshift=4cm]
+    \node [a23] (r) at (0.7,0.6) {30};
+    \node [a23] (e) at (0,-0.6) {20};
+    \node [a23tmp] (d) at (1.6,-0.6) {40\aS \aV{50}\aS 60};
+    \draw [a23lig] (r.south) -- (e.north);
+    \draw [a23lig] (r.south) -- (d.north);
+    \node [a23rot, below=2mm of $(e.south)!0.5!(d.south)$] {a folha fica com três\\chaves; o 50 sobe};
+  \end{scope}
+  \draw [a23seta] (6.9,0) -- (7.9,0);
+  \begin{scope}[xshift=8.6cm]
+    \node [a23] (r) at (1,0.6) {30\aS \aV{50}};
+    \node [a23] (e) at (0,-0.6) {20};
+    \node [a23] (m) at (1,-0.6) {40};
+    \node [a23] (d) at (2,-0.6) {60};
+    \foreach \f in {e, m, d} \draw [a23lig] (r.south) -- (\f.north);
+    \node [a23rot, below=2mm of m.south] {o pai tinha uma chave\\e fica com duas};
+  \end{scope}
+\end{tikzpicture}}
+
+% Caso D: folha e pai com duas chaves; entra o 80 e a divisão sobe até a raiz.
+\newcommand{\arvDoisTresD}{%
+\begin{tikzpicture}
+  \begin{scope}
+    \node [a23] (r) at (1.4,0.6) {30\aS 50};
+    \node [a23] (f1) at (0,-0.6) {20};
+    \node [a23] (f2) at (1,-0.6) {40};
+    \node [a23] (f3) at (2.3,-0.6) {60\aS 70};
+    \foreach \f in {f1, f2, f3} \draw [a23lig] (r.south) -- (\f.north);
+    \node [a23rot, below=2mm of f2.south east] {pai e folha com duas\\chaves; entra o 80};
+  \end{scope}
+  \draw [a23seta] (3.4,0) -- (4.4,0);
+  \begin{scope}[xshift=5.2cm]
+    \node [a23] (r) at (1.4,0.6) {30\aS 50};
+    \node [a23] (f1) at (0,-0.6) {20};
+    \node [a23] (f2) at (1,-0.6) {40};
+    \node [a23tmp] (f3) at (2.5,-0.6) {60\aS \aV{70}\aS 80};
+    \foreach \f in {f1, f2, f3} \draw [a23lig] (r.south) -- (\f.north);
+    \node [a23rot, below=2mm of f2.south east] {a folha fica com três\\chaves; o 70 sobe};
+  \end{scope}
+  \draw [a23seta] (5.4,-1.9) -- (3.4,-2.6);
+  \draw [a23seta] (3.9,-3.3) -- (4.9,-3.3);
+  \begin{scope}[yshift=-3.6cm]
+    \node [a23tmp] (r) at (1.5,0.6) {30\aS \aV{50}\aS 70};
+    \node [a23] (f1) at (0,-0.6) {20};
+    \node [a23] (f2) at (1,-0.6) {40};
+    \node [a23] (f3) at (2,-0.6) {60};
+    \node [a23] (f4) at (3,-0.6) {80};
+    \foreach \f in {f1, f2, f3, f4} \draw [a23lig] (r.south) -- (\f.north);
+    \node [a23rot, below=2mm of $(f2.south)!0.5!(f3.south)$] {o pai fica com três\\chaves; o 50 sobe};
+  \end{scope}
+  \begin{scope}[xshift=5.2cm, yshift=-3.6cm]
+    \node [a23] (r) at (1.5,1.2) {\aV{50}};
+    \node [a23] (i1) at (0.5,0.1) {30};
+    \node [a23] (i2) at (2.5,0.1) {70};
+    \draw [a23lig] (r.south) -- (i1.north);
+    \draw [a23lig] (r.south) -- (i2.north);
+    \node [a23] (f1) at (0,-0.9) {20};
+    \node [a23] (f2) at (1,-0.9) {40};
+    \node [a23] (f3) at (2,-0.9) {60};
+    \node [a23] (f4) at (3,-0.9) {80};
+    \draw [a23lig] (i1.south) -- (f1.north);
+    \draw [a23lig] (i1.south) -- (f2.north);
+    \draw [a23lig] (i2.south) -- (f3.north);
+    \draw [a23lig] (i2.south) -- (f4.north);
+    \node [a23rot, below=2mm of $(f2.south)!0.5!(f3.south)$] {a raiz se divide:\\a árvore ganha um nível};
+  \end{scope}
+\end{tikzpicture}}

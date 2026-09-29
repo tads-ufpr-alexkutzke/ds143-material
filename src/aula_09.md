@@ -195,6 +195,40 @@ uma, em troca de um código bem mais curto. A seção 6 volta a essa diferença.
 As restrições a mais eliminam metade dos casos da inserção e são a razão de o
 código da seção 5 caber em poucas linhas. A árvore da seção 3 é left-leaning.
 
+### Inserção na árvore 2-3
+
+A inserção na árvore 2-3 é a mesma que a seção 9 descreve para a árvore B, com
+ordem 3: a chave nova entra sempre em uma folha, e um nó que fica com chaves
+demais se divide. As figuras inserem 20, 30, 40, 50, 60, 70 e 80, nessa ordem, a
+sequência que degenera a ABB em uma lista.
+
+Se a folha tem uma chave, a nova entra ao lado dela e o nó passa a ter duas.
+
+![Inserção do 30 em uma folha com a chave 20: a folha passa a ter as chaves 20 e 30](09/img/arv23_a.svg)
+
+Se a folha já tem duas chaves, ela fica por um momento com três chaves e quatro
+filhos, um nó que a árvore 2-3 não admite e que a árvore 2-3-4 admite. O nó
+temporário se divide em seguida: a chave do meio sobe para o pai, e as outras
+duas ficam em dois nós de uma chave. Quando a folha é a raiz, a chave do meio
+vira uma raiz nova, e a árvore ganha um nível.
+
+![Inserção do 40 na raiz com as chaves 20 e 30: o nó temporário 20, 30, 40 se divide e o 30 vira a raiz nova](09/img/arv23_b.svg)
+
+Quando o pai tem uma chave, ele recebe a que subiu e fica com duas.
+
+![Inserção do 60: a folha 40, 50 fica com três chaves, o 50 sobe e o pai passa a ter as chaves 30 e 50](09/img/arv23_c.svg)
+
+Quando o pai também tem duas chaves, ele fica com três e se divide do mesmo
+jeito, e a divisão pode subir até a raiz. Na figura, a inserção do 70 já
+completou a folha do 60.
+
+![Inserção do 80: a folha 60, 70 fica com três chaves e o 70 sobe; o pai 30, 50 fica com três chaves e o 50 sobe para uma raiz nova](09/img/arv23_d.svg)
+
+Como na árvore B, a árvore 2-3 cresce pela raiz, e por isso todas as folhas
+ficam no mesmo nível. Na rubro-negra, depois das rotações, o nó temporário é o
+nó com duas ligações vermelhas para os filhos, e a divisão dele é a inversão de
+cores da seção 5.
+
 ## 5. Inserção: um nó novo vermelho e três consertos
 
 O nó novo entra sempre **vermelho**. Se entrasse preto, ele acrescentaria um nó

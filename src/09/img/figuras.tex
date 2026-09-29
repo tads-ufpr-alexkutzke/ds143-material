@@ -7,7 +7,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{forest}
-\usetikzlibrary{backgrounds, shapes.geometric, arrows.meta, positioning}
+\usetikzlibrary{backgrounds, shapes.geometric, arrows.meta, positioning, calc}
 
 \tikzset{
   no/.style = {circle, draw=black, fill=white, text=black, inner sep=0pt,
@@ -30,6 +30,9 @@
 % Chaves de um nó de árvore B separadas por barras: \ch{1}{2}{3}.
 \newcommand{\sep}{\,\textbar\,}
 \newcommand{\vm}[1]{\textcolor{red!80!black}{\textbf{#1}}}
+
+% Inserção em árvore 2-3, compartilhada com os slides.
+\input{arv23.tex}
 
 \begin{document}
 
@@ -167,6 +170,7 @@
 % 7. Trie com as 17 palavras do trie.go. Nó cinza: fim de palavra.
 % O forest desenha cada nó em uma tikzpicture própria para medir, e o fundo
 % branco de every picture quebra essa medição: o fundo vai só na figura final.
+\begingroup
 \tikzset{every picture/.style={}}
 \begin{forest}
   begin draw/.code={\begin{tikzpicture}[
@@ -192,5 +196,12 @@
         [u, fim]]]]
   ]
 \end{forest}
+\endgroup
+
+% 8 a 11. Inserção em árvore 2-3 de 20, 30, ..., 80 (ver arv23.tex).
+\arvDoisTresA
+\arvDoisTresB
+\arvDoisTresC
+\arvDoisTresD
 
 \end{document}

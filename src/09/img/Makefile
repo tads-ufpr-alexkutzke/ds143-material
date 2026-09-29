@@ -18,6 +18,10 @@ svg: pdf
 	pdftocairo -svg -f 5 -l 5 $(file).pdf b_propagacao.svg
 	pdftocairo -svg -f 6 -l 6 $(file).pdf bmais.svg
 	pdftocairo -svg -f 7 -l 7 $(file).pdf trie.svg
+	pdftocairo -svg -f 8 -l 8 $(file).pdf arv23_a.svg
+	pdftocairo -svg -f 9 -l 9 $(file).pdf arv23_b.svg
+	pdftocairo -svg -f 10 -l 10 $(file).pdf arv23_c.svg
+	pdftocairo -svg -f 11 -l 11 $(file).pdf arv23_d.svg
 
 dist:
 	latexmk -C $(file).tex
