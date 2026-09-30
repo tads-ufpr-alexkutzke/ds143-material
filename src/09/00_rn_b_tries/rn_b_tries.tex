@@ -257,47 +257,6 @@ Run Time: real 0.000
   Cormen, a remoção faz menos rotações que na AVL.
 \end{frame}
 
-\begin{frame}{As cores codificam uma árvore 2-3}
-  \begin{columns}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1.1cm,
-          level 1/.style={sibling distance=1.6cm}]
-        \node [bnode] {20 $\mid$ 40}
-        child { node [arn_t] {} }
-        child { node [arn_t] {} }
-        child { node [arn_t] {} };
-      \end{tikzpicture}
-
-      \vspace{0.3cm}
-      \footnotesize Nó 2-3 com duas chaves e três filhos.
-    \end{column}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1cm,
-          level 1/.style={sibling distance=1.8cm},
-          level 2/.style={sibling distance=1.3cm}]
-        \node [no] {40}
-        child { node [no] {20}
-            child { node [arn_t] {} edge from parent [lp] }
-            child { node [arn_t] {} edge from parent [lp] }
-            edge from parent [lv]
-          }
-        child { node [arn_t] {} };
-      \end{tikzpicture}
-
-      \vspace{0.3cm}
-      \footnotesize A ligação \tcr{vermelha} une as duas chaves do mesmo nó 2-3.
-    \end{column}
-  \end{columns}
-
-  \vspace{0.4cm}
-  \begin{itemize}
-    \item ligação preta = descer um nível na árvore 2-3;
-    \item altura preta = altura da árvore 2-3.
-  \end{itemize}
-\end{frame}
-
 \begin{frame}{A variante left-leaning}
   Sedgewick (seção 3.3) acrescenta duas exigências às três propriedades:
 
@@ -344,6 +303,90 @@ Run Time: real 0.000
 
   \vspace{0.4cm}
   As duas satisfazem as três propriedades e têm o mesmo limite de altura.
+\end{frame}
+
+\begin{frame}{O que é uma árvore 2-3}
+  Árvore de busca em que cada nó guarda uma ou duas chaves.
+
+  \vspace{0.3cm}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1.1cm,
+          level 1/.style={sibling distance=1.4cm}]
+        \node [bnode] {30}
+        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$< 30$}] {} }
+        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$> 30$}] {} };
+      \end{tikzpicture}
+
+      \vspace{0.1cm}
+      \footnotesize\textbf{Nó 2}: uma chave, dois filhos.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1.1cm,
+          level 1/.style={sibling distance=1.8cm}]
+        \node [bnode] {20 $\mid$ 40}
+        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$< 20$}] {} }
+        child { node [arn_t, label={[font=\sffamily\scriptsize]below:entre 20 e 40}] {} }
+        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$> 40$}] {} };
+      \end{tikzpicture}
+
+      \vspace{0.1cm}
+      \footnotesize\textbf{Nó 3}: duas chaves, três filhos.
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4cm}
+  \begin{itemize}
+    \item a busca compara com as chaves do nó e desce pelo filho do intervalo
+      certo;
+    \item todas as folhas ficam no \textbf{mesmo nível}: a árvore é
+      perfeitamente balanceada, com altura entre $\log_3 n$ e $\log_2 n$;
+    \item o preço é o nó com dois tamanhos, incômodo de implementar. A
+      rubro-negra guarda a mesma árvore usando só nós binários.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{As cores codificam uma árvore 2-3}
+  \begin{columns}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1.1cm,
+          level 1/.style={sibling distance=1.6cm}]
+        \node [bnode] {20 $\mid$ 40}
+        child { node [arn_t] {} }
+        child { node [arn_t] {} }
+        child { node [arn_t] {} };
+      \end{tikzpicture}
+
+      \vspace{0.3cm}
+      \footnotesize Nó 2-3 com duas chaves e três filhos.
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[-, level distance=1cm,
+          level 1/.style={sibling distance=1.8cm},
+          level 2/.style={sibling distance=1.3cm}]
+        \node [no] {40}
+        child { node [no] {20}
+            child { node [arn_t] {} edge from parent [lp] }
+            child { node [arn_t] {} edge from parent [lp] }
+            edge from parent [lv]
+          }
+        child { node [arn_t] {} };
+      \end{tikzpicture}
+
+      \vspace{0.3cm}
+      \footnotesize A ligação \tcr{vermelha} une as duas chaves do mesmo nó 2-3.
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4cm}
+  \begin{itemize}
+    \item ligação preta = descer um nível na árvore 2-3;
+    \item altura preta = altura da árvore 2-3.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Inserção na árvore 2-3}
@@ -398,6 +441,69 @@ Run Time: real 0.000
       duas ligações \tcr{vermelhas} para os filhos, e a divisão é a inversão
       de cores.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Da rubro-negra à árvore 2-3}
+  % Mesma figura de Sedgewick (fig. 3.3.12): cada chave mantém a mesma
+  % coordenada x nos três painéis, dada pela ordem das chaves.
+  \begin{center}
+    \resizebox{!}{0.72\textheight}{%
+      \begin{tikzpicture}[x=0.75cm, y=1cm,
+          k/.style={circle, draw=black, fill=white, line width=0.6pt,
+            minimum size=1.5em, inner sep=0pt, font=\sffamily\scriptsize},
+          b/.style={draw=black, fill=black!5, line width=0.6pt,
+            inner sep=2.5pt, font=\sffamily\scriptsize},
+          rot/.style={anchor=west, text width=2.6cm,
+            font=\sffamily\footnotesize}]
+        % Painel 1: rubro-negra left-leaning
+        \begin{scope}
+          \foreach \c/\x/\y in {50/7/0, 35/4/-0.55, 70/10/-0.55,
+              20/1/-1.1, 45/6/-1.1, 60/9/-1.1, 80/11/-1.1,
+              10/0/-1.65, 30/3/-1.65, 40/5/-1.65, 55/8/-1.65, 25/2/-2.2}
+            \node [k] (r\c) at (\x,\y) {\c};
+          \foreach \p/\f in {50/35, 50/70, 35/45, 20/10, 20/30, 70/60, 70/80}
+            \draw [lp] (r\p) -- (r\f);
+          \foreach \p/\f in {35/20, 30/25, 45/40, 60/55}
+            \draw [lv] (r\p) -- (r\f);
+          \node [rot] at (12,-1.1) {rubro-negra\\left-leaning};
+        \end{scope}
+        % Painel 2: ligações vermelhas na horizontal
+        \begin{scope}[yshift=-3.1cm]
+          \foreach \c/\x/\y in {50/7/0, 20/1/-0.7, 35/4/-0.7, 70/10/-0.7,
+              10/0/-1.6, 25/2/-1.6, 30/3/-1.6, 40/5/-1.6, 45/6/-1.6,
+              55/8/-1.6, 60/9/-1.6, 80/11/-1.6}
+            \node [k] (h\c) at (\x,\y) {\c};
+          \foreach \p/\f in {50/35, 50/70, 35/45, 20/10, 20/30, 70/60, 70/80}
+            \draw [lp] (h\p) -- (h\f);
+          \foreach \p/\f in {35/20, 30/25, 45/40, 60/55}
+            \draw [lv] (h\p) -- (h\f);
+          \node [rot] at (12,-0.7) {ligações vermelhas\\na horizontal};
+        \end{scope}
+        % Painel 3: árvore 2-3 correspondente
+        \begin{scope}[yshift=-5.6cm]
+          \node [b] (d50) at (7,0) {50};
+          \node [b] (d2035) at (2.5,-0.7) {20\,\textbar\,35};
+          \node [b] (d70) at (10,-0.7) {70};
+          \node [b] (d10) at (0,-1.6) {10};
+          \node [b] (d2530) at (2.5,-1.6) {25\,\textbar\,30};
+          \node [b] (d4045) at (5.5,-1.6) {40\,\textbar\,45};
+          \node [b] (d5560) at (8.5,-1.6) {55\,\textbar\,60};
+          \node [b] (d80) at (11,-1.6) {80};
+          \draw [lp] (d50.south west) -- (d2035.north);
+          \draw [lp] (d50.south east) -- (d70.north);
+          \draw [lp] (d2035.south west) -- (d10.north);
+          \draw [lp] (d2035.south) -- (d2530.north);
+          \draw [lp] (d2035.south east) -- (d4045.north);
+          \draw [lp] (d70.south west) -- (d5560.north);
+          \draw [lp] (d70.south east) -- (d80.north);
+          \node [rot] at (12,-0.7) {árvore 2-3\\correspondente};
+        \end{scope}
+      \end{tikzpicture}}
+  \end{center}
+
+  \small
+  Achatar cada ligação \tcr{vermelha} junta as duas chaves em um nó 2-3; as
+  ligações pretas viram as ligações da árvore 2-3.
 \end{frame}
 
 % ==========================================
