@@ -62,55 +62,55 @@
 
 % ==========================================
 \begin{frame}
-  \begin{center}
-    \large{Setor de Educação Profissional e Tecnológica}\\
-    Tecnologia em Análise e Desenvolvimento de Sistemas\\
-    \vspace{1cm}
-    \small{DS143 - Estruturas de Dados II}
-  \end{center}
-  \titlepage
+	\begin{center}
+		\large{Setor de Educação Profissional e Tecnológica}\\
+		Tecnologia em Análise e Desenvolvimento de Sistemas\\
+		\vspace{1cm}
+		\small{DS143 - Estruturas de Dados II}
+	\end{center}
+	\titlepage
 \end{frame}
 
 % ==========================================
 \begin{frame}{Objetivos da aula}
-  \footnotesize
-  Ao final desta aula você deve ser capaz de:
-  \begin{enumerate}
-    \itemsep=0pt
-    \item Enunciar as propriedades de uma árvore rubro-negra e verificar se uma
-          árvore colorida dada as satisfaz;
-    \item Explicar por que essas propriedades limitam a altura a
-          $2\log_2(n+1)$;
-    \item Descrever a inserção em termos de recoloração e rotação, e dizer o
-          que cada conserto corrige;
-    \item Comparar AVL e rubro-negra quanto à altura obtida e ao número de
-          consertos por operação, e escolher entre as duas a partir do perfil
-          de uso;
-    \item Explicar por que a árvore binária é a estrutura errada em disco, e
-          como a árvore B resolve o problema;
-    \item Executar à mão a inserção com divisão de nó em uma árvore B;
-    \item Calcular quantos níveis uma árvore B precisa dado o número de chaves
-          por nó;
-    \item Descrever a trie e justificar por que o custo de busca nela não
-          depende do número de chaves;
-    \item Escolher entre ABB balanceada, árvore B e trie a partir do tipo de
-          chave e do meio em que a estrutura vive.
-  \end{enumerate}
+	\footnotesize
+	Ao final desta aula você deve ser capaz de:
+	\begin{enumerate}
+		\itemsep=0pt
+		\item Enunciar as propriedades de uma árvore rubro-negra e verificar se uma
+		      árvore colorida dada as satisfaz;
+		\item Explicar por que essas propriedades limitam a altura a
+		      $2\log_2(n+1)$;
+		\item Descrever a inserção em termos de recoloração e rotação, e dizer o
+		      que cada conserto corrige;
+		\item Comparar AVL e rubro-negra quanto à altura obtida e ao número de
+		      consertos por operação, e escolher entre as duas a partir do perfil
+		      de uso;
+		\item Explicar por que a árvore binária é a estrutura errada em disco, e
+		      como a árvore B resolve o problema;
+		\item Executar à mão a inserção com divisão de nó em uma árvore B;
+		\item Calcular quantos níveis uma árvore B precisa dado o número de chaves
+		      por nó;
+		\item Descrever a trie e justificar por que o custo de busca nela não
+		      depende do número de chaves;
+		\item Escolher entre ABB balanceada, árvore B e trie a partir do tipo de
+		      chave e do meio em que a estrutura vive.
+	\end{enumerate}
 
-  \vspace{0.1cm}
-  Este conteúdo cai na Prova 2.
+	\vspace{0.1cm}
+	Este conteúdo cai na Prova 2.
 \end{frame}
 
 % ==========================================
 \begin{frame}{Roteiro}
-  \tableofcontents
+	\tableofcontents
 \end{frame}
 
 % ==========================================
 \section{Rubro-negras}
 
 \begin{frame}[fragile]{Demonstração: o índice de um banco de dados}
-\begin{minted}{sql}
+	\begin{minted}{sql}
 CREATE TABLE aluno(grr INTEGER, nome TEXT);
 WITH RECURSIVE seq(n) AS (
   SELECT 1 UNION ALL SELECT n + 1 FROM seq
@@ -128,12 +128,12 @@ EXPLAIN QUERY PLAN
   SELECT nome FROM aluno WHERE grr = 1999999;
 \end{minted}
 
-  \vspace{0.2cm}
-  Dois milhões de linhas, a mesma consulta duas vezes.
+	\vspace{0.2cm}
+	Dois milhões de linhas, a mesma consulta duas vezes.
 \end{frame}
 
 \begin{frame}[fragile]{O plano de execução muda}
-\begin{minted}{text}
+	\begin{minted}{text}
 QUERY PLAN
 `--SCAN aluno
 aluno 1999999
@@ -147,445 +147,446 @@ Run Time: real 0.000
 4096            <- PRAGMA page_size
 \end{minted}
 
-  \vspace{0.2cm}
-  De 69 ms para menos de 1 ms. O índice é uma \textbf{árvore B}, e 4096 é o
-  tamanho em bytes de cada nó dela. Voltamos a esta tela no fim da aula.
+	\vspace{0.2cm}
+	De 69 ms para menos de 1 ms. O índice é uma \textbf{árvore B}, e 4096 é o
+	tamanho em bytes de cada nó dela. Voltamos a esta tela no fim da aula.
 \end{frame}
 
 \begin{frame}{Três estruturas, a partir da ABB balanceada}
-  \begin{block}{Árvore rubro-negra}
-    Mantém a garantia de $O(\log n)$ com um critério de balanceamento mais
-    frouxo que o da AVL. É a árvore de busca das bibliotecas de linguagem.
-  \end{block}
+	\begin{block}{Árvore rubro-negra}
+		Mantém a garantia de $O(\log n)$ com um critério de balanceamento mais
+		frouxo que o da AVL. É a árvore de busca das bibliotecas de linguagem.
+	\end{block}
 
-  \begin{block}{Árvore B}
-    Abandona o formato binário para funcionar em disco. É a estrutura de índice
-    de bancos de dados e de sistemas de arquivos.
-  \end{block}
+	\begin{block}{Árvore B}
+		Abandona o formato binário para funcionar em disco. É a estrutura de índice
+		de bancos de dados e de sistemas de arquivos.
+	\end{block}
 
-  \begin{block}{Trie}
-    Abandona a comparação entre chaves inteiras e usa a estrutura interna da
-    chave, letra por letra.
-  \end{block}
+	\begin{block}{Trie}
+		Abandona a comparação entre chaves inteiras e usa a estrutura interna da
+		chave, letra por letra.
+	\end{block}
 \end{frame}
 
 \begin{frame}{O que o critério da AVL cobra}
-  Alturas das duas subárvores diferindo em no máximo 1, em todo nó.
+	Alturas das duas subárvores diferindo em no máximo 1, em todo nó.
 
-  \vspace{0.4cm}
-  \begin{itemize}
-    \item um campo de altura por nó, atualizado em todo nó do caminho;
-    \item a remoção pode rotacionar em cada nível até a raiz: até
-          $O(\log n)$ rotações para tirar \tcr{uma} chave.
-  \end{itemize}
+	\vspace{0.4cm}
+	\begin{itemize}
+		\item um campo de altura por nó, atualizado em todo nó do caminho;
+		\item a remoção pode rotacionar em cada nível até a raiz: até
+		      $O(\log n)$ rotações para tirar \tcr{uma} chave.
+	\end{itemize}
 
-  \vspace{0.4cm}
-  A inserção é barata (no máximo uma rotação simples ou dupla). A remoção é que
-  decide em uma estrutura que recebe alterações o tempo todo.
+	\vspace{0.4cm}
+	A inserção é barata (no máximo uma rotação simples ou dupla). A remoção é que
+	decide em uma estrutura que recebe alterações o tempo todo.
 
-  \vspace{0.4cm}
-  \textbf{Pergunta:} quanto desbalanceamento dá para admitir sem perder a altura
-  logarítmica?
+	\vspace{0.4cm}
+	\textbf{Pergunta:} quanto desbalanceamento dá para admitir sem perder a altura
+	logarítmica?
 \end{frame}
 
 \begin{frame}{As três propriedades}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=0.95cm,
-          level 1/.style={sibling distance=2.6cm},
-          level 2/.style={sibling distance=1.3cm},
-          level 3/.style={sibling distance=0.8cm}]
-        \node [no] {40}
-        child { node [no] {30}
-            child { node [no] {20}
-                child { node [no] {10} edge from parent [lv] }
-                child [missing]
-              }
-            child { node [no] {35} }
-          }
-        child { node [no] {50}
-            child { node [no] {45} }
-            child { node [no] {95}
-                child { node [no] {90} edge from parent [lv] }
-                child [missing]
-              }
-          };
-      \end{tikzpicture}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \small
-      Uma ABB em que cada nó tem uma cor e vale:
-      \begin{enumerate}
-        \item a raiz é preta;
-        \item nenhum nó vermelho tem filho vermelho;
-        \item todo caminho da raiz até uma subárvore vazia tem o mesmo número
-              de nós pretos.
-      \end{enumerate}
+	\begin{columns}
+		\begin{column}{0.5\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=0.95cm,
+					level 1/.style={sibling distance=2.6cm},
+					level 2/.style={sibling distance=1.3cm},
+					level 3/.style={sibling distance=0.8cm}]
+				\node [no] {40}
+				child { node [no] {30}
+						child { node [no] {20}
+								child { node [no] {10} edge from parent [lv] }
+								child [missing]
+							}
+						child { node [no] {35} }
+					}
+				child { node [no] {50}
+						child { node [no] {45} }
+						child { node [no] {95}
+								child { node [no] {90} edge from parent [lv] }
+								child [missing]
+							}
+					};
+			\end{tikzpicture}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\small
+			Uma ABB em que cada nó tem uma cor e vale:
+			\begin{enumerate}
+				\item a raiz é preta;
+				\item nenhum nó vermelho tem filho vermelho;
+				\item todo caminho da raiz até uma subárvore vazia tem o mesmo número
+				      de nós pretos.
+			\end{enumerate}
 
-      \vspace{0.2cm}
-      Esse número é a \textbf{altura preta}. Aqui, 3.
+			\vspace{0.2cm}
+			Esse número é a \textbf{altura preta}. Aqui, 3.
 
-      \vspace{0.2cm}
-      \footnotesize Desenho de Sedgewick: a cor do nó é a da \textbf{ligação}
-      que vem do pai. Vermelhos: 10 e 90.
-    \end{column}
-  \end{columns}
+			\vspace{0.2cm}
+			\footnotesize Desenho de Sedgewick: a cor do nó é a da \textbf{ligação}
+			que vem do pai. Vermelhos: 10 e 90.
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Por que a altura é logarítmica}
-  Seja $b$ a altura preta.
+	Seja $b$ a altura preta.
 
-  \vspace{0.3cm}
-  \begin{itemize}
-    \item o caminho mais curto só tem pretos: $b$ nós;
-    \item o mais longo alterna preto e vermelho (propriedade 2): no máximo
-          $2b$ nós.
-  \end{itemize}
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item o caminho mais curto só tem pretos: $b$ nós;
+		\item o mais longo alterna preto e vermelho (propriedade 2): no máximo
+		      $2b$ nós.
+	\end{itemize}
 
-  \vspace{0.3cm}
-  Nenhum caminho passa do dobro de outro. Com pelo menos $2^b - 1$ nós na
-  árvore, vale $b \le \log_2(n+1)$ e
+	\vspace{0.3cm}
+	Nenhum caminho passa do dobro de outro. Com pelo menos $2^b - 1$ nós na
+	árvore, vale $b \le \log_2(n+1)$ e
 
-  \vspace{0.2cm}
-  \begin{center}
-    \fbox{$h \le 2\log_2(n+1)$}
-  \end{center}
+	\vspace{0.2cm}
+	\begin{center}
+		\fbox{$h \le 2\log_2(n+1)$}
+	\end{center}
 
-  \vspace{0.3cm}
-  Contra $1{,}44\log_2(n+2)$ da AVL. O limite é pior; em troca, na versão do
-  Cormen, a remoção faz menos rotações que na AVL.
+	\vspace{0.3cm}
+	Contra $1{,}44\log_2(n+2)$ da AVL. O limite é pior; em troca, na versão do
+	Cormen, a remoção faz menos rotações que na AVL.
 \end{frame}
 
 \begin{frame}{A variante left-leaning}
-  Sedgewick (seção 3.3) acrescenta duas exigências às três propriedades:
+	Sedgewick (seção 3.3) acrescenta duas exigências às três propriedades:
 
-  \vspace{0.3cm}
-  \begin{itemize}
-    \item toda ligação vermelha aponta para a \textbf{esquerda};
-    \item nenhum nó tem duas ligações vermelhas.
-  \end{itemize}
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item toda ligação vermelha aponta para a \textbf{esquerda};
+		\item nenhum nó tem duas ligações vermelhas.
+	\end{itemize}
 
-  \vspace{0.3cm}
-  Com elas, a inserção perde metade dos casos e cabe em três testes. O motivo
-  aparece adiante, junto com a árvore 2-3.
+	\vspace{0.3cm}
+	Com elas, a inserção perde metade dos casos e cabe em três testes. O motivo
+	aparece adiante, junto com a árvore 2-3.
 \end{frame}
 
 \begin{frame}{Duas versões de rubro-negra}
-  \begin{columns}[t]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Cormen (cap. 13)}
-        \small
-        \begin{itemize}
-          \item vermelho à direita permitido, e nó preto com os dois filhos
-                vermelhos;
-          \item no máximo 2 rotações por inserção e 3 por remoção;
-          \item é a versão das bibliotecas.
-        \end{itemize}
-      \end{block}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Left-leaning (Sedgewick, 3.3)}
-        \small
-        \begin{itemize}
-          \item vermelho só à esquerda, e nenhum nó com duas ligações
-                vermelhas;
-          \item até $O(\log n)$ rotações por inserção e por remoção, em troca
-                de um código bem mais curto;
-          \item é a versão desta aula.
-        \end{itemize}
-      \end{block}
-    \end{column}
-  \end{columns}
+	\begin{columns}[t]
+		\begin{column}{0.48\textwidth}
+			\begin{block}{Cormen (cap. 13)}
+				\small
+				\begin{itemize}
+					\item vermelho à direita permitido, e nó preto com os dois filhos
+					      vermelhos;
+					\item no máximo 2 rotações por inserção e 3 por remoção;
+					\item é a versão das bibliotecas.
+				\end{itemize}
+			\end{block}
+		\end{column}
+		\begin{column}{0.48\textwidth}
+			\begin{block}{Left-leaning (Sedgewick, 3.3)}
+				\small
+				\begin{itemize}
+					\item vermelho só à esquerda, e nenhum nó com duas ligações
+					      vermelhas;
+					\item até $O(\log n)$ rotações por inserção e por remoção, em troca
+					      de um código bem mais curto;
+					\item é a versão desta aula.
+				\end{itemize}
+			\end{block}
+		\end{column}
+	\end{columns}
 
-  \vspace{0.4cm}
-  As duas satisfazem as três propriedades e têm o mesmo limite de altura.
+	\vspace{0.4cm}
+	As duas satisfazem as três propriedades e têm o mesmo limite de altura.
 \end{frame}
 
 \begin{frame}{O que é uma árvore 2-3}
-  Árvore de busca em que cada nó guarda uma ou duas chaves.
+	Árvore de busca em que cada nó guarda uma ou duas chaves.
 
-  \vspace{0.3cm}
-  \begin{columns}
-    \begin{column}{0.4\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1.1cm,
-          level 1/.style={sibling distance=1.4cm}]
-        \node [bnode] {30}
-        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$< 30$}] {} }
-        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$> 30$}] {} };
-      \end{tikzpicture}
+	\vspace{0.3cm}
+	\begin{columns}
+		\begin{column}{0.4\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=1.1cm,
+					level 1/.style={sibling distance=1.4cm}]
+				\node [bnode] {30}
+				child { node [arn_t, label={[font=\sffamily\scriptsize]below:$< 30$}] {} }
+				child { node [arn_t, label={[font=\sffamily\scriptsize]below:$> 30$}] {} };
+			\end{tikzpicture}
 
-      \vspace{0.1cm}
-      \footnotesize\textbf{Nó 2}: uma chave, dois filhos.
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1.1cm,
-          level 1/.style={sibling distance=1.8cm}]
-        \node [bnode] {20 $\mid$ 40}
-        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$< 20$}] {} }
-        child { node [arn_t, label={[font=\sffamily\scriptsize]below:entre 20 e 40}] {} }
-        child { node [arn_t, label={[font=\sffamily\scriptsize]below:$> 40$}] {} };
-      \end{tikzpicture}
+			\vspace{0.1cm}
+			\footnotesize\textbf{Nó 2}: uma chave, dois filhos.
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=1.1cm,
+					level 1/.style={sibling distance=1.8cm}]
+				\node [bnode] {20 $\mid$ 40}
+				child { node [arn_t, label={[font=\sffamily\scriptsize]below:$< 20$}] {} }
+				child { node [arn_t, label={[font=\sffamily\scriptsize]below:entre 20 e 40}] {} }
+				child { node [arn_t, label={[font=\sffamily\scriptsize]below:$> 40$}] {} };
+			\end{tikzpicture}
 
-      \vspace{0.1cm}
-      \footnotesize\textbf{Nó 3}: duas chaves, três filhos.
-    \end{column}
-  \end{columns}
+			\vspace{0.1cm}
+			\footnotesize\textbf{Nó 3}: duas chaves, três filhos.
+		\end{column}
+	\end{columns}
 
-  \vspace{0.4cm}
-  \begin{itemize}
-    \item a busca compara com as chaves do nó e desce pelo filho do intervalo
-      certo;
-    \item todas as folhas ficam no \textbf{mesmo nível}: a árvore é
-      perfeitamente balanceada, com altura entre $\log_3 n$ e $\log_2 n$;
-    \item o preço é o nó com dois tamanhos, incômodo de implementar. A
-      rubro-negra guarda a mesma árvore usando só nós binários.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{As cores codificam uma árvore 2-3}
-  \begin{columns}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1.1cm,
-          level 1/.style={sibling distance=1.6cm}]
-        \node [bnode] {20 $\mid$ 40}
-        child { node [arn_t] {} }
-        child { node [arn_t] {} }
-        child { node [arn_t] {} };
-      \end{tikzpicture}
-
-      \vspace{0.3cm}
-      \footnotesize Nó 2-3 com duas chaves e três filhos.
-    \end{column}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1cm,
-          level 1/.style={sibling distance=1.8cm},
-          level 2/.style={sibling distance=1.3cm}]
-        \node [no] {40}
-        child { node [no] {20}
-            child { node [arn_t] {} edge from parent [lp] }
-            child { node [arn_t] {} edge from parent [lp] }
-            edge from parent [lv]
-          }
-        child { node [arn_t] {} };
-      \end{tikzpicture}
-
-      \vspace{0.3cm}
-      \footnotesize A ligação \tcr{vermelha} une as duas chaves do mesmo nó 2-3.
-    \end{column}
-  \end{columns}
-
-  \vspace{0.4cm}
-  \begin{itemize}
-    \item ligação preta = descer um nível na árvore 2-3;
-    \item altura preta = altura da árvore 2-3;
-    \item na versão do Cormen, o nó preto com dois filhos vermelhos é um nó de
-      três chaves: as cores codificam uma árvore \textbf{2-3-4}.
-  \end{itemize}
+	\vspace{0.4cm}
+	\begin{itemize}
+		\item a busca compara com as chaves do nó e desce pelo filho do intervalo
+		      certo;
+		\item todas as folhas ficam no \textbf{mesmo nível}: a árvore é
+		      perfeitamente balanceada, com altura entre $\log_3 n$ e $\log_2 n$;
+		\item o preço é o nó com dois tamanhos, incômodo de implementar. A
+		      rubro-negra guarda a mesma árvore usando só nós binários.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Inserção na árvore 2-3}
-  \begin{itemize}
-    \item a chave nova entra sempre em uma \textbf{folha};
-    \item exemplo: 20, 30, 40, 50, 60, 70 e 80, nessa ordem, a sequência que
-      degenera a ABB em uma lista.
-  \end{itemize}
+	\begin{itemize}
+		\item a chave nova entra sempre em uma \textbf{folha};
+		\item exemplo: 20, 30, 40, 50, 60, 70 e 80, nessa ordem, a sequência que
+		      degenera a ABB em uma lista.
+	\end{itemize}
 
-  \vspace{0.5cm}
-  \begin{center}
-    \arvDoisTresA
-  \end{center}
+	\vspace{0.5cm}
+	\begin{center}
+		\arvDoisTresA
+	\end{center}
 
-  \vspace{0.3cm}
-  Folha com uma chave: a nova entra ao lado dela, e acabou.
+	\vspace{0.3cm}
+	Folha com uma chave: a nova entra ao lado dela, e acabou.
 \end{frame}
 
 \begin{frame}{Folha com duas chaves: o nó temporário}
-  \begin{center}
-    \resizebox{\textwidth}{!}{\arvDoisTresB}
-  \end{center}
+	\begin{center}
+		\resizebox{\textwidth}{!}{\arvDoisTresB}
+	\end{center}
 
-  \vspace{0.3cm}
-  \begin{itemize}
-    \item por um momento, o nó fica com \tcr{três chaves} e quatro filhos: um nó
-      que a árvore 2-3 não admite e a \textbf{2-3-4} admite;
-    \item ele se divide: a chave do meio sobe, e as outras duas ficam em dois
-      nós de uma chave;
-    \item se o nó é a raiz, a chave do meio vira uma raiz nova.
-  \end{itemize}
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item por um momento, o nó fica com \tcr{três chaves} e quatro filhos: um nó
+		      que a árvore 2-3 não admite e a \textbf{2-3-4} admite;
+		\item ele se divide: a chave do meio sobe, e as outras duas ficam em dois
+		      nós de uma chave;
+		\item se o nó é a raiz, a chave do meio vira uma raiz nova.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{A chave que sobe entra no pai}
-  \begin{center}
-    \resizebox{\textwidth}{!}{\arvDoisTresC}
-  \end{center}
+	\begin{center}
+		\resizebox{\textwidth}{!}{\arvDoisTresC}
+	\end{center}
 
-  \vspace{0.3cm}
-  Depois de inserir o 70, que só completa a folha do 60, a árvore tem pai e
-  folha com duas chaves.
+	\vspace{0.3cm}
+	Depois de inserir o 70, que só completa a folha do 60, a árvore tem pai e
+	folha com duas chaves.
 \end{frame}
 
 \begin{frame}{A divisão pode subir até a raiz}
-  \begin{center}
-    \resizebox{!}{0.6\textheight}{\arvDoisTresD}
-  \end{center}
+	\begin{center}
+		\resizebox{!}{0.6\textheight}{\arvDoisTresD}
+	\end{center}
 
-  \begin{itemize}
-    \item a árvore cresce pela raiz, e todas as folhas ficam no mesmo nível;
-    \item na rubro-negra, depois das rotações, o nó temporário é o nó com
-      duas ligações \tcr{vermelhas} para os filhos, e a divisão é a inversão
-      de cores.
-  \end{itemize}
+	\begin{itemize}
+		\item a árvore cresce pela raiz, e todas as folhas ficam no mesmo nível;
+		\item na rubro-negra, depois das rotações, o nó temporário é o nó com
+		      duas ligações \tcr{vermelhas} para os filhos, e a divisão é a inversão
+		      de cores.
+	\end{itemize}
 \end{frame}
 
-\begin{frame}{Da rubro-negra à árvore 2-3}
-  % Mesma figura de Sedgewick (fig. 3.3.12): cada chave mantém a mesma
-  % coordenada x nos três painéis, dada pela ordem das chaves.
-  \begin{center}
-    \resizebox{!}{0.72\textheight}{%
-      \begin{tikzpicture}[x=0.75cm, y=1cm,
-          k/.style={circle, draw=black, fill=white, line width=0.6pt,
-            minimum size=1.5em, inner sep=0pt, font=\sffamily\scriptsize},
-          b/.style={draw=black, fill=black!5, line width=0.6pt,
-            inner sep=2.5pt, font=\sffamily\scriptsize},
-          rot/.style={anchor=west, text width=2.6cm,
-            font=\sffamily\footnotesize}]
-        % Painel 1: rubro-negra left-leaning
-        \begin{scope}
-          \foreach \c/\x/\y in {50/7/0, 35/4/-0.55, 70/10/-0.55,
-              20/1/-1.1, 45/6/-1.1, 60/9/-1.1, 80/11/-1.1,
-              10/0/-1.65, 30/3/-1.65, 40/5/-1.65, 55/8/-1.65, 25/2/-2.2}
-            \node [k] (r\c) at (\x,\y) {\c};
-          \foreach \p/\f in {50/35, 50/70, 35/45, 20/10, 20/30, 70/60, 70/80}
-            \draw [lp] (r\p) -- (r\f);
-          \foreach \p/\f in {35/20, 30/25, 45/40, 60/55}
-            \draw [lv] (r\p) -- (r\f);
-          \node [rot] at (12,-1.1) {rubro-negra\\left-leaning};
-        \end{scope}
-        % Painel 2: ligações vermelhas na horizontal
-        \begin{scope}[yshift=-3.1cm]
-          \foreach \c/\x/\y in {50/7/0, 20/1/-0.7, 35/4/-0.7, 70/10/-0.7,
-              10/0/-1.6, 25/2/-1.6, 30/3/-1.6, 40/5/-1.6, 45/6/-1.6,
-              55/8/-1.6, 60/9/-1.6, 80/11/-1.6}
-            \node [k] (h\c) at (\x,\y) {\c};
-          \foreach \p/\f in {50/35, 50/70, 35/45, 20/10, 20/30, 70/60, 70/80}
-            \draw [lp] (h\p) -- (h\f);
-          \foreach \p/\f in {35/20, 30/25, 45/40, 60/55}
-            \draw [lv] (h\p) -- (h\f);
-          \node [rot] at (12,-0.7) {ligações vermelhas\\na horizontal};
-        \end{scope}
-        % Painel 3: árvore 2-3 correspondente
-        \begin{scope}[yshift=-5.6cm]
-          \node [b] (d50) at (7,0) {50};
-          \node [b] (d2035) at (2.5,-0.7) {20\,\textbar\,35};
-          \node [b] (d70) at (10,-0.7) {70};
-          \node [b] (d10) at (0,-1.6) {10};
-          \node [b] (d2530) at (2.5,-1.6) {25\,\textbar\,30};
-          \node [b] (d4045) at (5.5,-1.6) {40\,\textbar\,45};
-          \node [b] (d5560) at (8.5,-1.6) {55\,\textbar\,60};
-          \node [b] (d80) at (11,-1.6) {80};
-          \draw [lp] (d50.south west) -- (d2035.north);
-          \draw [lp] (d50.south east) -- (d70.north);
-          \draw [lp] (d2035.south west) -- (d10.north);
-          \draw [lp] (d2035.south) -- (d2530.north);
-          \draw [lp] (d2035.south east) -- (d4045.north);
-          \draw [lp] (d70.south west) -- (d5560.north);
-          \draw [lp] (d70.south east) -- (d80.north);
-          \node [rot] at (12,-0.7) {árvore 2-3\\correspondente};
-        \end{scope}
-      \end{tikzpicture}}
-  \end{center}
+\begin{frame}{As cores codificam uma árvore 2-3}
+	\begin{columns}
+		\begin{column}{0.42\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=1.1cm,
+					level 1/.style={sibling distance=1.6cm}]
+				\node [bnode] {20 $\mid$ 40}
+				child { node [arn_t] {} }
+				child { node [arn_t] {} }
+				child { node [arn_t] {} };
+			\end{tikzpicture}
 
-  \small
-  Achatar cada ligação \tcr{vermelha} junta as duas chaves em um nó 2-3; as
-  ligações pretas viram as ligações da árvore 2-3.
+			\vspace{0.3cm}
+			\footnotesize Nó 2-3 com duas chaves e três filhos.
+		\end{column}
+		\begin{column}{0.42\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=1cm,
+					level 1/.style={sibling distance=1.8cm},
+					level 2/.style={sibling distance=1.3cm}]
+				\node [no] {40}
+				child { node [no] {20}
+						child { node [arn_t] {} edge from parent [lp] }
+						child { node [arn_t] {} edge from parent [lp] }
+						edge from parent [lv]
+					}
+				child { node [arn_t] {} };
+			\end{tikzpicture}
+
+			\vspace{0.3cm}
+			\footnotesize A ligação \tcr{vermelha} une as duas chaves do mesmo nó 2-3.
+		\end{column}
+	\end{columns}
+
+	\vspace{0.4cm}
+	\begin{itemize}
+		\item ligação preta = descer um nível na árvore 2-3;
+		\item altura preta = altura da árvore 2-3;
+		\item na versão do Cormen, o nó preto com dois filhos vermelhos é um nó de
+		      três chaves: as cores codificam uma árvore \textbf{2-3-4}.
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Da rubro-negra à árvore 2-3}
+	% Mesma figura de Sedgewick (fig. 3.3.12): cada chave mantém a mesma
+	% coordenada x nos três painéis, dada pela ordem das chaves.
+	\begin{center}
+		\resizebox{!}{0.72\textheight}{%
+			\begin{tikzpicture}[x=0.75cm, y=1cm,
+					k/.style={circle, draw=black, fill=white, line width=0.6pt,
+							minimum size=1.5em, inner sep=0pt, font=\sffamily\scriptsize},
+					b/.style={draw=black, fill=black!5, line width=0.6pt,
+							inner sep=2.5pt, font=\sffamily\scriptsize},
+					rot/.style={anchor=west, text width=2.6cm,
+							font=\sffamily\footnotesize}]
+				% Painel 1: rubro-negra left-leaning
+				\begin{scope}
+					\foreach \c/\x/\y in {50/7/0, 35/4/-0.55, 70/10/-0.55,
+							20/1/-1.1, 45/6/-1.1, 60/9/-1.1, 80/11/-1.1,
+							10/0/-1.65, 30/3/-1.65, 40/5/-1.65, 55/8/-1.65, 25/2/-2.2}
+					\node [k] (r\c) at (\x,\y) {\c};
+					\foreach \p/\f in {50/35, 50/70, 35/45, 20/10, 20/30, 70/60, 70/80}
+					\draw [lp] (r\p) -- (r\f);
+					\foreach \p/\f in {35/20, 30/25, 45/40, 60/55}
+					\draw [lv] (r\p) -- (r\f);
+					\node [rot] at (12,-1.1) {rubro-negra\\left-leaning};
+				\end{scope}
+				% Painel 2: ligações vermelhas na horizontal
+				\begin{scope}[yshift=-3.1cm]
+					\foreach \c/\x/\y in {50/7/0, 20/1/-0.7, 35/4/-0.7, 70/10/-0.7,
+							10/0/-1.6, 25/2/-1.6, 30/3/-1.6, 40/5/-1.6, 45/6/-1.6,
+							55/8/-1.6, 60/9/-1.6, 80/11/-1.6}
+					\node [k] (h\c) at (\x,\y) {\c};
+					\foreach \p/\f in {50/35, 50/70, 35/45, 20/10, 20/30, 70/60, 70/80}
+					\draw [lp] (h\p) -- (h\f);
+					\foreach \p/\f in {35/20, 30/25, 45/40, 60/55}
+					\draw [lv] (h\p) -- (h\f);
+					\node [rot] at (12,-0.7) {ligações vermelhas\\na horizontal};
+				\end{scope}
+				% Painel 3: árvore 2-3 correspondente
+				\begin{scope}[yshift=-5.6cm]
+					\node [b] (d50) at (7,0) {50};
+					\node [b] (d2035) at (2.5,-0.7) {20\,\textbar\,35};
+					\node [b] (d70) at (10,-0.7) {70};
+					\node [b] (d10) at (0,-1.6) {10};
+					\node [b] (d2530) at (2.5,-1.6) {25\,\textbar\,30};
+					\node [b] (d4045) at (5.5,-1.6) {40\,\textbar\,45};
+					\node [b] (d5560) at (8.5,-1.6) {55\,\textbar\,60};
+					\node [b] (d80) at (11,-1.6) {80};
+					\draw [lp] (d50.south west) -- (d2035.north);
+					\draw [lp] (d50.south east) -- (d70.north);
+					\draw [lp] (d2035.south west) -- (d10.north);
+					\draw [lp] (d2035.south) -- (d2530.north);
+					\draw [lp] (d2035.south east) -- (d4045.north);
+					\draw [lp] (d70.south west) -- (d5560.north);
+					\draw [lp] (d70.south east) -- (d80.north);
+					\node [rot] at (12,-0.7) {árvore 2-3\\correspondente};
+				\end{scope}
+			\end{tikzpicture}}
+	\end{center}
+
+	\small
+	Achatar cada ligação \tcr{vermelha} junta as duas chaves em um nó 2-3; as
+	ligações pretas viram as ligações da árvore 2-3.
 \end{frame}
 
 % ==========================================
 \section{Inserção}
 
 \begin{frame}{O nó novo entra vermelho}
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \begin{block}{Se entrasse preto}
-        Acrescentaria um nó preto ao caminho que o contém e quebraria a
-        propriedade 3, a mais cara de restabelecer.
-      \end{block}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \begin{block}{Entrando vermelho}
-        Só pode quebrar a propriedade 2, e apenas quando o pai também for
-        vermelho.
-      \end{block}
-    \end{column}
-  \end{columns}
+	\begin{columns}
+		\begin{column}{0.5\textwidth}
+			\begin{block}{Se entrasse preto}
+				Acrescentaria um nó preto ao caminho que o contém e quebraria a
+				propriedade 3, a mais cara de restabelecer.
+			\end{block}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\begin{block}{Entrando vermelho}
+				Só pode quebrar a propriedade 2, e apenas quando o pai também for
+				vermelho.
+			\end{block}
+		\end{column}
+	\end{columns}
 
-  \vspace{0.5cm}
-  Os consertos acontecem na volta da recursão, em cada nó do caminho da folha
-  nova até a raiz. Ao final, a raiz é pintada de preto.
+	\vspace{0.5cm}
+	Os consertos acontecem na volta da recursão, em cada nó do caminho da folha
+	nova até a raiz. Ao final, a raiz é pintada de preto.
 \end{frame}
 
 \begin{frame}{Os três consertos}
-  \begin{center}
-    \small
-    \begin{tabular}{p{4.6cm}ll}
-      \toprule
-      \textbf{Situação no nó} & \textbf{Conserto} & \textbf{Muda} \\
-      \midrule
-      filho direito vermelho e esquerdo preto & rotação à esquerda & ponteiros \\
-      filho esquerdo vermelho com filho esquerdo vermelho & rotação à direita & ponteiros \\
-      os dois filhos vermelhos & inversão de cores & só as cores \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\small
+		\begin{tabular}{p{4.6cm}ll}
+			\toprule
+			\textbf{Situação no nó}                             & \textbf{Conserto}  & \textbf{Muda} \\
+			\midrule
+			filho direito vermelho e esquerdo preto             & rotação à esquerda & ponteiros     \\
+			filho esquerdo vermelho com filho esquerdo vermelho & rotação à direita  & ponteiros     \\
+			os dois filhos vermelhos                            & inversão de cores  & só as cores   \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.4cm}
-  Nessa ordem, sempre. A inversão de cores empurra o vermelho um nível para
-  cima: na árvore 2-3, é a divisão de um nó que ficou com três chaves.
+	\vspace{0.4cm}
+	Nessa ordem, sempre. A inversão de cores empurra o vermelho um nível para
+	cima: na árvore 2-3, é a divisão de um nó que ficou com três chaves.
 \end{frame}
 
 \begin{frame}{Inversão de cores}
-  \begin{columns}
-    \begin{column}{0.45\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1cm,
-          level 1/.style={sibling distance=1.6cm}]
-        \node [no] (r) {40}
-        child { node [no] {20} edge from parent [lv] }
-        child { node [no] {50} edge from parent [lv] };
-        \draw [lp] (r.north) -- ++(0,0.6);
-      \end{tikzpicture}
+	\begin{columns}
+		\begin{column}{0.45\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=1cm,
+					level 1/.style={sibling distance=1.6cm}]
+				\node [no] (r) {40}
+				child { node [no] {20} edge from parent [lv] }
+				child { node [no] {50} edge from parent [lv] };
+				\draw [lp] (r.north) -- ++(0,0.6);
+			\end{tikzpicture}
 
-      \vspace{0.2cm}
-      \footnotesize antes
-    \end{column}
-    \begin{column}{0.45\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=1cm,
-          level 1/.style={sibling distance=1.6cm}]
-        \node [no] (r) {40}
-        child { node [no] {20} }
-        child { node [no] {50} };
-        \draw [lv] (r.north) -- ++(0,0.6);
-      \end{tikzpicture}
+			\vspace{0.2cm}
+			\footnotesize antes
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=1cm,
+					level 1/.style={sibling distance=1.6cm}]
+				\node [no] (r) {40}
+				child { node [no] {20} }
+				child { node [no] {50} };
+				\draw [lv] (r.north) -- ++(0,0.6);
+			\end{tikzpicture}
 
-      \vspace{0.2cm}
-      \footnotesize depois
-    \end{column}
-  \end{columns}
+			\vspace{0.2cm}
+			\footnotesize depois
+		\end{column}
+	\end{columns}
 
-  \vspace{0.4cm}
-  Nenhum ponteiro muda. As duas ligações vermelhas de baixo viram pretas, e a
-  ligação que chega ao 40 vira vermelha: o vermelho sobe um nível para ser
-  tratado pelo pai. A altura preta dos caminhos não muda.
+	\vspace{0.4cm}
+	Nenhum ponteiro muda. As duas ligações vermelhas de baixo viram pretas, e a
+	ligação que chega ao 40 vira vermelha: o vermelho sobe um nível para ser
+	tratado pelo pai. A altura preta dos caminhos não muda.
 \end{frame}
 
 \begin{frame}[fragile]{Rotação com cor}
-\begin{minted}{go}
+	\begin{minted}{go}
 func rotacionaEsquerda(a *No) *No {
 	b := a.Dir
 	a.Dir = b.Esq
@@ -596,14 +597,14 @@ func rotacionaEsquerda(a *No) *No {
 }
 \end{minted}
 
-  \vspace{0.2cm}
-  As três primeiras linhas são a rotação da AVL. As duas seguintes são o que a
-  cor acrescenta: quem sobe leva a cor do nó que estava ali, e quem desce fica
-  vermelho.
+	\vspace{0.2cm}
+	As três primeiras linhas são a rotação da AVL. As duas seguintes são o que a
+	cor acrescenta: quem sobe leva a cor do nó que estava ali, e quem desce fica
+	vermelho.
 \end{frame}
 
 \begin{frame}[fragile]{A inserção inteira}
-\begin{minted}[fontsize=\scriptsize]{go}
+	\begin{minted}[fontsize=\scriptsize]{go}
 func insere(a *No, v int) *No {
 	if a == nil {
 		return &No{Info: v, Cor: Vermelho}
@@ -628,77 +629,77 @@ func insere(a *No, v int) *No {
 \end{frame}
 
 \begin{frame}{Inserção de P: os consertos em sequência}
-  \begin{center}
-    \only<1>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_1.pdf}}%
-    \only<2>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_2.pdf}}%
-    \only<3>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_3.pdf}}%
-    \only<4>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_4.pdf}}%
-    \only<5>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_5.pdf}}%
-    \only<6>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_6.pdf}}%
-  \end{center}
+	\begin{center}
+		\only<1>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_1.pdf}}%
+		\only<2>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_2.pdf}}%
+		\only<3>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_3.pdf}}%
+		\only<4>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_4.pdf}}%
+		\only<5>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_5.pdf}}%
+		\only<6>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_6.pdf}}%
+	\end{center}
 
-  \vspace{0.2cm}
-  \begin{center}
-    \only<1>{1. P entra como folha vermelha.}%
-    \only<2>{2. Dois filhos vermelhos: inversão de cores em M.}%
-    \only<3>{3. Filho direito vermelho: rotação à esquerda em E.}%
-    \only<4>{4. Dois vermelhos seguidos à esquerda: rotação à direita em R.}%
-    \only<5>{5. Dois filhos vermelhos: inversão de cores em M.}%
-    \only<6>{6. A raiz volta a ser preta.}%
-  \end{center}
+	\vspace{0.2cm}
+	\begin{center}
+		\only<1>{1. P entra como folha vermelha.}%
+		\only<2>{2. Dois filhos vermelhos: inversão de cores em M.}%
+		\only<3>{3. Filho direito vermelho: rotação à esquerda em E.}%
+		\only<4>{4. Dois vermelhos seguidos à esquerda: rotação à direita em R.}%
+		\only<5>{5. Dois filhos vermelhos: inversão de cores em M.}%
+		\only<6>{6. A raiz volta a ser preta.}%
+	\end{center}
 
-  \vspace{0.1cm}
-  \footnotesize Exemplo de Sedgewick e Wayne, seção 3.3. Em laranja, o nó em
-  que o conserto foi aplicado.
+	\vspace{0.1cm}
+	\footnotesize Exemplo de Sedgewick e Wayne, seção 3.3. Em laranja, o nó em
+	que o conserto foi aplicado.
 \end{frame}
 
 \begin{frame}{Inserindo 10, 20 e 30 em ordem}
-  \begin{columns}[t]
-    \begin{column}{0.3\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=0.9cm,
-          level 1/.style={sibling distance=1.2cm}]
-        \node [no] {10}
-        child [missing]
-        child { node [no] {20} edge from parent [lv] };
-      \end{tikzpicture}
+	\begin{columns}[t]
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=0.9cm,
+					level 1/.style={sibling distance=1.2cm}]
+				\node [no] {10}
+				child [missing]
+				child { node [no] {20} edge from parent [lv] };
+			\end{tikzpicture}
 
-      \vspace{0.2cm}
-      \footnotesize vermelho à direita
-    \end{column}
-    \begin{column}{0.3\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=0.9cm,
-          level 1/.style={sibling distance=1.2cm}]
-        \node [no] {20}
-        child { node [no] {10} edge from parent [lv] }
-        child [missing];
-      \end{tikzpicture}
+			\vspace{0.2cm}
+			\footnotesize vermelho à direita
+		\end{column}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=0.9cm,
+					level 1/.style={sibling distance=1.2cm}]
+				\node [no] {20}
+				child { node [no] {10} edge from parent [lv] }
+				child [missing];
+			\end{tikzpicture}
 
-      \vspace{0.2cm}
-      \footnotesize rotação à esquerda
-    \end{column}
-    \begin{column}{0.35\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=0.9cm,
-          level 1/.style={sibling distance=1.3cm}]
-        \node [no] {20}
-        child { node [no] {10} }
-        child { node [no] {30} };
-      \end{tikzpicture}
+			\vspace{0.2cm}
+			\footnotesize rotação à esquerda
+		\end{column}
+		\begin{column}{0.35\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=0.9cm,
+					level 1/.style={sibling distance=1.3cm}]
+				\node [no] {20}
+				child { node [no] {10} }
+				child { node [no] {30} };
+			\end{tikzpicture}
 
-      \vspace{0.2cm}
-      \footnotesize insere 30, inversão de cores
-    \end{column}
-  \end{columns}
+			\vspace{0.2cm}
+			\footnotesize insere 30, inversão de cores
+		\end{column}
+	\end{columns}
 
-  \vspace{0.5cm}
-  A entrada em ordem crescente, que degenera a ABB em uma lista, produz aqui uma
-  árvore cheia. O 20 virou raiz sem ter sido inserido primeiro.
+	\vspace{0.5cm}
+	A entrada em ordem crescente, que degenera a ABB em uma lista, produz aqui uma
+	árvore cheia. O 20 virou raiz sem ter sido inserido primeiro.
 \end{frame}
 
 \begin{frame}[fragile]{A árvore de exemplo, agora colorida}
-\begin{minted}{text}
+	\begin{minted}{text}
 $ go run rn.go
 Inserindo [50 30 90 20 40 95 10 35 45]
 
@@ -715,16 +716,16 @@ Inserindo [50 30 90 20 40 95 10 35 45]
 altura: 3   altura preta: 3   é rubro-negra: true
 \end{minted}
 
-  \vspace{0.1cm}
-  \texttt{(v)}: ligação vermelha vinda do pai. É a árvore do slide das
-  propriedades, e a raiz é o 40, e não o 50 que entrou primeiro.
+	\vspace{0.1cm}
+	\texttt{(v)}: ligação vermelha vinda do pai. É a árvore do slide das
+	propriedades, e a raiz é o 40, e não o 50 que entrou primeiro.
 \end{frame}
 
 % ==========================================
 \section{AVL e rubro-negra}
 
 \begin{frame}[fragile]{Medindo as duas: altura e consertos}
-\begin{minted}[fontsize=\fontsize{6}{7.5}\selectfont, breaklines=false]{text}
+	\begin{minted}[fontsize=\fontsize{6}{7.5}\selectfont, breaklines=false]{text}
 Inserções em ordem crescente
       n | alt. ABB | alt. AVL | alt. RN | rot. AVL | rot. RN | recolor. RN
 --------+----------+----------+---------+----------+---------+------------
@@ -740,179 +741,179 @@ Inserções em ordem aleatória
  100000 |       40 |       19 |      22 |    69951 |  118478 |       74636
 \end{minted}
 
-  \vspace{0.1cm}
-  \footnotesize \texttt{go run comparacao.go}
+	\vspace{0.1cm}
+	\footnotesize \texttt{go run comparacao.go}
 \end{frame}
 
 \begin{frame}{O que a tabela diz}
-  \begin{itemize}
-    \item as duas eliminam a degeneração, e ficam bem abaixo dos limites
-          teóricos (24 e 34 para $n = 100$ mil);
-    \item a AVL fica 2 ou 3 níveis mais baixa na ordem aleatória. Cada nível é
-          uma comparação a mais por busca;
-    \item na inserção, a rubro-negra \tcr{não} faz menos rotações. Na variante
-          left-leaning medida aqui faz mais, porque também mantém as ligações
-          vermelhas todas à esquerda, e ainda recolore em cerca de três quartos
-          das inserções.
-  \end{itemize}
+	\begin{itemize}
+		\item as duas eliminam a degeneração, e ficam bem abaixo dos limites
+		      teóricos (24 e 34 para $n = 100$ mil);
+		\item a AVL fica 2 ou 3 níveis mais baixa na ordem aleatória. Cada nível é
+		      uma comparação a mais por busca;
+		\item na inserção, a rubro-negra \tcr{não} faz menos rotações. Na variante
+		      left-leaning medida aqui faz mais, porque também mantém as ligações
+		      vermelhas todas à esquerda, e ainda recolore em cerca de três quartos
+		      das inserções.
+	\end{itemize}
 
-  \vspace{0.4cm}
-  A vantagem da rubro-negra aparece na remoção, que a tabela não mede, e só na
-  versão do Cormen.
+	\vspace{0.4cm}
+	A vantagem da rubro-negra aparece na remoção, que a tabela não mede, e só na
+	versão do Cormen.
 \end{frame}
 
 \begin{frame}{A diferença está na remoção}
-  \begin{center}
-    \scriptsize
-    \begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm}
-                    >{\raggedright\arraybackslash}p{2.6cm}
-                    >{\raggedright\arraybackslash}p{2.1cm}
-                    >{\raggedright\arraybackslash}p{2.3cm}}
-      \toprule
-       & \textbf{AVL} & \textbf{RN (Cormen)} & \textbf{RN (left-leaning)} \\
-      \midrule
-      Altura no pior caso & $1{,}44\log_2(n+2)$ & $2\log_2(n+1)$ & $2\log_2(n+1)$ \\
-      Rotações por inserção & no máximo 2 & no máximo 2 & \tcr{até $O(\log n)$} \\
-      Rotações por remoção & até $O(\log n)$ & \tcr{no máximo 3} & até $O(\log n)$ \\
-      Informação por nó & altura (um inteiro) ou fator (2 bits) & cor (1 bit) & cor (1 bit) \\
-      Uso típico & muitas buscas, poucas alterações & uso geral, bibliotecas & ensino, implementações curtas \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\scriptsize
+		\begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm}
+			>{\raggedright\arraybackslash}p{2.6cm}
+			>{\raggedright\arraybackslash}p{2.1cm}
+			>{\raggedright\arraybackslash}p{2.3cm}}
+			\toprule
+			                      & \textbf{AVL}                          & \textbf{RN (Cormen)}   & \textbf{RN (left-leaning)}    \\
+			\midrule
+			Altura no pior caso   & $1{,}44\log_2(n+2)$                   & $2\log_2(n+1)$         & $2\log_2(n+1)$                \\
+			Rotações por inserção & no máximo 2                           & no máximo 2            & \tcr{até $O(\log n)$}         \\
+			Rotações por remoção  & até $O(\log n)$                       & \tcr{no máximo 3}      & até $O(\log n)$               \\
+			Informação por nó     & altura (um inteiro) ou fator (2 bits) & cor (1 bit)            & cor (1 bit)                   \\
+			Uso típico            & muitas buscas, poucas alterações      & uso geral, bibliotecas & ensino, implementações curtas \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.2cm}
-  \small
-  Na AVL, o conserto da remoção pode reduzir a altura da subárvore e propagar o
-  desbalanceamento para o pai, nível a nível. A left-leaning também pode
-  rotacionar em cada nível do caminho.
+	\vspace{0.2cm}
+	\small
+	Na AVL, o conserto da remoção pode reduzir a altura da subárvore e propagar o
+	desbalanceamento para o pai, nível a nível. A left-leaning também pode
+	rotacionar em cada nível do caminho.
 
-  \vspace{0.2cm}
-  Muitas remoções: rubro-negra do Cormen. Quase só buscas: AVL.
+	\vspace{0.2cm}
+	Muitas remoções: rubro-negra do Cormen. Quase só buscas: AVL.
 \end{frame}
 
 \begin{frame}{Onde a rubro-negra é usada}
-  \begin{itemize}
-    \item \texttt{std::map} e \texttt{std::set} em C++, nas implementações
-          usuais;
-    \item \texttt{TreeMap} e \texttt{TreeSet} em Java;
-    \item o kernel do Linux, em \texttt{lib/rbtree.c}, usado por vários
-          subsistemas.
-  \end{itemize}
+	\begin{itemize}
+		\item \texttt{std::map} e \texttt{std::set} em C++, nas implementações
+		      usuais;
+		\item \texttt{TreeMap} e \texttt{TreeSet} em Java;
+		\item o kernel do Linux, em \texttt{lib/rbtree.c}, usado por vários
+		      subsistemas.
+	\end{itemize}
 
-  \vspace{0.2cm}
-  Todas usam a versão do Cormen.
+	\vspace{0.2cm}
+	Todas usam a versão do Cormen.
 
-  \vspace{0.5cm}
-  O \texttt{map} de Go fica de fora: ele é uma tabela de dispersão, assunto da
-  próxima aula. Em Go, uma estrutura ordenada exige biblioteca externa ou
-  implementação própria.
+	\vspace{0.5cm}
+	O \texttt{map} de Go fica de fora: ele é uma tabela de dispersão, assunto da
+	próxima aula. Em Go, uma estrutura ordenada exige biblioteca externa ou
+	implementação própria.
 
-  \vspace{0.3cm}
-  \footnotesize A remoção na rubro-negra não é desenvolvida nesta aula e não cai
-  na prova além do limite de 3 rotações na versão do Cormen. Cormen, seção
-  13.4.
+	\vspace{0.3cm}
+	\footnotesize A remoção na rubro-negra não é desenvolvida nesta aula e não cai
+	na prova além do limite de 3 rotações na versão do Cormen. Cormen, seção
+	13.4.
 \end{frame}
 
 \begin{frame}{Por que as bibliotecas escolhem a rubro-negra}
-  \begin{block}{Mudanças na estrutura em número fixo}
-    Na versão do Cormen, no máximo 2 rotações por inserção e 3 por remoção. Pesa quando a rotação é
-    cara: árvore aumentada (recalcular o valor guardado no nó), estrutura
-    persistente (copiar o nó), acesso concorrente (sincronizar).
-  \end{block}
+	\begin{block}{Mudanças na estrutura em número fixo}
+		Na versão do Cormen, no máximo 2 rotações por inserção e 3 por remoção. Pesa quando a rotação é
+		cara: árvore aumentada (recalcular o valor guardado no nó), estrutura
+		persistente (copiar o nó), acesso concorrente (sincronizar).
+	\end{block}
 
-  \begin{block}{A biblioteca não conhece o uso}
-    Pior caso aceitável na busca e na alteração, sem saber a proporção entre
-    as duas.
-  \end{block}
+	\begin{block}{A biblioteca não conhece o uso}
+		Pior caso aceitável na busca e na alteração, sem saber a proporção entre
+		as duas.
+	\end{block}
 
-  \begin{block}{Tradição}
-    STL da HP/SGI, Cormen, e as bibliotecas que vieram depois.
-  \end{block}
+	\begin{block}{Tradição}
+		STL da HP/SGI, Cormen, e as bibliotecas que vieram depois.
+	\end{block}
 
-  \vspace{0.1cm}
-  \footnotesize A diferença prática é pequena: com muitas buscas, a AVL costuma
-  ganhar (o kernel do Windows usa AVL). A memória também não decide: a cor cabe
-  em 1 bit, que o Linux guarda no ponteiro para o pai, e o fator da AVL cabe em
-  2. A LLRB medida rotaciona mais que a versão do Cormen, das bibliotecas.
+	\vspace{0.1cm}
+	\footnotesize A diferença prática é pequena: com muitas buscas, a AVL costuma
+	ganhar (o kernel do Windows usa AVL). A memória também não decide: a cor cabe
+	em 1 bit, que o Linux guarda no ponteiro para o pai, e o fator da AVL cabe em
+	2. A LLRB medida rotaciona mais que a versão do Cormen, das bibliotecas.
 \end{frame}
 
 % ==========================================
 \section{Árvores B}
 
 \begin{frame}{Quando a árvore binária é a estrutura errada}
-  Índice com 100 milhões de chaves, em disco.
+	Índice com 100 milhões de chaves, em disco.
 
-  \vspace{0.4cm}
-  \begin{itemize}
-    \item árvore rubro-negra: altura por volta de 40;
-    \item cada nível visitado está em um endereço qualquer do arquivo;
-    \item disco rotacional: alguns milissegundos por leitura, mais de 100 ms no
-          total. SSD: dezenas de microssegundos, contra nanossegundos da
-          memória.
-  \end{itemize}
+	\vspace{0.4cm}
+	\begin{itemize}
+		\item árvore rubro-negra: altura por volta de 40;
+		\item cada nível visitado está em um endereço qualquer do arquivo;
+		\item disco rotacional: alguns milissegundos por leitura, mais de 100 ms no
+		      total. SSD: dezenas de microssegundos, contra nanossegundos da
+		      memória.
+	\end{itemize}
 
-  \vspace{0.4cm}
-  E o sistema operacional não lê 16 bytes: lê uma \textbf{página} inteira, de
-  4096 bytes. Ler 16 e ler 4096 custa quase o mesmo.
+	\vspace{0.4cm}
+	E o sistema operacional não lê 16 bytes: lê uma \textbf{página} inteira, de
+	4096 bytes. Ler 16 e ler 4096 custa quase o mesmo.
 
-  \vspace{0.3cm}
-  A árvore binária usa 16 dos 4096 bytes que a leitura trouxe.
+	\vspace{0.3cm}
+	A árvore binária usa 16 dos 4096 bytes que a leitura trouxe.
 \end{frame}
 
 \begin{frame}{O nó do tamanho da página}
-  Chave mais ponteiro ocupando 20 bytes, página de 4096 bytes:
+	Chave mais ponteiro ocupando 20 bytes, página de 4096 bytes:
 
-  \vspace{0.2cm}
-  \begin{center}
-    cerca de \textbf{200 chaves} e \textbf{201 filhos} por nó.
-  \end{center}
+	\vspace{0.2cm}
+	\begin{center}
+		cerca de \textbf{200 chaves} e \textbf{201 filhos} por nó.
+	\end{center}
 
-  \vspace{0.4cm}
-\begin{center}
-  \small
-  \begin{tabular}{rrrrr}
-    \toprule
-    \textbf{ordem} & \textbf{chaves/nó} & \textbf{1 mil} & \textbf{1 mi} & \textbf{1 bilhão} \\
-    \midrule
-    5    &    4 & 5 & 9 & 13 \\
-    101  &  100 & 2 & 3 &  5 \\
-    201  &  200 & 2 & 3 &  4 \\
-    1001 & 1000 & 1 & 2 &  3 \\
-    \bottomrule
-  \end{tabular}
-\end{center}
+	\vspace{0.4cm}
+	\begin{center}
+		\small
+		\begin{tabular}{rrrrr}
+			\toprule
+			\textbf{ordem} & \textbf{chaves/nó} & \textbf{1 mil} & \textbf{1 mi} & \textbf{1 bilhão} \\
+			\midrule
+			5              & 4                  & 5              & 9             & 13                \\
+			101            & 100                & 2              & 3             & 5                 \\
+			201            & 200                & 2              & 3             & 4                 \\
+			1001           & 1000               & 1              & 2             & 3                 \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.3cm}
-  Níveis com os nós cheios, ou seja, leituras de disco por busca. Um bilhão de
-  chaves em 4 leituras.
+	\vspace{0.3cm}
+	Níveis com os nós cheios, ou seja, leituras de disco por busca. Um bilhão de
+	chaves em 4 leituras.
 \end{frame}
 
 \begin{frame}{Árvore B de ordem $m$}
-  \begin{itemize}
-    \item cada nó guarda no máximo $m-1$ chaves em ordem crescente, e no máximo
-          $m$ filhos;
-    \item as chaves do nó dividem as das subárvores em faixas;
-    \item todo nó, exceto a raiz, guarda ao menos
-          $\lceil m/2 \rceil - 1$ chaves;
-    \item \tcr{todas as folhas estão no mesmo nível}.
-  \end{itemize}
+	\begin{itemize}
+		\item cada nó guarda no máximo $m-1$ chaves em ordem crescente, e no máximo
+		      $m$ filhos;
+		\item as chaves do nó dividem as das subárvores em faixas;
+		\item todo nó, exceto a raiz, guarda ao menos
+		      $\lceil m/2 \rceil - 1$ chaves;
+		\item \tcr{todas as folhas estão no mesmo nível}.
+	\end{itemize}
 
-  \vspace{0.4cm}
-  \begin{center}
-    \begin{tikzpicture}[-, level distance=1.2cm,
-        level 1/.style={sibling distance=2.6cm}]
-      \node [bnode] {9}
-      child { node [bnode] {3 $\mid$ 6} }
-      child { node [bnode] {12 $\mid$ 15 $\mid$ 18} };
-    \end{tikzpicture}
-  \end{center}
+	\vspace{0.4cm}
+	\begin{center}
+		\begin{tikzpicture}[-, level distance=1.2cm,
+				level 1/.style={sibling distance=2.6cm}]
+			\node [bnode] {9}
+			child { node [bnode] {3 $\mid$ 6} }
+			child { node [bnode] {12 $\mid$ 15 $\mid$ 18} };
+		\end{tikzpicture}
+	\end{center}
 
-  \vspace{0.2cm}
-  O critério é mais forte que o da AVL: não há caminho mais longo que outro.
+	\vspace{0.2cm}
+	O critério é mais forte que o da AVL: não há caminho mais longo que outro.
 \end{frame}
 
 \begin{frame}[fragile]{Busca}
-\begin{minted}{go}
+	\begin{minted}{go}
 func Busca(n *NoB, v int) bool {
 	if n == nil {
 		return false
@@ -928,35 +929,35 @@ func Busca(n *NoB, v int) bool {
 }
 \end{minted}
 
-  \vspace{0.2cm}
-  Dentro do nó, a busca escolhe entre $m$ caminhos, e não entre 2. Sequencial ou
-  binária dá no mesmo: as duas acontecem dentro da página já lida.
+	\vspace{0.2cm}
+	Dentro do nó, a busca escolhe entre $m$ caminhos, e não entre 2. Sequencial ou
+	binária dá no mesmo: as duas acontecem dentro da página já lida.
 \end{frame}
 
 \begin{frame}{Inserção: sempre em folha, com divisão}
-  Ordem 5, folha cheia com \texttt{[1 2 4 5]}, chega o 3:
+	Ordem 5, folha cheia com \texttt{[1 2 4 5]}, chega o 3:
 
-  \vspace{0.3cm}
-  \begin{center}
-    \begin{tikzpicture}[node distance=0.6cm]
-      \node [bnode] (cheio) {1 $\mid$ 2 $\mid$ 3 $\mid$ 4 $\mid$ 5};
-      \node [below=0.8cm of cheio] (mid) {};
-      \node [bnode, below=1.4cm of cheio] (pai) {3};
-      \node [bnode, below left=0.7cm and 0.3cm of pai] (esq) {1 $\mid$ 2};
-      \node [bnode, below right=0.7cm and 0.3cm of pai] (dir) {4 $\mid$ 5};
-      \draw [-{Latex}] (cheio) -- (pai);
-      \draw (pai) -- (esq);
-      \draw (pai) -- (dir);
-    \end{tikzpicture}
-  \end{center}
+	\vspace{0.3cm}
+	\begin{center}
+		\begin{tikzpicture}[node distance=0.6cm]
+			\node [bnode] (cheio) {1 $\mid$ 2 $\mid$ 3 $\mid$ 4 $\mid$ 5};
+			\node [below=0.8cm of cheio] (mid) {};
+			\node [bnode, below=1.4cm of cheio] (pai) {3};
+			\node [bnode, below left=0.7cm and 0.3cm of pai] (esq) {1 $\mid$ 2};
+			\node [bnode, below right=0.7cm and 0.3cm of pai] (dir) {4 $\mid$ 5};
+			\draw [-{Latex}] (cheio) -- (pai);
+			\draw (pai) -- (esq);
+			\draw (pai) -- (dir);
+		\end{tikzpicture}
+	\end{center}
 
-  \vspace{0.2cm}
-  Cinco chaves em um nó que só comporta quatro. A chave do meio \textbf{sobe}
-  para o pai, e as outras ficam em dois nós.
+	\vspace{0.2cm}
+	Cinco chaves em um nó que só comporta quatro. A chave do meio \textbf{sobe}
+	para o pai, e as outras ficam em dois nós.
 \end{frame}
 
 \begin{frame}[fragile]{A divisão em código}
-\begin{minted}{go}
+	\begin{minted}{go}
 func divide(n *NoB) (int, *NoB) {
 	meio := len(n.Chaves) / 2
 	subiu := n.Chaves[meio]
@@ -976,22 +977,22 @@ func divide(n *NoB) (int, *NoB) {
 \end{frame}
 
 \begin{frame}{A árvore cresce pela raiz}
-  A chave que sobe pode estourar o pai, que se divide também. A divisão pode
-  propagar até a raiz.
+	A chave que sobe pode estourar o pai, que se divide também. A divisão pode
+	propagar até a raiz.
 
-  \vspace{0.4cm}
-  \begin{block}{Quando a raiz se divide}
-    A árvore ganha um nível. É o único jeito de uma árvore B crescer em altura,
-    e é por isso que todas as folhas continuam no mesmo nível.
-  \end{block}
+	\vspace{0.4cm}
+	\begin{block}{Quando a raiz se divide}
+		A árvore ganha um nível. É o único jeito de uma árvore B crescer em altura,
+		e é por isso que todas as folhas continuam no mesmo nível.
+	\end{block}
 
-  \vspace{0.4cm}
-  Uma árvore binária cresce pelas folhas, e por isso um ramo pode ficar mais
-  longo que os outros.
+	\vspace{0.4cm}
+	Uma árvore binária cresce pelas folhas, e por isso um ramo pode ficar mais
+	longo que os outros.
 \end{frame}
 
 \begin{frame}[fragile]{20 chaves em ordem crescente, ordem 5}
-\begin{minted}{text}
+	\begin{minted}{text}
 $ go run btree.go
 inserção do  5: a raiz se dividiu, altura agora é 1
 inserção do 17: a raiz se dividiu, altura agora é 2
@@ -1008,117 +1009,117 @@ inserção do 17: a raiz se dividiu, altura agora é 2
         [19 20]
 \end{minted}
 
-  \vspace{0.1cm}
-  A mesma entrada que degenera a ABB (altura 19) dá 3 níveis aqui.
+	\vspace{0.1cm}
+	A mesma entrada que degenera a ABB (altura 19) dá 3 níveis aqui.
 \end{frame}
 
 \begin{frame}{B+ e o que os sistemas reais usam}
-  Na \textbf{árvore B+}, as chaves ficam todas nas folhas, os nós internos
-  guardam apenas separadores, e as folhas são ligadas em lista encadeada.
+	Na \textbf{árvore B+}, as chaves ficam todas nas folhas, os nós internos
+	guardam apenas separadores, e as folhas são ligadas em lista encadeada.
 
-  \vspace{0.2cm}
-  \begin{center}
-    \includegraphics[width=0.85\textwidth]{../img/slides/bmais.pdf}
-  \end{center}
+	\vspace{0.2cm}
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{../img/slides/bmais.pdf}
+	\end{center}
 
-  \vspace{0.1cm}
-  As duas mudanças servem à consulta por faixa: achada a chave inicial, o resto
-  do intervalo sai seguindo os ponteiros entre folhas.
+	\vspace{0.1cm}
+	As duas mudanças servem à consulta por faixa: achada a chave inicial, o resto
+	do intervalo sai seguindo os ponteiros entre folhas.
 
-  \vspace{0.2cm}
-  \begin{itemize}
-    \item SQLite: tabelas são árvores B+, índices são árvores B;
-    \item PostgreSQL e MySQL/InnoDB: índices em árvore B+;
-    \item sistemas de arquivos como Btrfs e XFS.
-  \end{itemize}
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item SQLite: tabelas são árvores B+, índices são árvores B;
+		\item PostgreSQL e MySQL/InnoDB: índices em árvore B+;
+		\item sistemas de arquivos como Btrfs e XFS.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{De volta à demonstração}
-\begin{minted}{text}
+	\begin{minted}{text}
 `--SCAN aluno                          69 ms
 `--SEARCH aluno USING INDEX idx_grr    < 1 ms
 `--SEARCH ... USING COVERING INDEX idx_grr
        (grr>? AND grr<?)
 \end{minted}
 
-  \vspace{0.3cm}
-  \begin{itemize}
-    \item \texttt{SCAN}: lê todas as páginas da tabela, $\Theta(n)$;
-    \item \texttt{SEARCH}: desce a árvore B, 3 níveis para 2 milhões de chaves;
-    \item o \texttt{BETWEEN} também usa o índice, porque as chaves estão em
-          ordem;
-    \item os 0,43 s do \texttt{CREATE INDEX} são 2 milhões de inserções em
-          árvore B. Indexar acelera a consulta e custa na escrita.
-  \end{itemize}
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item \texttt{SCAN}: lê todas as páginas da tabela, $\Theta(n)$;
+		\item \texttt{SEARCH}: desce a árvore B, 3 níveis para 2 milhões de chaves;
+		\item o \texttt{BETWEEN} também usa o índice, porque as chaves estão em
+		      ordem;
+		\item os 0,43 s do \texttt{CREATE INDEX} são 2 milhões de inserções em
+		      árvore B. Indexar acelera a consulta e custa na escrita.
+	\end{itemize}
 \end{frame}
 
 % ==========================================
 \section{Tries}
 
 \begin{frame}{Chaves que têm estrutura interna}
-  Até aqui, toda estrutura compara chaves inteiras. Com chaves de texto, cada
-  comparação percorre a palavra até a primeira letra diferente, e a árvore de
-  altura $\log n$ faz $\log n$ dessas comparações.
+	Até aqui, toda estrutura compara chaves inteiras. Com chaves de texto, cada
+	comparação percorre a palavra até a primeira letra diferente, e a árvore de
+	altura $\log n$ faz $\log n$ dessas comparações.
 
-  \vspace{0.5cm}
-  A \textbf{trie} (de re\textbf{trie}val) usa uma letra da chave por nível para
-  escolher o filho.
+	\vspace{0.5cm}
+	A \textbf{trie} (de re\textbf{trie}val) usa uma letra da chave por nível para
+	escolher o filho.
 
-  \vspace{0.3cm}
-  A chave não fica guardada em nó nenhum: ela é o \textbf{caminho} da raiz até o
-  nó, e um marcador diz quais caminhos são palavras inteiras.
+	\vspace{0.3cm}
+	A chave não fica guardada em nó nenhum: ela é o \textbf{caminho} da raiz até o
+	nó, e um marcador diz quais caminhos são palavras inteiras.
 \end{frame}
 
 \begin{frame}{Uma trie com cinco palavras}
-  \begin{columns}
-    \begin{column}{0.55\textwidth}
-      \centering
-      \begin{tikzpicture}[-, level distance=0.75cm,
-          level 1/.style={sibling distance=2.4cm},
-          level 2/.style={sibling distance=1.6cm},
-          level 3/.style={sibling distance=1.2cm}]
-        \node [tnode] {}
-        child { node [tnode] {c}
-            child { node [tnode] {a}
-                child { node [tnode] {s}
-                    child { node [tfim] {a}
-                        child { node [tfim] {l} }
-                      }
-                  }
-                child { node [tnode] {r}
-                    child { node [tnode] {t}
-                        child { node [tfim] {a}
-                            child { node [tfim] {z} }
-                          }
-                      }
-                  }
-              }
-          }
-        child { node [tnode] {d}
-            child { node [tnode] {a}
-                child { node [tnode] {d}
-                    child { node [tfim] {o} }
-                  }
-              }
-          };
-      \end{tikzpicture}
-    \end{column}
-    \begin{column}{0.4\textwidth}
-      \texttt{casa}, \texttt{casal}, \texttt{carta}, \texttt{cartaz},
-      \texttt{dado}.
+	\begin{columns}
+		\begin{column}{0.55\textwidth}
+			\centering
+			\begin{tikzpicture}[-, level distance=0.75cm,
+					level 1/.style={sibling distance=2.4cm},
+					level 2/.style={sibling distance=1.6cm},
+					level 3/.style={sibling distance=1.2cm}]
+				\node [tnode] {}
+				child { node [tnode] {c}
+						child { node [tnode] {a}
+								child { node [tnode] {s}
+										child { node [tfim] {a}
+												child { node [tfim] {l} }
+											}
+									}
+								child { node [tnode] {r}
+										child { node [tnode] {t}
+												child { node [tfim] {a}
+														child { node [tfim] {z} }
+													}
+											}
+									}
+							}
+					}
+				child { node [tnode] {d}
+						child { node [tnode] {a}
+								child { node [tnode] {d}
+										child { node [tfim] {o} }
+									}
+							}
+					};
+			\end{tikzpicture}
+		\end{column}
+		\begin{column}{0.4\textwidth}
+			\texttt{casa}, \texttt{casal}, \texttt{carta}, \texttt{cartaz},
+			\texttt{dado}.
 
-      \vspace{0.3cm}
-      Nó \tcg{verde} marca fim de palavra.
+			\vspace{0.3cm}
+			Nó \tcg{verde} marca fim de palavra.
 
-      \vspace{0.3cm}
-      13 nós além da raiz, para 24 letras. Os prefixos comuns são guardados uma
-      vez só.
-    \end{column}
-  \end{columns}
+			\vspace{0.3cm}
+			13 nós além da raiz, para 24 letras. Os prefixos comuns são guardados uma
+			vez só.
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]{Nó e inserção}
-\begin{minted}{go}
+	\begin{minted}{go}
 type No struct {
 	Filhos       map[rune]*No
 	FimDePalavra bool
@@ -1140,31 +1141,31 @@ func Insere(raiz *No, palavra string) {
 \end{frame}
 
 \begin{frame}{O custo não depende do número de chaves}
-  \begin{center}
-    \small
-    \begin{tabular}{lll}
-      \toprule
-      \textbf{Operação} & \textbf{Trie} & \textbf{ABB balanceada} \\
-      \midrule
-      Busca de palavra de $m$ letras & $O(m)$ & $O(m \log n)$ \\
-      Consulta por prefixo & $O(m + k)$ & percorre a faixa \\
-      Espaço & um nó por letra & um nó por chave \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\small
+		\begin{tabular}{lll}
+			\toprule
+			\textbf{Operação}              & \textbf{Trie}   & \textbf{ABB balanceada} \\
+			\midrule
+			Busca de palavra de $m$ letras & $O(m)$          & $O(m \log n)$           \\
+			Consulta por prefixo           & $O(m + k)$      & percorre a faixa        \\
+			Espaço                         & um nó por letra & um nó por chave         \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.4cm}
-  Mil ou dez milhões de palavras: a busca custa o mesmo, porque o caminho
-  percorrido é a própria palavra.
+	\vspace{0.4cm}
+	Mil ou dez milhões de palavras: a busca custa o mesmo, porque o caminho
+	percorrido é a própria palavra.
 
-  \vspace{0.3cm}
-  Em troca, a trie ocupa mais espaço. O nó pode ser um \texttt{map} (pouco
-  espaço, poucos filhos) ou um vetor com uma posição por letra do alfabeto
-  (acesso constante, posições desperdiçadas).
+	\vspace{0.3cm}
+	Em troca, a trie ocupa mais espaço. O nó pode ser um \texttt{map} (pouco
+	espaço, poucos filhos) ou um vetor com uma posição por letra do alfabeto
+	(acesso constante, posições desperdiçadas).
 \end{frame}
 
 \begin{frame}[fragile]{Consulta por prefixo}
-\begin{minted}{text}
+	\begin{minted}{text}
 $ go run trie.go
 17 palavras, 86 letras no total, 37 nós na trie
 
@@ -1175,52 +1176,52 @@ ComPrefixo("cas") = casa, casaco, casal, caso, cassino
 ComPrefixo("z") = nenhuma palavra
 \end{minted}
 
-  \vspace{0.2cm}
-  Desce até o nó do prefixo e coleta a subárvore. Nenhuma palavra fora da
-  resposta é visitada.
+	\vspace{0.2cm}
+	Desce até o nó do prefixo e coleta a subárvore. Nenhuma palavra fora da
+	resposta é visitada.
 
-  \vspace{0.2cm}
-  Autocompletar, corretor ortográfico e roteamento IP por prefixo mais longo.
-  Tabela de dispersão não faz isso: o hash destrói a vizinhança entre chaves
-  parecidas.
+	\vspace{0.2cm}
+	Autocompletar, corretor ortográfico e roteamento IP por prefixo mais longo.
+	Tabela de dispersão não faz isso: o hash destrói a vizinhança entre chaves
+	parecidas.
 \end{frame}
 
 % ==========================================
 \section{Fechamento}
 
 \begin{frame}{Escolher entre as estruturas}
-  \begin{center}
-    \small
-    \begin{tabular}{ll>{\raggedright\arraybackslash}p{4.2cm}}
-      \toprule
-      \textbf{Estrutura} & \textbf{Busca} & \textbf{Escolha quando} \\
-      \midrule
-      ABB sem balanceamento & $O(h)$ & nunca em código de produção \\
-      AVL & $\Theta(\log n)$ & busca domina, alterações raras \\
-      Rubro-negra & $\Theta(\log n)$ & uso geral, muitas alterações \\
-      Árvore B / B+ & $\Theta(\log_m n)$ & a estrutura vive em disco \\
-      Trie & $O(m)$ & chaves são cadeias, consulta por prefixo \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
+	\begin{center}
+		\small
+		\begin{tabular}{ll>{\raggedright\arraybackslash}p{4.2cm}}
+			\toprule
+			\textbf{Estrutura}    & \textbf{Busca}     & \textbf{Escolha quando}                  \\
+			\midrule
+			ABB sem balanceamento & $O(h)$             & nunca em código de produção              \\
+			AVL                   & $\Theta(\log n)$   & busca domina, alterações raras           \\
+			Rubro-negra           & $\Theta(\log n)$   & uso geral, muitas alterações             \\
+			Árvore B / B+         & $\Theta(\log_m n)$ & a estrutura vive em disco                \\
+			Trie                  & $O(m)$             & chaves são cadeias, consulta por prefixo \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
 
-  \vspace{0.4cm}
-  Nas três primeiras linhas, o critério é a proporção entre buscas e alterações.
-  Na quarta, o meio em que a estrutura vive. Na quinta, o tipo da chave.
+	\vspace{0.4cm}
+	Nas três primeiras linhas, o critério é a proporção entre buscas e alterações.
+	Na quarta, o meio em que a estrutura vive. Na quinta, o tipo da chave.
 \end{frame}
 
 \begin{frame}{Para a próxima aula}
-  \begin{itemize}
-    \item exercícios 1 a 12 do roteiro da aula, sem entrega e sem nota. O
-          conteúdo cai na Prova 2;
-    \item rodar \texttt{rn.go}, \texttt{comparacao.go}, \texttt{btree.go} e
-          \texttt{trie.go}, alterando as sequências de inserção;
-    \item leitura: Sedgewick, seções 3.3 e 5.2; Cormen, capítulos 13 e 18.
-  \end{itemize}
+	\begin{itemize}
+		\item exercícios 1 a 12 do roteiro da aula, sem entrega e sem nota. O
+		      conteúdo cai na Prova 2;
+		\item rodar \texttt{rn.go}, \texttt{comparacao.go}, \texttt{btree.go} e
+		      \texttt{trie.go}, alterando as sequências de inserção;
+		\item leitura: Sedgewick, seções 3.3 e 5.2; Cormen, capítulos 13 e 18.
+	\end{itemize}
 
-  \vspace{0.5cm}
-  Próxima aula: tabelas de dispersão. A estrutura que abre mão da ordem entre as
-  chaves para buscar em tempo constante.
+	\vspace{0.5cm}
+	Próxima aula: tabelas de dispersão. A estrutura que abre mão da ordem entre as
+	chaves para buscar em tempo constante.
 \end{frame}
 
 \end{document}
