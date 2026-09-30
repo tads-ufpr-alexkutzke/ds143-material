@@ -148,8 +148,8 @@ nós, vale $b \le \log_2(n+1)$, e a altura fica limitada por
 $$h \le 2 \log_2(n + 1)$$
 
 O limite é o dobro do da árvore perfeitamente balanceada, contra os 44% a mais
-da AVL. Em compensação, chegar a uma árvore que satisfaça as três propriedades
-custa menos consertos, e é isso que a seção 6 mostra.
+da AVL. Em compensação, na versão de rubro-negra do Cormen, apresentada na seção
+4, a remoção faz menos rotações que na AVL. A seção 6 compara esses custos.
 
 ## 4. A leitura como árvore 2-3
 

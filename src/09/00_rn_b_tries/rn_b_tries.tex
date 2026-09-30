@@ -8,6 +8,7 @@
 \usepackage{url}
 \usepackage{xcolor}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{ragged2e}
 \usepackage{etoolbox}
 \usepackage{amsmath}
@@ -72,24 +73,32 @@
 
 % ==========================================
 \begin{frame}{Objetivos da aula}
+  \footnotesize
   Ao final desta aula você deve ser capaz de:
   \begin{enumerate}
+    \itemsep=0pt
     \item Enunciar as propriedades de uma árvore rubro-negra e verificar se uma
           árvore colorida dada as satisfaz;
     \item Explicar por que essas propriedades limitam a altura a
           $2\log_2(n+1)$;
-    \item Descrever a inserção em termos de recoloração e rotação;
-    \item Comparar AVL e rubro-negra, e escolher entre as duas a partir do
-          perfil de uso;
+    \item Descrever a inserção em termos de recoloração e rotação, e dizer o
+          que cada conserto corrige;
+    \item Comparar AVL e rubro-negra quanto à altura obtida e ao número de
+          consertos por operação, e escolher entre as duas a partir do perfil
+          de uso;
     \item Explicar por que a árvore binária é a estrutura errada em disco, e
           como a árvore B resolve o problema;
     \item Executar à mão a inserção com divisão de nó em uma árvore B;
+    \item Calcular quantos níveis uma árvore B precisa dado o número de chaves
+          por nó;
     \item Descrever a trie e justificar por que o custo de busca nela não
-          depende do número de chaves.
+          depende do número de chaves;
+    \item Escolher entre ABB balanceada, árvore B e trie a partir do tipo de
+          chave e do meio em que a estrutura vive.
   \end{enumerate}
 
-  \vspace{0.2cm}
-  \footnotesize Este conteúdo cai na Prova 2.
+  \vspace{0.1cm}
+  Este conteúdo cai na Prova 2.
 \end{frame}
 
 % ==========================================
@@ -244,8 +253,8 @@ Run Time: real 0.000
   \end{center}
 
   \vspace{0.3cm}
-  Contra $1{,}44\log_2(n+2)$ da AVL. O limite é pior; o preço de manter a
-  árvore dentro dele é menor.
+  Contra $1{,}44\log_2(n+2)$ da AVL. O limite é pior; em troca, na versão do
+  Cormen, a remoção faz menos rotações que na AVL.
 \end{frame}
 
 \begin{frame}{As cores codificam uma árvore 2-3}
@@ -302,11 +311,39 @@ Run Time: real 0.000
   Com elas, cada nó 2-3 tem uma única representação binária, e a correspondência
   com a árvore 2-3 é exata. A inserção perde metade dos casos e cabe em três
   testes.
+\end{frame}
 
-  \vspace{0.3cm}
-  O Cormen (cap. 13) admite vermelho à direita e nó preto com os dois filhos
-  vermelhos, que é um nó de três chaves: as cores dele codificam uma árvore
-  \textbf{2-3-4}.
+\begin{frame}{Duas versões de rubro-negra}
+  \begin{columns}[t]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Cormen (cap. 13)}
+        \small
+        \begin{itemize}
+          \item vermelho à direita permitido, e nó preto com os dois filhos
+                vermelhos (um nó de três chaves);
+          \item as cores codificam uma árvore \textbf{2-3-4};
+          \item no máximo 2 rotações por inserção e 3 por remoção;
+          \item é a versão das bibliotecas.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Left-leaning (Sedgewick, 3.3)}
+        \small
+        \begin{itemize}
+          \item vermelho só à esquerda, e nenhum nó com duas ligações
+                vermelhas;
+          \item as cores codificam uma árvore \textbf{2-3};
+          \item até $O(\log n)$ rotações por inserção e por remoção, em troca
+                de um código bem mais curto;
+          \item é a versão desta aula.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4cm}
+  As duas satisfazem as três propriedades e têm o mesmo limite de altura.
 \end{frame}
 
 \begin{frame}{Inserção na árvore 2-3}
@@ -485,6 +522,31 @@ func insere(a *No, v int) *No {
 \end{minted}
 \end{frame}
 
+\begin{frame}{Inserção de P: os consertos em sequência}
+  \begin{center}
+    \only<1>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_1.pdf}}%
+    \only<2>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_2.pdf}}%
+    \only<3>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_3.pdf}}%
+    \only<4>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_4.pdf}}%
+    \only<5>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_5.pdf}}%
+    \only<6>{\includegraphics[height=0.55\textheight]{../img/slides/rn_insercao_P_6.pdf}}%
+  \end{center}
+
+  \vspace{0.2cm}
+  \begin{center}
+    \only<1>{1. P entra como folha vermelha.}%
+    \only<2>{2. Dois filhos vermelhos: inversão de cores em M.}%
+    \only<3>{3. Filho direito vermelho: rotação à esquerda em E.}%
+    \only<4>{4. Dois vermelhos seguidos à esquerda: rotação à direita em R.}%
+    \only<5>{5. Dois filhos vermelhos: inversão de cores em M.}%
+    \only<6>{6. A raiz volta a ser preta.}%
+  \end{center}
+
+  \vspace{0.1cm}
+  \footnotesize Exemplo de Sedgewick e Wayne, seção 3.3. Em laranja, o nó em
+  que o conserto foi aplicado.
+\end{frame}
+
 \begin{frame}{Inserindo 10, 20 e 30 em ordem}
   \begin{columns}[t]
     \begin{column}{0.3\textwidth}
@@ -557,20 +619,20 @@ altura: 3   altura preta: 3   é rubro-negra: true
 \section{AVL e rubro-negra}
 
 \begin{frame}[fragile]{Medindo as duas: altura e consertos}
-\begin{minted}{text}
+\begin{minted}[fontsize=\fontsize{6}{7.5}\selectfont, breaklines=false]{text}
 Inserções em ordem crescente
-      n | alt. ABB | alt. AVL | alt. RN | rot. AVL | rot. RN
---------+----------+----------+---------+----------+--------
-   1000 |      999 |        9 |       9 |      990 |     991
-  10000 |     9999 |       13 |      13 |     9986 |    9987
- 100000 |    99999 |       16 |      16 |    99983 |   99984
+      n | alt. ABB | alt. AVL | alt. RN | rot. AVL | rot. RN | recolor. RN
+--------+----------+----------+---------+----------+---------+------------
+   1000 |      999 |        9 |       9 |      990 |     991 |         985
+  10000 |     9999 |       13 |      13 |     9986 |    9987 |        9982
+ 100000 |    99999 |       16 |      16 |    99983 |   99984 |       99978
 
 Inserções em ordem aleatória
-      n | alt. ABB | alt. AVL | alt. RN | rot. AVL | rot. RN
---------+----------+----------+---------+----------+--------
-   1000 |       19 |       11 |      13 |      718 |    1204
-  10000 |       31 |       15 |      17 |     7027 |   11970
- 100000 |       40 |       19 |      22 |    69951 |  118478
+      n | alt. ABB | alt. AVL | alt. RN | rot. AVL | rot. RN | recolor. RN
+--------+----------+----------+---------+----------+---------+------------
+   1000 |       19 |       11 |      13 |      718 |    1204 |         747
+  10000 |       31 |       15 |      17 |     7027 |   11970 |        7489
+ 100000 |       40 |       19 |      22 |    69951 |  118478 |       74636
 \end{minted}
 
   \vspace{0.1cm}
@@ -584,34 +646,43 @@ Inserções em ordem aleatória
     \item a AVL fica 2 ou 3 níveis mais baixa na ordem aleatória. Cada nível é
           uma comparação a mais por busca;
     \item na inserção, a rubro-negra \tcr{não} faz menos rotações. Na variante
-          left-leaning faz mais, e ainda recolore em cerca de três quartos das
-          inserções.
+          left-leaning medida aqui faz mais, porque também mantém as ligações
+          vermelhas todas à esquerda, e ainda recolore em cerca de três quartos
+          das inserções.
   \end{itemize}
 
   \vspace{0.4cm}
-  A vantagem da rubro-negra não está na inserção.
+  A vantagem da rubro-negra aparece na remoção, que a tabela não mede, e só na
+  versão do Cormen.
 \end{frame}
 
 \begin{frame}{A diferença está na remoção}
   \begin{center}
-    \begin{tabular}{lll}
+    \scriptsize
+    \begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm}
+                    >{\raggedright\arraybackslash}p{2.6cm}
+                    >{\raggedright\arraybackslash}p{2.1cm}
+                    >{\raggedright\arraybackslash}p{2.3cm}}
       \toprule
-       & \textbf{AVL} & \textbf{Rubro-negra} \\
+       & \textbf{AVL} & \textbf{RN (Cormen)} & \textbf{RN (left-leaning)} \\
       \midrule
-      Altura no pior caso & $1{,}44\log_2(n+2)$ & $2\log_2(n+1)$ \\
-      Rotações por inserção & no máximo 2 & no máximo 2 \\
-      Rotações por remoção & até $O(\log n)$ & \tcr{no máximo 3} \\
-      Informação por nó & altura ou fator & cor (1 bit) \\
+      Altura no pior caso & $1{,}44\log_2(n+2)$ & $2\log_2(n+1)$ & $2\log_2(n+1)$ \\
+      Rotações por inserção & no máximo 2 & no máximo 2 & \tcr{até $O(\log n)$} \\
+      Rotações por remoção & até $O(\log n)$ & \tcr{no máximo 3} & até $O(\log n)$ \\
+      Informação por nó & altura (um inteiro) ou fator (2 bits) & cor (1 bit) & cor (1 bit) \\
+      Uso típico & muitas buscas, poucas alterações & uso geral, bibliotecas & ensino, implementações curtas \\
       \bottomrule
     \end{tabular}
   \end{center}
 
-  \vspace{0.4cm}
+  \vspace{0.2cm}
+  \small
   Na AVL, o conserto da remoção pode reduzir a altura da subárvore e propagar o
-  desbalanceamento para o pai, nível a nível.
+  desbalanceamento para o pai, nível a nível. A left-leaning também pode
+  rotacionar em cada nível do caminho.
 
-  \vspace{0.3cm}
-  Muitas remoções: rubro-negra. Quase só buscas: AVL.
+  \vspace{0.2cm}
+  Muitas remoções: rubro-negra do Cormen. Quase só buscas: AVL.
 \end{frame}
 
 \begin{frame}{Onde a rubro-negra é usada}
@@ -623,6 +694,9 @@ Inserções em ordem aleatória
           subsistemas.
   \end{itemize}
 
+  \vspace{0.2cm}
+  Todas usam a versão do Cormen.
+
   \vspace{0.5cm}
   O \texttt{map} de Go fica de fora: ele é uma tabela de dispersão, assunto da
   próxima aula. Em Go, uma estrutura ordenada exige biblioteca externa ou
@@ -630,12 +704,13 @@ Inserções em ordem aleatória
 
   \vspace{0.3cm}
   \footnotesize A remoção na rubro-negra não é desenvolvida nesta aula e não cai
-  na prova além do limite de 3 rotações. Cormen, seção 13.4.
+  na prova além do limite de 3 rotações na versão do Cormen. Cormen, seção
+  13.4.
 \end{frame}
 
 \begin{frame}{Por que as bibliotecas escolhem a rubro-negra}
   \begin{block}{Mudanças na estrutura em número fixo}
-    No máximo 2 rotações por inserção e 3 por remoção. Pesa quando a rotação é
+    Na versão do Cormen, no máximo 2 rotações por inserção e 3 por remoção. Pesa quando a rotação é
     cara: árvore aumentada (recalcular o valor guardado no nó), estrutura
     persistente (copiar o nó), acesso concorrente (sincronizar).
   \end{block}
@@ -651,8 +726,9 @@ Inserções em ordem aleatória
 
   \vspace{0.1cm}
   \footnotesize A diferença prática é pequena: com muitas buscas, a AVL costuma
-  ganhar (o kernel do Windows usa AVL). A LLRB medida rotaciona mais que a
-  rubro-negra clássica das bibliotecas.
+  ganhar (o kernel do Windows usa AVL). A memória também não decide: a cor cabe
+  em 1 bit, que o Linux guarda no ponteiro para o pai, e o fator da AVL cabe em
+  2. A LLRB medida rotaciona mais que a versão do Cormen, das bibliotecas.
 \end{frame}
 
 % ==========================================
@@ -835,11 +911,16 @@ inserção do 17: a raiz se dividiu, altura agora é 2
   Na \textbf{árvore B+}, as chaves ficam todas nas folhas, os nós internos
   guardam apenas separadores, e as folhas são ligadas em lista encadeada.
 
-  \vspace{0.4cm}
+  \vspace{0.2cm}
+  \begin{center}
+    \includegraphics[width=0.85\textwidth]{../img/slides/bmais.pdf}
+  \end{center}
+
+  \vspace{0.1cm}
   As duas mudanças servem à consulta por faixa: achada a chave inicial, o resto
   do intervalo sai seguindo os ponteiros entre folhas.
 
-  \vspace{0.4cm}
+  \vspace{0.2cm}
   \begin{itemize}
     \item SQLite: tabelas são árvores B+, índices são árvores B;
     \item PostgreSQL e MySQL/InnoDB: índices em árvore B+;
@@ -1005,11 +1086,11 @@ ComPrefixo("z") = nenhuma palavra
 \begin{frame}{Escolher entre as estruturas}
   \begin{center}
     \small
-    \begin{tabular}{llp{4.2cm}}
+    \begin{tabular}{ll>{\raggedright\arraybackslash}p{4.2cm}}
       \toprule
       \textbf{Estrutura} & \textbf{Busca} & \textbf{Escolha quando} \\
       \midrule
-      ABB sem balanceamento & $O(h)$ & nunca, em produção \\
+      ABB sem balanceamento & $O(h)$ & nunca em código de produção \\
       AVL & $\Theta(\log n)$ & busca domina, alterações raras \\
       Rubro-negra & $\Theta(\log n)$ & uso geral, muitas alterações \\
       Árvore B / B+ & $\Theta(\log_m n)$ & a estrutura vive em disco \\
