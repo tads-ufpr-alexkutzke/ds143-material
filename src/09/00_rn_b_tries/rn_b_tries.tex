@@ -267,9 +267,8 @@ Run Time: real 0.000
   \end{itemize}
 
   \vspace{0.3cm}
-  Com elas, cada nó 2-3 tem uma única representação binária, e a correspondência
-  com a árvore 2-3 é exata. A inserção perde metade dos casos e cabe em três
-  testes.
+  Com elas, a inserção perde metade dos casos e cabe em três testes. O motivo
+  aparece adiante, junto com a árvore 2-3.
 \end{frame}
 
 \begin{frame}{Duas versões de rubro-negra}
@@ -279,8 +278,7 @@ Run Time: real 0.000
         \small
         \begin{itemize}
           \item vermelho à direita permitido, e nó preto com os dois filhos
-                vermelhos (um nó de três chaves);
-          \item as cores codificam uma árvore \textbf{2-3-4};
+                vermelhos;
           \item no máximo 2 rotações por inserção e 3 por remoção;
           \item é a versão das bibliotecas.
         \end{itemize}
@@ -292,7 +290,6 @@ Run Time: real 0.000
         \begin{itemize}
           \item vermelho só à esquerda, e nenhum nó com duas ligações
                 vermelhas;
-          \item as cores codificam uma árvore \textbf{2-3};
           \item até $O(\log n)$ rotações por inserção e por remoção, em troca
                 de um código bem mais curto;
           \item é a versão desta aula.
@@ -385,7 +382,9 @@ Run Time: real 0.000
   \vspace{0.4cm}
   \begin{itemize}
     \item ligação preta = descer um nível na árvore 2-3;
-    \item altura preta = altura da árvore 2-3.
+    \item altura preta = altura da árvore 2-3;
+    \item na versão do Cormen, o nó preto com dois filhos vermelhos é um nó de
+      três chaves: as cores codificam uma árvore \textbf{2-3-4}.
   \end{itemize}
 \end{frame}
 
