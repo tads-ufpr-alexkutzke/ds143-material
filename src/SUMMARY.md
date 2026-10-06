@@ -17,11 +17,15 @@
 - [Aula 07: Atividade Avaliativa 2](./aula_07.md)
 - [Aula 09: Árvores rubro-negras, árvores B e tries](./aula_09.md)
 
+# Tabelas de dispersão
+
+- [Aula 10: Tabelas de dispersão](./aula_10.md)
+
 # Material anterior (em C, numeração antiga)
 
 - [Árvores e percursos](./aula_07_old.md)
 - [Árvores binárias de busca](./aula_08.md)
-- [Tabelas hash](./aula_10.md)
+- [Tabelas hash](./aula_10_old.md)
 - [Grafos não direcionados](./aula_11.md)
 - [Grafos direcionados e caminhos mínimos](./aula_12.md)
 

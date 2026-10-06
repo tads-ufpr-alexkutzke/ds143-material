@@ -1,0 +1,45 @@
+% Grupo de 8 posições de uma Swiss Table e a busca por Davi, com etiqueta 89.
+% Compartilhado entre o roteiro (figuras.tex) e os slides (hash.tex). Os
+% valores das etiquetas são inventados para o exemplo.
+
+\tikzset{
+  swctrl/.style = {draw=black, fill=black!5, minimum width=1.25cm,
+    minimum height=0.6cm, inner sep=0pt, font=\ttfamily\small, line width=0.6pt},
+  swslot/.style = {draw=black, fill=white, minimum width=1.25cm,
+    minimum height=0.75cm, inner sep=0pt, font=\ttfamily\small, line width=0.6pt},
+  swrot/.style = {font=\sffamily\small, anchor=east},
+  swidx/.style = {font=\sffamily\scriptsize, text=black!60},
+  swnota/.style = {font=\sffamily\scriptsize, align=center},
+  swseta/.style = {-{Stealth[length=2.2mm]}, line width=0.8pt}
+}
+
+% Marca de posição vazia no byte de controle: dois hífens, sem ligadura.
+\newcommand{\vz}{\mbox{-}\mbox{-}}
+
+\newcommand{\swissGrupo}{%
+\begin{tikzpicture}
+  \foreach \i/\c/\k in {0/12/Hugo, 1/\vz/, 2/89/Elisa, 3/45/Ana,
+                        4/\vz/, 5/89/Davi, 6/3/Gabi, 7/\vz/} {
+    \node [swidx] at (\i*1.25, 0.75) {\i};
+    \node [swctrl] (c\i) at (\i*1.25, 0) {\c};
+    \node [swslot] (s\i) at (\i*1.25, -1.0) {\k};
+  }
+  % Candidatas: etiqueta igual à procurada.
+  \node [swctrl, fill=orange!35] at (c2) {89};
+  \node [swctrl, fill=orange!35] at (c5) {89};
+  \node [swslot, fill=red!12] at (s2) {Elisa};
+  \node [swslot, fill=green!25] at (s5) {Davi};
+
+  \node [swrot] at ($(c0.west)+(-0.15,0)$) {bytes de controle};
+  \node [swrot] at ($(s0.west)+(-0.15,0)$) {posições};
+
+  % A etiqueta procurada.
+  \node [swctrl, fill=orange!35, label={[font=\sffamily\small]left:busca por \texttt{Davi}, etiqueta}]
+    (q) at (2.5*1.25+1.25, 2.0) {89};
+  \draw [swseta] (q.south) -- (c2.north east);
+  \draw [swseta] (q.south) -- (c5.north west);
+  \node [swnota, right=0.3cm of q] {compara com os 8 bytes\\de uma vez};
+
+  \node [swnota, below=0.2cm of s2] {etiqueta igual,\\chave diferente};
+  \node [swnota, below=0.2cm of s5] {chave\\encontrada};
+\end{tikzpicture}}

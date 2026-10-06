@@ -1,0 +1,1106 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, calc}
+% Grupo da Swiss Table, compartilhado com o roteiro.
+\input{../img/swiss.tex}
+
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\tcg}[1]{\textcolor{green!50!black}{#1}}
+
+\tikzset{
+  slot/.style = {draw=black, minimum width=0.62cm, minimum height=0.55cm,
+    inner sep=0pt, font=\sffamily\footnotesize, line width=0.6pt},
+  idx/.style = {font=\sffamily\scriptsize, text=black!60},
+  item/.style = {draw=black, fill=black!5, rounded corners=1pt,
+    font=\sffamily\scriptsize, inner sep=2.5pt, line width=0.6pt},
+  bit/.style = {draw=black, minimum width=0.42cm, minimum height=0.48cm,
+    inner sep=0pt, font=\sffamily\scriptsize, line width=0.5pt},
+  liga/.style = {-{Latex[length=1.6mm]}, line width=0.6pt}
+}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+\title{10 - Tabelas de dispersão}
+\author{Prof. Alex Kutzke}
+\date{Outubro de 2026}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+	\begin{center}
+		\large{Setor de Educação Profissional e Tecnológica}\\
+		Tecnologia em Análise e Desenvolvimento de Sistemas\\
+		\vspace{1cm}
+		\small{DS143 - Estruturas de Dados II}
+	\end{center}
+	\titlepage
+\end{frame}
+
+% ==========================================
+\begin{frame}{Objetivos da aula}
+	\footnotesize
+	Ao final desta aula você deve ser capaz de:
+	\begin{enumerate}
+		\itemsep=0pt
+		\item Explicar como a tabela de dispersão transforma a chave em posição, e
+		      por que a busca não depende do número de chaves no caso médio;
+		\item Avaliar uma função de dispersão quanto à distribuição das chaves, e
+		      explicar por que $m$ costuma ser primo no método da divisão;
+		\item Executar à mão a inserção com encadeamento e com sondagem linear,
+		      sondagem quadrática e dispersão dupla;
+		\item Relacionar o fator de carga ao custo médio da busca, e explicar
+		      quando e por que a tabela é redimensionada;
+		\item Explicar por que a remoção em endereçamento aberto exige lápide;
+		\item Descrever o filtro de Bloom e o tipo de erro que ele admite;
+		\item Escolher entre tabela de dispersão e árvore de busca a partir das
+		      operações que a aplicação precisa.
+	\end{enumerate}
+
+	\vspace{0.1cm}
+	Este conteúdo cai na Prova 2.
+\end{frame}
+
+% ==========================================
+\begin{frame}{Roteiro}
+	\tableofcontents
+\end{frame}
+
+% ==========================================
+\section{Dispersão}
+
+\begin{frame}[fragile]{Demonstração: o \texttt{map} de Go}
+	\begin{minted}{go}
+idade := map[string]int{
+	"Ana": 19, "Bruno": 22, "Carla": 20, "Davi": 21,
+	"Elisa": 23, "Fábio": 19, "Gabi": 24, "Hugo": 20,
+}
+for rodada := 1; rodada <= 3; rodada++ {
+	for nome := range idade {
+		fmt.Printf(" %s", nome)
+	}
+}
+\end{minted}
+
+	\begin{minted}{text}
+$ go run mapa.go
+  1: Fábio Gabi Hugo Ana Bruno Carla Davi Elisa
+  2: Elisa Fábio Gabi Hugo Ana Bruno Carla Davi
+  3: Carla Davi Elisa Fábio Gabi Hugo Ana Bruno
+\end{minted}
+
+	\vspace{0.1cm}
+	Nem ordem alfabética, nem ordem de inserção, e cada percurso começa em uma
+	chave diferente.
+\end{frame}
+
+\begin{frame}[fragile]{O tempo de uma busca}
+	\begin{minted}{text}
+Tempo médio de uma busca bem-sucedida, em nanossegundos:
+
+         n | sequencial |  binária |     map
+-----------+------------+----------+--------
+      1000 |        429 |       82 |       6
+     10000 |       1354 |       67 |       7
+    100000 |      14014 |       92 |      13
+   1000000 |     150637 |      158 |      29
+\end{minted}
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item $n$ mil vezes maior: a sequencial fica 350 vezes mais lenta, a
+		      binária, 2 vezes;
+		\item o \texttt{map} é o mais rápido em todas as linhas;
+		\item por que ele também cresce um pouco: no fim da aula.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Endereçamento direto}
+	Chaves de 0 a 999: um vetor de 1000 posições, e a chave 427 fica em
+	\texttt{v[427]}.
+
+	\vspace{0.3cm}
+	\begin{center}
+		\begin{tikzpicture}
+			\foreach \i/\t in {0/0, 1/1, 2/2, 3/\ldots, 4/427, 5/\ldots, 6/999} {
+				\node [slot, minimum width=0.9cm] (d\i) at (\i*0.9, 0) {};
+				\node [idx, below=0.05cm of d\i] {\t};
+			}
+			\node [slot, minimum width=0.9cm, fill=green!20] at (4*0.9, 0) {427};
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.3cm}
+	Busca, inserção e remoção em $O(1)$, sem comparação nenhuma.
+
+	\vspace{0.4cm}
+	Não serve quando o universo de chaves é grande:
+	\begin{itemize}
+		\item CPF tem 11 dígitos: 100 bilhões de posições para alguns milhares de
+		      clientes;
+		\item chaves de texto nem formam um intervalo de inteiros.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Tabela de dispersão}
+	Uma \textbf{função de dispersão} (\emph{hash function}) leva cada chave a uma
+	posição de um vetor de $m$ posições:
+	\[
+		h : \text{chaves} \to \{0, 1, \ldots, m-1\}
+	\]
+
+	\begin{center}
+		\begin{tikzpicture}
+			\foreach \i in {0,...,6} {
+				\node [slot] (p\i) at (\i*0.62+3.5, 0) {};
+				\node [idx, below=0.05cm of p\i] {\i};
+			}
+			\node [slot, fill=red!15] at (3*0.62+3.5, 0) {};
+			\node [item] (a) at (4.6, 1.3) {\texttt{roma}};
+			\node [item] (b) at (6.6, 1.3) {\texttt{rato}};
+			\node [item] (c) at (3.0, 1.3) {\texttt{rei}};
+			\draw [liga] (a.south) -- ([xshift=1.2mm]p3.north);
+			\draw [liga] (b.south) -- (p6.north);
+			\draw [liga, red] (c.south) -- ([xshift=-1.2mm]p3.north);
+			\node [right=0.2cm of p6, font=\sffamily\scriptsize, text=red] {colisão em 3};
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.1cm}
+	\begin{itemize}
+		\item $m$ é escolhido pelo tamanho do conjunto, e não do universo;
+		\item duas chaves na mesma posição: \tcr{colisão};
+		\item toda tabela de dispersão tem duas partes: a função e uma regra para
+		      resolver colisões.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{As colisões acontecem cedo}
+	Chaves sorteadas em 365 posições: com \textbf{23 chaves}, a chance de alguma
+	colisão já é de 50,7\%.
+
+	\vspace{0.3cm}
+	É o paradoxo do aniversário: em uma turma de 23 pessoas, a chance de duas
+	fazerem aniversário no mesmo dia passa de metade.
+
+	\vspace{0.4cm}
+	\begin{center}
+		\small
+		\begin{tabular}{rr}
+			\toprule
+			\textbf{posições} & \textbf{chaves para 50\% de chance} \\
+			\midrule
+			365               & 23                                  \\
+			1000              & 38                                  \\
+			100003            & 373                                 \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.3cm}
+	A regra de colisão não é um caso raro: ela trabalha o tempo todo.
+\end{frame}
+
+\begin{frame}{O que se exige da função de dispersão}
+	\begin{block}{Determinística}
+		A mesma chave cai sempre na mesma posição, senão a busca não acha o que a
+		inserção guardou.
+	\end{block}
+
+	\begin{block}{Rápida}
+		É calculada em toda operação.
+	\end{block}
+
+	\begin{block}{Uniforme}
+		As chaves que a aplicação de fato usa se espalham pelas $m$ posições.
+	\end{block}
+
+	\vspace{0.2cm}
+	A terceira depende das chaves, e não só da função: \texttt{go run funcoes.go}.
+\end{frame}
+
+\begin{frame}[fragile]{Método da divisão: $h(k) = k \bmod m$}
+	\begin{minted}{text}
+1. 1000 chaves múltiplas de 20, com h(k) = k % m
+
+    m | posições usadas | chaves na posição mais cheia
+------+-----------------+-----------------------------
+  100 |               5 |                          200
+   97 |              97 |                           11
+\end{minted}
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item com $m = 100$, o resto de um múltiplo de 20 só pode ser 0, 20, 40, 60
+		      ou 80;
+		\item chaves que avançam de $p$ em $p$ ocupam $m / \text{mdc}(p, m)$
+		      posições;
+		\item com $m$ \textbf{primo}, o mdc é 1, e todas as posições são usadas.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	\footnotesize Padrões assim são comuns: identificadores de 10 em 10, preços
+	terminados em 0 ou 9, endereços alinhados em 8.
+\end{frame}
+
+\begin{frame}[fragile]{Chaves de texto}
+	\begin{columns}
+		\begin{column}{0.45\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+palavra | soma | polinomial
+--------+------+-----------
+amor    |   43 |         52
+roma    |   43 |         62
+mora    |   43 |         60
+ramo    |   43 |          8
+omar    |   43 |         77
+\end{minted}
+			\footnotesize A soma das letras ignora a posição: todo anagrama colide.
+		\end{column}
+		\begin{column}{0.53\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{go}
+func polinomial(s string, m int) int {
+	h := 0
+	for i := 0; i < len(s); i++ {
+		h = (31*h + int(s[i])) % m
+	}
+	return h
+}
+\end{minted}
+			\footnotesize A palavra como um número na base 31, pelo método de Horner. É a
+			base do \texttt{String.hashCode()} do Java.
+		\end{column}
+	\end{columns}
+
+	\vspace{0.3cm}
+	\[
+		h(s) = \left(s_0 \cdot 31^{L-1} + s_1 \cdot 31^{L-2} + \cdots + s_{L-1}\right) \bmod m
+	\]
+\end{frame}
+
+\begin{frame}[fragile]{Chaves parecidas entre si}
+	\begin{minted}[fontsize=\scriptsize]{text}
+3. 2000 matrículas, de GRR20260001 a GRR20262000, com m = 997
+
+função          | posições usadas | chaves na posição mais cheia
+----------------+-----------------+-----------------------------
+soma das letras |              28 |                          150
+polinomial      |             634 |                            6
+FNV-1a          |             834 |                            7
+sorteio         |             849 |                            7
+\end{minted}
+
+	\vspace{0.1cm}
+	\begin{itemize}
+		\item soma: só depende dos quatro dígitos finais, de 1 a 28;
+		\item a polinomial espalha muito melhor, e ainda fica atrás das duas de
+		      baixo;
+		\item FNV-1a (pacote \texttt{hash/fnv}) mistura os bits com ou-exclusivo e
+		      multiplicação;
+		\item \texttt{sorteio} ignora a chave: é a referência de posições
+		      independentes. Mesmo nela, 15\% das posições ficam vazias.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{A tabela usada nos exemplos}
+	\begin{minted}[fontsize=\fontsize{7}{8}\selectfont]{go}
+type Tabela struct {
+	posicoes [][]Par
+	n        int // número de pares guardados
+}
+
+func NovaTabela(m int) *Tabela {
+	return &Tabela{posicoes: make([][]Par, m)}
+}
+
+func (t *Tabela) m() int {
+	return len(t.posicoes)
+}
+
+func (t *Tabela) hash(chave string) int {
+	h := 0
+	for i := 0; i < len(chave); i++ {
+		h = (31*h + int(chave[i])) % t.m()
+	}
+	return h
+}
+\end{minted}
+
+	\vspace{-0.2cm}
+	\footnotesize $m$ não é um campo: é o comprimento do vetor, e \texttt{m()} só o
+	consulta. O \texttt{sondagem.go} tem a mesma organização, com o vetor de chaves
+	no lugar do vetor de listas.
+\end{frame}
+
+% ==========================================
+\section{Encadeamento}
+
+\begin{frame}{Encadeamento}
+	Cada posição guarda a \textbf{lista} das chaves que caíram nela.
+
+	\vspace{0.3cm}
+	\begin{center}
+		\begin{tikzpicture}
+			\foreach \i in {0,...,4} {
+				\node [slot] (e\i) at (0, -\i*0.6) {};
+				\node [idx, left=0.05cm of e\i] {\i};
+			}
+			\node [item, right=0.5cm of e0] (a1) {da};
+			\node [item, right=0.5cm of e2] (b1) {a};
+			\node [item, right=0.4cm of b1] (b2) {rei};
+			\node [item, right=0.4cm of b2] (b3) {resto};
+			\node [item, right=0.5cm of e3] (c1) {roeu};
+			\node [item, right=0.4cm of c1] (c2) {roupa};
+			\draw [liga] (e0.center) -- (a1);
+			\draw [liga] (e2.center) -- (b1);
+			\draw [liga] (b1) -- (b2);
+			\draw [liga] (b2) -- (b3);
+			\draw [liga] (e3.center) -- (c1);
+			\draw [liga] (c1) -- (c2);
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item inserção: calcula $h(k)$ e acrescenta à lista da posição;
+		\item busca: calcula $h(k)$ e percorre \textbf{só} aquela lista;
+		\item remoção: tira da lista.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Busca no encadeamento}
+	\begin{minted}[fontsize=\scriptsize]{go}
+type Par struct {
+	Chave string
+	Valor int
+}
+
+func (t *Tabela) Busca(chave string) (int, bool) {
+	for _, p := range t.posicoes[t.hash(chave)] {
+		if p.Chave == chave {
+			return p.Valor, true
+		}
+	}
+	return 0, false
+}
+\end{minted}
+
+	\footnotesize A lista é um \emph{slice}. Com lista encadeada, como no Cormen, o
+	comportamento é o mesmo.
+\end{frame}
+
+\begin{frame}[fragile]{O programa: contar as palavras de uma frase}
+	\begin{minted}{go}
+t := NovaTabela(7)
+for _, palavra := range strings.Fields(texto) {
+	quantas, _ := t.Busca(palavra)
+	t.Insere(palavra, quantas+1)
+}
+\end{minted}
+
+	\begin{itemize}
+		\item busca a contagem atual (zero, se a palavra é nova) e insere com a
+		      contagem mais um. Chave já existente: \texttt{Insere} só troca o valor;
+		\item a tabela começa com 7 posições. A frase tem 14 palavras distintas;
+		\item a oitava, \texttt{de}, deixa 8 chaves em 7 posições, e a tabela
+		      cresce:
+	\end{itemize}
+
+	\begin{minted}[fontsize=\scriptsize]{text}
+inserção de "de"     n =  8 > m =  7, a tabela passa a ter 17 posições
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Contando as palavras de uma frase}
+	\begin{columns}
+		\begin{column}{0.5\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+  0:
+  1: [da 1]
+  2:
+  3: [roma 1]
+  4:
+  5: [de 2]
+  6: [rato 2]
+  7:
+  8: [rainha 1]
+  9: [o 2]
+ 10: [raiva 1]
+ 11:
+ 12: [a 2] [rei 1] [resto 1]
+ 13: [roeu 2] [roupa 2]
+ 14:
+ 15: [do 2]
+ 16: [e 1]
+\end{minted}
+		\end{column}
+		\begin{column}{0.48\textwidth}
+			\small
+			\texttt{go run encadeamento.go}
+
+			\vspace{0.3cm}
+			\emph{o rato roeu a roupa do rei de roma e a rainha de raiva roeu o resto
+				da roupa do rato}
+
+			\vspace{0.3cm}
+			14 chaves, 17 posições.
+
+			\vspace{0.2cm}
+			Seis posições vazias e uma lista de três chaves, com a tabela menos que
+			cheia.
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Fator de carga e custo}
+	\[
+		\alpha = \frac{n}{m}
+	\]
+
+	\vspace{0.1cm}
+	No encadeamento, $\alpha$ é o comprimento médio das listas, e pode passar de 1.
+
+	\vspace{0.3cm}
+	Com \textbf{dispersão uniforme simples} (Cormen):
+	\begin{itemize}
+		\item busca malsucedida: percorre uma lista inteira, $\alpha$ chaves em
+		      média;
+		\item busca bem-sucedida: cerca de metade de uma lista;
+		\item as duas custam $\Theta(1 + \alpha)$: o 1 é calcular $h(k)$.
+	\end{itemize}
+
+	\vspace{0.3cm}
+	\begin{block}{Consequência}
+		Com $\alpha$ limitado por uma constante, a busca custa $O(1)$ no caso
+		médio. O pior caso continua $\Theta(n)$: todas as chaves na mesma posição.
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Redimensionamento}
+	\begin{minted}[fontsize=\scriptsize]{go}
+func (t *Tabela) redimensiona(m int) {
+	nova := NovaTabela(m)
+	for _, lista := range t.posicoes {
+		for _, p := range lista {
+			i := nova.hash(p.Chave)
+			nova.posicoes[i] = append(nova.posicoes[i], p)
+			nova.n++
+		}
+	}
+	*t = *nova
+}
+\end{minted}
+
+	\begin{itemize}
+		\item \texttt{encadeamento.go}: cresce quando $\alpha > 1$, para o primeiro
+		      primo depois de $2m$;
+		\item $h$ depende de $m$: toda chave muda de posição e é reinserida;
+		\item um redimensionamento custa $\Theta(n)$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Custo amortizado}
+	Tabela com 8 posições no início, que dobra quando recebe uma chave a mais do
+	que tem posições. Inserindo 64 chaves:
+
+	\vspace{0.1cm}
+	\begin{center}
+		\small
+		\begin{tabular}{lrr}
+			\toprule
+			\textbf{inserção} & \textbf{posições depois} & \textbf{reinserções} \\
+			\midrule
+			9\textsuperscript{a}                & 16                       & 8                    \\
+			17\textsuperscript{a}               & 32                       & 16                   \\
+			33\textsuperscript{a}               & 64                       & 32                   \\
+			\midrule
+			\textbf{total}    &                          & \textbf{56}          \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	64 inserções e 56 reinserções: 120 operações, menos de 2 por chave. A soma das
+	reinserções é sempre menor que $n$, porque cada parcela é o dobro da anterior.
+
+	\begin{block}{Custo amortizado}
+		Custo médio por operação sobre a sequência inteira. A inserção custa $O(1)$
+		amortizado, ainda que algumas custem $\Theta(n)$.
+	\end{block}
+
+	\footnotesize O \texttt{append} de Go funciona do mesmo jeito: \emph{slice}
+	cheio, aloca um vetor maior e copia os elementos.
+\end{frame}
+
+% ==========================================
+\section{Endereçamento aberto}
+
+\begin{frame}{Endereçamento aberto}
+	As chaves ficam no próprio vetor, sem listas. Posição ocupada: seguir uma
+	\textbf{sequência de sondagem}, que depende da chave:
+	\[
+		h(k, 0),\; h(k, 1),\; h(k, 2),\; \ldots
+	\]
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item a inserção para na primeira posição livre;
+		\item a busca segue a mesma sequência, e para ao achar a chave ou uma
+		      posição \textbf{vazia};
+		\item a posição vazia prova que a chave não está: se estivesse, teria sido
+		      posta ali ou antes;
+		\item uma chave por posição: $\alpha < 1$ sempre.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Três regras de sondagem}
+	\begin{center}
+		\small
+		\begin{tabular}{lll}
+			\toprule
+			\textbf{Regra}      & $h(k, i)$                           & \textbf{a partir de $h_1(k)$} \\
+			\midrule
+			sondagem linear     & $(h_1(k) + i) \bmod m$              & $+0, +1, +2, +3, \ldots$      \\
+			sondagem quadrática & $(h_1(k) + i^2) \bmod m$            & $+0, +1, +4, +9, \ldots$      \\
+			dispersão dupla     & $(h_1(k) + i \cdot h_2(k)) \bmod m$ & passo $h_2(k)$                \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\begin{minted}[fontsize=\scriptsize]{go}
+func (t *Tabela) posicao(k, i int) int {
+	m := t.m()
+	h1 := k % m
+	switch t.regra {
+	case Linear:
+		return (h1 + i) % m
+	case Quadratica:
+		return (h1 + i*i) % m
+	default: // Dupla
+		h2 := 1 + k%(m-1)
+		return (h1 + i*h2) % m
+	}
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Dispersão dupla: o passo $h_2(k)$}
+	No \texttt{sondagem.go}:
+	\[
+		h_2(k) = 1 + (k \bmod (m-1))
+	\]
+
+	\vspace{0.1cm}
+	$k \bmod (m-1)$ vai de 0 a $m-2$; somando 1, o passo fica entre 1 e $m-1$, e
+	nunca é zero.
+
+	\vspace{0.3cm}
+	\begin{center}
+		\small
+		\begin{tabular}{cccl}
+			\toprule
+			\textbf{chave} & $h_1$ & $h_2$                 & \textbf{sequência de sondagem} \\
+			\midrule
+			16             & 5     & $1 + 16 \bmod 10 = 7$ & 5, 1, 8, 4, \ldots             \\
+			27             & 5     & $1 + 27 \bmod 10 = 8$ & 5, 2, 10, 7, \ldots            \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.3cm}
+	Com $m = 11$: o mesmo $h_1$ e sequências diferentes. Cada posição é a anterior
+	mais o passo, módulo 11: para o 16, $5 + 7 = 12 \to 1$, $1 + 7 = 8$,
+	$8 + 7 = 15 \to 4$.
+\end{frame}
+
+\begin{frame}[fragile]{Sondagem linear}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run sondagem.go
+Sondagem linear, m = 11, h1(k) = k % 11
+  insere 22: h1 =  0, posições examinadas: 1
+  insere 33: h1 =  0, posições examinadas: 2
+  insere  5: h1 =  5, posições examinadas: 1
+  insere 16: h1 =  5, posições examinadas: 2
+  insere 27: h1 =  5, posições examinadas: 3
+  insere 38: h1 =  5, posições examinadas: 4
+  insere 44: h1 =  0, posições examinadas: 3
+      0   1   2   3   4   5   6   7   8   9  10
+     22  33  44   .   .   5  16  27  38   .   .
+\end{minted}
+
+	\vspace{0.1cm}
+	\small
+	O 5, o 16, o 27 e o 38 têm $h_1 = 5$, e cada um examina uma posição a mais
+	que o anterior.
+\end{frame}
+
+\begin{frame}{Agrupamento primário}
+	\begin{center}
+		\begin{tikzpicture}
+			\foreach \i/\c in {0/22, 1/33, 2/44, 3/, 4/, 5/5, 6/16, 7/27, 8/38, 9/, 10/} {
+				\node [slot] (q\i) at (\i*0.62, 0) {\c};
+				\node [idx, below=0.05cm of q\i] {\i};
+			}
+			\foreach \i in {5,...,8} {
+				\node [slot, fill=orange!30] at (\i*0.62, 0) {};
+			}
+			\foreach \i/\c in {5/5, 6/16, 7/27, 8/38} {
+				\node [font=\sffamily\footnotesize] at (\i*0.62, 0) {\c};
+			}
+			\draw [liga, red] (q6.north) to [bend left=50] (q9.north);
+			\node [font=\sffamily\scriptsize, text=red, above=0.45cm of q7] {$h_1 = 6$ vai parar no 9};
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item as posições 5 a 8 formam um bloco contínuo de posições ocupadas;
+		\item toda chave cujo $h_1$ caia no bloco vai parar no fim dele, e o
+		      aumenta;
+		\item bloco grande recebe mais chaves, e cresce mais depressa que bloco
+		      pequeno.
+	\end{itemize}
+
+	\vspace{0.3cm}
+	É o \textbf{agrupamento primário}, o defeito da sondagem linear.
+\end{frame}
+
+\begin{frame}[fragile]{Quadrática e dupla, mesmas chaves}
+	\begin{minted}[fontsize=\scriptsize]{text}
+Sondagem quadrática, m = 11, h1(k) = k % 11
+      0   1   2   3   4   5   6   7   8   9  10
+     22  33   .  38  44   5  16   .   .  27   .
+
+Sondagem dupla, m = 11, h1(k) = k % 11
+      0   1   2   3   4   5   6   7   8   9  10
+     22  16  27  38  33   5   .   .   .   .  44
+\end{minted}
+
+	\begin{itemize}
+		\item \textbf{quadrática}: o bloco não se forma, mas chaves com o mesmo
+		      $h_1$ seguem a mesma sequência (agrupamento secundário). Com $m$ primo,
+		      só há garantia de posição livre com $\alpha \le 1/2$;
+		\item \textbf{dupla}: o passo depende da chave. O 16 anda de 7 em 7, o 27
+		      de 8 em 8, o 38 de 9 em 9;
+		\item $h_2(k)$ nunca pode valer 0, e precisa ser primo com $m$. Com $m$
+		      primo e $1 \le h_2(k) \le m-1$, as duas condições valem.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Custo em função do fator de carga}
+	\begin{minted}[fontsize=\fontsize{6.5}{8}\selectfont, breaklines=false]{text}
+Busca bem-sucedida
+ alfa | linear | quadrática |  dupla | teoria linear | teoria uniforme
+------+--------+------------+--------+---------------+----------------
+ 0.50 |   1.50 |       1.43 |   1.39 |          1.50 |            1.39
+ 0.75 |   2.50 |       1.96 |   1.85 |          2.50 |            1.85
+ 0.90 |   5.45 |       2.79 |   2.55 |          5.50 |            2.56
+ 0.95 |  10.23 |       3.49 |   3.16 |         10.50 |            3.15
+
+Busca malsucedida
+ alfa | linear | quadrática |  dupla | teoria linear | teoria uniforme
+------+--------+------------+--------+---------------+----------------
+ 0.50 |   2.49 |       2.14 |   2.01 |          2.50 |            2.00
+ 0.75 |   8.62 |       4.47 |   4.01 |          8.50 |            4.00
+ 0.90 |  50.46 |      11.28 |   9.99 |         50.50 |           10.00
+ 0.95 | 203.56 |      22.97 |  19.87 |        200.50 |           20.00
+\end{minted}
+
+	\footnotesize Posições examinadas por busca, em média. $m = 100003$, chaves
+	aleatórias. A linear examina mais posições e continua em uso: as posições
+	vizinhas são lidas da memória em bloco, pelo mesmo motivo da página da árvore
+	B, e na quadrática e na dupla cada posição pode exigir uma nova leitura.
+\end{frame}
+
+\begin{frame}{As fórmulas}
+	\begin{block}{Sondagem linear (Knuth)}
+		\[
+			\text{bem-sucedida} \approx \frac{1}{2}\left(1 + \frac{1}{1-\alpha}\right)
+			\qquad
+			\text{malsucedida} \approx \frac{1}{2}\left(1 + \frac{1}{(1-\alpha)^2}\right)
+		\]
+	\end{block}
+
+	\begin{block}{Dispersão uniforme, o caso ideal (Cormen, 11.6 e 11.8)}
+		\[
+			\text{bem-sucedida} \approx \frac{1}{\alpha} \ln \frac{1}{1-\alpha}
+			\qquad
+			\text{malsucedida} \approx \frac{1}{1-\alpha}
+		\]
+	\end{block}
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item a dupla fica sobre a curva ideal; a quadrática, um pouco acima;
+		\item o $(1-\alpha)^2$ explica as 200 posições com a tabela 95\% cheia;
+		\item crescer em: $1/2$ (Sedgewick, linear), $2/3$ (\texttt{dict} do
+		      Python), $7/8$ (\texttt{map} de Go).
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Remoção: esvaziar a posição não funciona}
+	\begin{center}
+		\begin{tikzpicture}
+			\foreach \i/\c in {0/22, 1/33, 2/44, 3/, 4/, 5/5, 6/, 7/27, 8/38, 9/, 10/} {
+				\node [slot] (r\i) at (\i*0.62, 0) {\c};
+				\node [idx, below=0.05cm of r\i] {\i};
+			}
+			\node [slot, fill=red!15] at (6*0.62, 0) {};
+			\draw [liga] (r5.north) to [bend left=50] (r6.north);
+			\node [font=\sffamily\scriptsize, text=red, above=0.5cm of r6] {para aqui};
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.3cm}
+	O 38 foi inserido na posição 8 depois de passar por 5, 6 e 7. Se a remoção do
+	16 esvaziar a posição 6, a busca pelo 38 para nela e responde que o 38
+	\tcr{não está} na tabela.
+
+	\vspace{0.4cm}
+	\begin{block}{Lápide (\emph{tombstone})}
+		Um terceiro estado, além de vazia e ocupada: a busca passa por cima, e a
+		inserção pode reaproveitar a posição.
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Remoção com lápide}
+	\begin{minted}{text}
+Remoção com lápide, na tabela da sondagem linear:
+  Remove(16) = true
+  Busca(38) = true, posições examinadas: 4
+      0   1   2   3   4   5   6   7   8   9  10
+     22  33  44   .   .   5   X  27  38   .   .
+\end{minted}
+
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item as lápides não contam em $n$, mas alongam as buscas como se fossem
+		      chaves;
+		\item muitas remoções acumulam lápides, e a tabela precisa ser reconstruída
+		      de tempos em tempos, só com as chaves vivas.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Remoção sem lápide, na sondagem linear}
+	Esvaziar a posição e trazer para ela as chaves seguintes que dependiam dela:
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item percorre as posições depois do buraco até achar uma vazia;
+		\item chave com $h_1$ igual ou anterior ao buraco desce para ele, e o buraco
+		      passa para a posição que ela deixou.
+	\end{itemize}
+
+	\begin{minted}{text}
+Remove(16), sem lápide:
+      0   1   2   3   4   5   6   7   8   9  10
+     22  33  44   .   .   5  16  27  38   .   .   antes
+     22  33  44   .   .   5  27  38   .   .   .   depois
+\end{minted}
+
+	\begin{itemize}
+		\item o 27 ($h_1 = 5$) desce para a 6, o 38 ($h_1 = 5$) para a 7, e a
+		      posição 9 vazia encerra a remoção;
+		\item a busca pelo 38 passa a examinar 3 posições;
+		\item só na sondagem linear. Na quadrática e na dupla, a lápide é a solução
+		      usual.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Encadeamento ou endereçamento aberto}
+	\begin{center}
+		\scriptsize
+		\begin{tabular}{>{\raggedright\arraybackslash}p{2.2cm}
+			>{\raggedright\arraybackslash}p{3.6cm}
+			>{\raggedright\arraybackslash}p{3.6cm}}
+			\toprule
+			                 & \textbf{Encadeamento}                        & \textbf{Endereçamento aberto}                     \\
+			\midrule
+			Fator de carga   & pode passar de 1                             & sempre menor que 1, com folga                     \\
+			$\alpha$ alto    & custo cresce devagar ($1 + \alpha$)          & custo dispara perto de 1                          \\
+			Remoção          & tira da lista                                & exige lápide                                      \\
+			Memória          & ponteiro ou \emph{slice} por posição, e nós  & só o vetor                                        \\
+			Acesso à memória & segue ponteiros para outros endereços        & posições vizinhas, na linear                      \\
+			Uso              & \texttt{HashMap} do Java                     & \texttt{dict} do Python, \texttt{map} de Go 1.24+ \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+\end{frame}
+
+\begin{frame}{O pior caso provocado}
+	Com a função polinomial de base 31:
+	\[
+		h(\texttt{Aa}) = 65 \cdot 31 + 97 = 2112 = 66 \cdot 31 + 66 = h(\texttt{BB})
+	\]
+
+	\vspace{0.1cm}
+	\begin{itemize}
+		\item \textbf{bloco}: cada um dos pares \texttt{Aa} e \texttt{BB}. Mesmo valor
+		      e mesmo comprimento: trocar um pelo outro não muda o valor da palavra;
+		\item \texttt{AaAa}, \texttt{AaBB}, \texttt{BBAa} e \texttt{BBBB} valem
+		      todas 2031744;
+		\item 10 blocos, cada um \texttt{Aa} ou \texttt{BB}: $2^{10} = 1024$ chaves
+		      na mesma posição, e a tabela vira uma lista.
+	\end{itemize}
+
+	\vspace{0.3cm}
+	\begin{block}{\emph{Hash flooding} (28C3, 2011)}
+		Servidores web em PHP, Java, Python e outras linguagens derrubados por uma
+		requisição com milhares de parâmetros que colidiam todos.
+	\end{block}
+
+	\vspace{0.2cm}
+	Defesa: uma \textbf{semente} sorteada, misturada à função. O \texttt{map} de Go
+	sorteia uma para cada \texttt{map} criado.
+\end{frame}
+
+% ==========================================
+\section{Aplicações}
+
+\begin{frame}{Tabela de dispersão e árvore de busca}
+	A função espalha chaves vizinhas por posições distantes: a tabela perde a
+	\textbf{ordem}.
+
+	\vspace{0.3cm}
+	\begin{center}
+		\scriptsize
+		\begin{tabular}{>{\raggedright\arraybackslash}p{2.8cm}
+			>{\raggedright\arraybackslash}p{3.4cm}
+			>{\raggedright\arraybackslash}p{3cm}}
+			\toprule
+			\textbf{Operação}        & \textbf{Tabela de dispersão}                       & \textbf{Árvore balanceada}  \\
+			\midrule
+			busca, inserção, remoção & $O(1)$ no caso médio, $\Theta(n)$ no pior          & $\Theta(\log n)$ no pior    \\
+			mínimo e máximo          & $\Theta(n)$                                        & $\Theta(\log n)$            \\
+			percurso em ordem        & ordenar antes: $\Theta(n \log n)$                  & $\Theta(n)$                 \\
+			consulta por faixa       & percorre tudo                                      & desce ao início e segue     \\
+			sucessor                 & percorre tudo                                      & $\Theta(\log n)$            \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.3cm}
+	\small
+	Frequência de palavras, sessões por identificador, duplicatas: só busca exata.
+	Produtos entre 50 e 100 reais, próximo horário livre: precisa de ordem.
+\end{frame}
+
+\begin{frame}{Filtro de Bloom}
+	Um vetor de $m$ bits, todos desligados no início, e $k$ funções de dispersão
+	(Bloom, 1970).
+
+	\vspace{0.3cm}
+	\begin{itemize}
+		\item inserir: calcula as $k$ posições e liga os $k$ bits;
+		\item consultar: algum bit desligado, a chave \textbf{certamente não está};
+		      todos ligados, \textbf{talvez esteja};
+		\item o filtro não guarda as chaves, só os bits.
+	\end{itemize}
+
+	\vspace{0.4cm}
+	\begin{block}{Um só tipo de erro}
+		Uma chave nunca inserida pode achar todos os seus bits ligados por outras:
+		\tcr{falso positivo}. Os bits de uma chave inserida nunca são desligados:
+		falso negativo, nunca.
+	\end{block}
+\end{frame}
+
+\begin{frame}{Exemplo: $m = 12$ bits, $k = 3$ funções}
+	\begin{center}
+		\begin{tikzpicture}
+			\foreach \i/\b in {0/0, 1/1, 2/0, 3/1, 4/0, 5/0, 6/1, 7/0, 8/1, 9/0, 10/1, 11/0} {
+				\node [bit] (b\i) at (\i*0.6, 0) {\b};
+				\node [idx] at (\i*0.6, -0.45) {\i};
+			}
+			\node [item] (x) at (1.2, 1.4) {\texttt{casa}};
+			\node [item] (y) at (5.1, 1.4) {\texttt{dado}};
+			\foreach \i in {1,3,6} \draw [liga] (x.south) -- (b\i.north);
+			\foreach \i in {3,8,10} \draw [liga] (y.south) -- (b\i.north);
+			\node [item] (z) at (1.8, -1.6) {\texttt{gato}};
+			\node [item] (w) at (5.1, -1.6) {\texttt{bola}};
+			\foreach \i in {1,8,10} \draw [liga, orange!80!black] (z.north) -- ([yshift=-0.6cm]b\i.south);
+			\foreach \i in {6,8,9} \draw [liga, red] (w.north) -- ([yshift=-0.6cm]b\i.south);
+		\end{tikzpicture}
+	\end{center}
+
+	\vspace{0.1cm}
+	\small
+	\begin{itemize}
+		\item inseridas: \texttt{casa} (1, 3, 6) e \texttt{dado} (3, 8, 10). O bit 3
+		      foi ligado pelas duas, e o filtro não registra quem ligou;
+		\item \tcr{\texttt{bola}} (6, 8, 9): bit 9 desligado, certamente não está;
+		\item \textcolor{orange!80!black}{\texttt{gato}} (1, 8, 10): três bits
+		      ligados, por \texttt{casa} e \texttt{dado}. Talvez: falso positivo.
+	\end{itemize}
+
+	\footnotesize Posições supostas para o exemplo.
+\end{frame}
+
+\begin{frame}[fragile]{Taxa de falsos positivos}
+	\begin{columns}
+		\begin{column}{0.42\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+$ go run bloom.go
+10 bits por chave
+
+ k | medida | teoria
+---+--------+-------
+ 1 |  9.18% |  9.52%
+ 2 |  3.20% |  3.29%
+ 3 |  1.73% |  1.74%
+ 4 |  1.16% |  1.18%
+ 5 |  0.93% |  0.94%
+ 6 |  0.82% |  0.84%
+ 7 |  0.81% |  0.82%
+ 8 |  0.82% |  0.85%
+ 9 |  0.87% |  0.91%
+10 |  1.02% |  1.02%
+\end{minted}
+		\end{column}
+		\begin{column}{0.55\textwidth}
+			\[
+				P \approx \left(1 - e^{-kn/m}\right)^k
+			\]
+
+			\small
+			\begin{itemize}
+				\item poucas funções: poucos bits conferidos;
+				\item muitas: o vetor enche de bits ligados;
+				\item melhor $k \approx \frac{m}{n}\ln 2 = 6{,}9$.
+			\end{itemize}
+
+			\vspace{0.2cm}
+			\textbf{Bits por chave}: $m/n$. No exemplo, $12/2 = 6$; aqui, 10, com
+			menos de 1\% de erro. Não depende do tamanho da chave, e a taxa de erro
+			depende só dele e de $k$.
+
+			\vspace{0.2cm}
+			\footnotesize LevelDB e RocksDB podem guardar um filtro por arquivo em
+			disco: a resposta \emph{certamente não está} economiza a leitura.
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{De volta à demonstração: a ordem do \texttt{map}}
+	Desde Go 1.24, o \texttt{map} é uma \textbf{Swiss Table}: endereçamento aberto.
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item uma semente sorteada por \texttt{map}: as posições mudam de uma
+		      execução para outra;
+		\item cada percurso sorteia a posição em que começa. As três linhas da
+		      demonstração são a mesma sequência circular;
+		\item a especificação diz que a ordem não é especificada, e o sorteio impede
+		      que um programa dependa dela.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	Para percorrer em ordem, ordenar as chaves:
+	\begin{minted}{go}
+for _, nome := range slices.Sorted(maps.Keys(idade)) {
+	fmt.Println(nome, idade[nome])
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Swiss Table: um grupo de 8 posições}
+	\begin{center}
+		\resizebox{\textwidth}{!}{\swissGrupo}
+	\end{center}
+
+	\small
+	\begin{itemize}
+		\item grupo: 8 posições (par chave e valor) e 8 bytes de controle, um por
+		      posição: vazia (\texttt{\vz}) ou 7 bits de $h(k)$;
+		\item a parte alta de $h(k)$ escolhe o grupo; os 7 bits da parte baixa são
+		      a \textbf{etiqueta};
+		\item busca por \texttt{Davi}, etiqueta 89: uma comparação com os 8 bytes
+		      acha as candidatas 2 e 5, e só nelas a chave inteira é comparada;
+		\item \texttt{Elisa}: etiqueta igual por acaso, chance de 1 em 128.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{De volta à demonstração: o tempo do \texttt{map}}
+	\begin{itemize}
+		\item chave fora do grupo e grupo com posição vazia: a chave não está;
+		\item grupo cheio: passa a outro grupo, por sondagem quadrática;
+		\item cresce com 7/8 das posições ocupadas. O fator de carga é alto porque
+		      cada passo examina 8 posições de uma vez.
+	\end{itemize}
+
+	\vspace{0.4cm}
+	\begin{block}{De 6 para 29 ns}
+		O fator de carga fica sempre abaixo de 7/8, e a busca examina poucas
+		posições em todas as linhas. Com um milhão de chaves, a tabela não cabe na
+		memória \emph{cache}, e cada busca espera pela memória principal.
+	\end{block}
+\end{frame}
+
+% ==========================================
+\section{Fechamento}
+
+\begin{frame}{Escolher entre as estruturas}
+	\begin{center}
+		\scriptsize
+		\begin{tabular}{ll>{\raggedright\arraybackslash}p{4.6cm}}
+			\toprule
+			\textbf{Estrutura}           & \textbf{Busca}       & \textbf{Escolha quando}                   \\
+			\midrule
+			AVL                          & $\Theta(\log n)$     & busca domina, ordem importa               \\
+			Rubro-negra                  & $\Theta(\log n)$     & uso geral com ordem, muitas alterações    \\
+			Árvore B / B+                & $\Theta(\log_m n)$   & a estrutura vive em disco                 \\
+			Trie                         & $O(\text{tamanho})$  & chaves são cadeias, consulta por prefixo  \\
+			\tcb{Tabela de dispersão}    & \tcb{$O(1)$ médio}   & \tcb{só busca exata, sem ordem nem faixa} \\
+			\tcb{Filtro de Bloom}        & \tcb{$O(k)$}         & \tcb{pertinência aproximada, pouca memória} \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.4cm}
+	A pergunta que decide entre tabela de dispersão e árvore: a aplicação precisa
+	da ordem entre as chaves?
+\end{frame}
+
+\begin{frame}{Para a próxima aula}
+	\begin{itemize}
+		\item exercícios 1 a 12 do roteiro da aula, sem entrega e sem nota. O
+		      conteúdo cai na Prova 2;
+		\item rodar \texttt{funcoes.go}, \texttt{encadeamento.go},
+		      \texttt{sondagem.go} e \texttt{bloom.go}, alterando as chaves e os
+		      tamanhos;
+		\item leitura: Sedgewick, seção 3.4; Cormen, capítulo 11.
+	\end{itemize}
+
+	\vspace{0.5cm}
+	Próxima aula: aula prática de tabelas de dispersão em laboratório, com a
+	\textbf{Atividade Avaliativa 3}.
+\end{frame}
+
+\end{document}

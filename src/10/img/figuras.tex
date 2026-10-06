@@ -1,0 +1,22 @@
+% Figuras do roteiro da aula de tabelas de dispersão. Cada tikzpicture vira
+% uma página do PDF e um SVG (ver Makefile).
+
+\documentclass[tikz, border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usetikzlibrary{backgrounds, arrows.meta, positioning, calc}
+
+\tikzset{
+  every picture/.style = {background rectangle/.style={fill=white},
+    show background rectangle}
+}
+
+% Grupo da Swiss Table, compartilhado com os slides.
+\input{swiss.tex}
+
+\begin{document}
+
+% 1. Um grupo de 8 posições de uma Swiss Table e a busca por Davi.
+\swissGrupo
+
+\end{document}
