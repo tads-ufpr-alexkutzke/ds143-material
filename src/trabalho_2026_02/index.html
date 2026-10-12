@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de Despacho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: enunciado longo em coluna de leitura, com índice fixo à esquerda em telas largas; cores do mapa do jogo (rua, quarteirão, hospital, chamado comum, chamado grave). */
+:root {
+  --bg: #f3f5f7;
+  --panel: #ffffff;
+  --fg: #1b232c;
+  --muted: #586370;
+  --line: #d5dbe1;
+  --code-bg: #e9edf1;
+  --accent: #1f5fbf;
+  --accent-soft: #dfe8f7;
+  --hospital: #1f7a4d;
+  --grave: #c92f2a;
+  --comum: #c39a1c;
+  --rua: #ece9e1;
+  --quarteirao: #b9b4a8;
+  --eq0: #2e6fdb;
+  --eq1: #e0731f;
+  --pendente-bg: #fff1c7;
+  --pendente-fg: #6b4d00;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10151b;
+    --panel: #161d25;
+    --fg: #e2e7ed;
+    --muted: #97a3b0;
+    --line: #2a343f;
+    --code-bg: #1c252f;
+    --accent: #7aa7ff;
+    --accent-soft: #1d2a40;
+    --hospital: #3fbf7f;
+    --grave: #ff5a52;
+    --comum: #d8b13a;
+    --rua: #23272d;
+    --quarteirao: #4a4f57;
+    --eq0: #6f9dff;
+    --eq1: #ff9a4a;
+    --pendente-bg: #3d3214;
+    --pendente-fg: #ffd977;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10151b;
+  --panel: #161d25;
+  --fg: #e2e7ed;
+  --muted: #97a3b0;
+  --line: #2a343f;
+  --code-bg: #1c252f;
+  --accent: #7aa7ff;
+  --accent-soft: #1d2a40;
+  --hospital: #3fbf7f;
+  --grave: #ff5a52;
+  --comum: #d8b13a;
+  --rua: #23272d;
+  --quarteirao: #4a4f57;
+  --eq0: #6f9dff;
+  --eq1: #ff9a4a;
+  --pendente-bg: #3d3214;
+  --pendente-fg: #ffd977;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 var(--body);
+  padding-inline: 16px;
+  padding-block: 0 64px;
+}
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, pre { font-family: var(--mono); font-size: 0.88em; }
+:not(pre) > code {
+  background: var(--code-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+strong { font-weight: 600; }
+
+.pagina {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 48px;
+}
+@media (max-width: 960px) {
+  .pagina { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.indice { display: none; }
+}
+
+/* ---------- índice ---------- */
+nav.indice {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  align-self: start;
+  padding-block: 32px;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+nav.indice p {
+  font: 600 13px/1 var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+nav.indice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.indice a {
+  display: block;
+  padding: 4px 10px;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+nav.indice a:hover { color: var(--fg); border-left-color: var(--accent); }
+
+main { min-width: 0; }
+.leitura { max-width: 70ch; }
+
+/* ---------- cabeçalho ---------- */
+header.abertura { padding-block: 40px 8px; }
+.disciplina {
+  font: 600 14px/1 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+h1 {
+  font: 700 clamp(48px, 9vw, 88px)/0.92 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+h1 .faixa {
+  display: inline-block;
+  color: var(--panel);
+  background: var(--grave);
+  padding: 0 0.12em;
+}
+.chamada {
+  font-size: 19px;
+  line-height: 1.55;
+  margin: 24px 0 0;
+  max-width: 62ch;
+}
+.aviso {
+  margin: 20px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.pendente {
+  display: inline-block;
+  background: var(--pendente-bg);
+  color: var(--pendente-fg);
+  font: 600 12px/1.5 var(--body);
+  padding: 0 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  vertical-align: 0.1em;
+}
+
+.ficha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 32px 0 0;
+}
+.ficha div { background: var(--panel); padding: 14px 16px; display: grid; gap: 2px; align-content: start; }
+.ficha b { font: 600 26px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.ficha span { font-size: 13px; color: var(--muted); line-height: 1.35; }
+
+/* ---------- seções ---------- */
+section { padding-block: 40px 0; scroll-margin-top: 16px; }
+h2 {
+  font: 700 34px/1.05 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  text-wrap: balance;
+}
+h2 .num {
+  font: 600 15px/1 var(--mono);
+  color: var(--muted);
+  letter-spacing: 0;
+}
+h3 {
+  font: 600 22px/1.2 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 28px 0 8px;
+}
+p { margin: 0 0 14px; }
+ul, ol { margin: 0 0 14px; padding-left: 1.3em; }
+li { margin: 4px 0; }
+
+figure { margin: 24px 0; }
+figure.largo { max-width: 100%; }
+figure img, figure svg { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+figure img { border: 1px solid var(--line); }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; max-width: 70ch; }
+
+.legenda { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 10px 0 0; font-size: 14px; }
+.legenda span { display: inline-flex; align-items: center; gap: 8px; }
+.amostra { width: 12px; height: 12px; display: inline-block; flex: none; }
+
+/* ---------- caixas ---------- */
+.lado-a-lado { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
+.caixa {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 18px;
+  min-width: 0;
+}
+.caixa h4 {
+  font: 600 18px/1.2 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+.caixa p:last-child, .caixa ul:last-child { margin-bottom: 0; }
+.destaque { border-left: 4px solid var(--accent); }
+
+/* ---------- passos do turno ---------- */
+ol.passos { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 10px; counter-reset: passo; }
+ol.passos li {
+  counter-increment: passo;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin: 0;
+}
+ol.passos li::before {
+  content: counter(passo);
+  font: 700 22px/40px var(--display);
+  text-align: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
+ol.passos li > div { padding-top: 8px; }
+
+/* ---------- código ---------- */
+pre {
+  background: var(--code-bg);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 12px 0 16px;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+.troca { display: grid; gap: 14px; margin: 16px 0; }
+.mensagem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.mensagem .quem {
+  grid-column: 1 / -1;
+  font: 600 14px/1 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mensagem.do-bot .quem { color: var(--eq0); }
+.mensagem.do-servidor .quem { color: var(--muted); }
+.mensagem pre { margin: 0; border-radius: 0; height: 100%; }
+.mensagem .notas { padding: 12px 14px; font-size: 14px; display: grid; gap: 8px; align-content: start; }
+.mensagem .notas p { margin: 0; }
+.mensagem .notas code { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .mensagem { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- tabelas ---------- */
+.tabela { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 13px/1.3 var(--body); color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- linha do tempo ---------- */
+ol.prazos { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 0; }
+ol.prazos li {
+  display: grid;
+  grid-template-columns: 96px 18px minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  min-height: 56px;
+}
+ol.prazos .data { font: 600 20px/1.2 var(--display); font-variant-numeric: tabular-nums; text-align: right; padding-top: 2px; }
+ol.prazos .trilho { position: relative; }
+ol.prazos .trilho::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+ol.prazos .trilho::after {
+  content: ""; position: absolute; left: 3px; top: 7px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--panel); border: 2px solid var(--accent);
+}
+ol.prazos li.contexto .trilho::after { border-color: var(--muted); }
+ol.prazos li.entrega .trilho::after { background: var(--accent); }
+ol.prazos .o-que { padding-bottom: 14px; }
+ol.prazos .o-que b { display: block; }
+ol.prazos .o-que span { font-size: 14px; color: var(--muted); }
+
+/* ---------- composição da nota ---------- */
+.barra-nota { display: flex; height: 38px; border-radius: 6px; overflow: hidden; margin: 10px 0 6px; font: 600 15px/38px var(--display); letter-spacing: 0.04em; }
+.barra-nota span { color: #fff; padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.barra-nota .suite { background: var(--accent); }
+.barra-nota .notaproj { background: var(--hospital); }
+.barra-nota .defesa { background: var(--eq1); }
+.barra-nota .vazio { background: var(--line); color: var(--muted); }
+
+.svg-texto { fill: var(--fg); font-family: var(--body); }
+.svg-suave { fill: var(--muted); font-family: var(--body); }
+.svg-mono { fill: var(--muted); font-family: var(--mono); }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+</style>
+</head>
+<body>
+<div class="pagina">
+  <nav class="indice" aria-label="Índice">
+    <p>Índice</p>
+    <ol>
+      <li><a href="#jogo">O jogo</a></li>
+      <li><a href="#regras">Regras</a></li>
+      <li><a href="#etapas">Etapas</a></li>
+      <li><a href="#protocolo">Protocolo</a></li>
+      <li><a href="#cenarios">Cenários e limites</a></li>
+      <li><a href="#restricoes">Restrições</a></li>
+      <li><a href="#kit">Kit inicial</a></li>
+      <li><a href="#prazos">Entregas e prazos</a></li>
+      <li><a href="#avaliacao">Avaliação</a></li>
+      <li><a href="#torneio">Torneio e ODS</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="abertura">
+      <p class="disciplina">DS143 Estruturas de Dados II, trabalho prático 2026/2</p>
+      <h1>Central de <span class="faixa">Despacho</span></h1>
+      <p class="chamada">Você vai escrever o programa que comanda uma frota de ambulâncias numa cidade. A cada turno surgem chamados de emergência; seu bot decide para onde cada ambulância vai, disputando os pacientes com o bot de outra equipe. Quais estruturas de dados usar é decisão sua, e é isso que o trabalho avalia.</p>
+
+      <div class="ficha" aria-label="Resumo">
+        <div><b>30%</b><span>da média da disciplina</span></div>
+        <div><b>2 etapas</b><span>grade aberta, depois quarteirões e ruas fechadas</span></div>
+        <div><b>Go</b><span>individual ou em dupla</span></div>
+        <div><b>500 mil</b><span>chamados abertos ao mesmo tempo no cenário mais pesado</span></div>
+      </div>
+    </header>
+
+    <!-- ===================== O JOGO ===================== -->
+    <section id="jogo">
+      <div class="leitura">
+        <h2><span class="num">01</span>O jogo</h2>
+        <p>A cidade é uma grade de células. Algumas células são hospitais. A cada turno, novos chamados aparecem na grade, cada um com um <strong>valor</strong> e um <strong>prazo</strong>. Uma ambulância livre que chega à célula de um chamado dentro do prazo recolhe o paciente. A equipe só pontua quando a ambulância <strong>entrega o paciente num hospital</strong>, qualquer um deles. Cada ambulância leva um paciente por vez.</p>
+        <p>O servidor do jogo, fornecido pelo professor, simula a cidade e coloca o seu bot para disputar com outro bot no mesmo mapa. Vence a equipe com mais pontos ao fim do último turno.</p>
+      </div>
+
+      <figure class="largo">
+        <img src="img/grade.png" alt="Trecho do mapa no visualizador: um hospital ao centro cercado por ambulâncias das duas equipes, chamados comuns em amarelo espalhados pela grade e alguns chamados graves em vermelho." width="1100" height="851" loading="lazy">
+        <figcaption>Um trecho de partida real no cenário de estresse, aproximado em volta de um hospital (cruz verde). As ambulâncias perto dele já recolheram os chamados próximos; o espaço vazio em volta mostra isso.</figcaption>
+        <div class="legenda">
+          <span><span class="amostra" style="background:var(--comum)"></span>chamado comum</span>
+          <span><span class="amostra" style="background:var(--grave)"></span>chamado grave</span>
+          <span><span class="amostra" style="border:2px solid var(--eq0);border-radius:50%"></span>ambulância livre</span>
+          <span><span class="amostra" style="background:var(--eq0);border-radius:50%"></span>ambulância ocupada</span>
+          <span><span class="amostra" style="background:var(--eq1);border-radius:50%"></span>outra equipe</span>
+        </div>
+      </figure>
+
+      <div class="leitura">
+        <p>O enunciado não diz quais estruturas de dados usar. O cenário mais pesado foi dimensionado para que guardar os chamados num slice e percorrer tudo a cada turno fique muitas vezes mais lento que o bot de referência, e o teste de tempo compara o seu bot com essa referência.</p>
+        <h3>Objetivos</h3>
+        <p>Ao concluir o trabalho, você deverá ser capaz de:</p>
+        <ul>
+          <li>escolher estruturas de dados a partir das operações que um problema exige, da escala dos dados e de um limite de tempo, justificando a escolha pela complexidade de cada operação;</li>
+          <li>comparar a sua escolha com pelo menos uma alternativa e explicar em que situação a alternativa seria melhor;</li>
+          <li>implementar em Go as estruturas escolhidas, sem recorrer às estruturas prontas da biblioteca padrão;</li>
+          <li>adaptar a solução quando o problema muda, como acontece na etapa 2, em que o mapa ganha obstáculos e a distância passa a depender de um percurso em grafo.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== REGRAS ===================== -->
+    <section id="regras">
+      <div class="leitura">
+        <h2><span class="num">02</span>Regras</h2>
+        <h3>Grade e movimento</h3>
+        <p>A grade tem <code>largura</code> colunas e <code>altura</code> linhas. A coluna <code>x</code> cresce da esquerda para a direita; a linha <code>y</code> cresce <strong>de cima para baixo</strong>, como nas coordenadas de tela. A cada turno, cada ambulância faz um movimento:</p>
+      </div>
+
+      <div class="lado-a-lado">
+        <div class="caixa">
+          <h4>Movimentos</h4>
+          <svg viewBox="0 0 220 170" role="img" aria-label="Rosa dos ventos: N diminui y, S aumenta y, L aumenta x, O diminui x, P fica parado." style="max-width:260px">
+            <defs>
+              <marker id="ponta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+              </marker>
+            </defs>
+            <rect x="95" y="70" width="30" height="30" rx="4" fill="var(--accent-soft)" stroke="var(--accent)"></rect>
+            <text x="110" y="90" text-anchor="middle" class="svg-texto" font-size="14" font-weight="600">P</text>
+            <line x1="110" y1="66" x2="110" y2="30" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
+            <line x1="110" y1="104" x2="110" y2="140" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
+            <line x1="129" y1="85" x2="165" y2="85" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
+            <line x1="91" y1="85" x2="55" y2="85" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
+            <text x="110" y="20" text-anchor="middle" class="svg-texto" font-size="14" font-weight="600">N  y - 1</text>
+            <text x="110" y="160" text-anchor="middle" class="svg-texto" font-size="14" font-weight="600">S  y + 1</text>
+            <text x="172" y="90" class="svg-texto" font-size="14" font-weight="600">L</text>
+            <text x="172" y="106" class="svg-suave" font-size="12">x + 1</text>
+            <text x="48" y="90" text-anchor="end" class="svg-texto" font-size="14" font-weight="600">O</text>
+            <text x="48" y="106" text-anchor="end" class="svg-suave" font-size="12">x - 1</text>
+          </svg>
+        </div>
+        <div class="caixa">
+          <h4>O que vale</h4>
+          <ul>
+            <li>Ambulâncias podem ocupar a mesma célula, inclusive de equipes diferentes. Não há colisão.</li>
+            <li>Sair da grade ou, na etapa 2, entrar numa célula bloqueada é <strong>infração</strong>: a ambulância fica parada naquele turno.</li>
+            <li>Todas as ambulâncias começam livres, sobre os hospitais. As duas equipes começam em posições simétricas.</li>
+          </ul>
+        </div>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 410 300" role="img" aria-label="Grade de 12 por 8 células com um hospital, duas ambulâncias, chamados comuns e um chamado grave. A ambulância livre segue 3 células para leste e 2 para sul até um chamado, distância 5. A ambulância ocupada segue para o hospital." style="max-width:560px;background:var(--panel);border:1px solid var(--line)">
+          <g id="grade-a">
+            <rect x="30" y="24" width="360" height="240" fill="var(--rua)"></rect>
+            <g stroke="var(--line)" stroke-width="1">
+              <line x1="60" y1="24" x2="60" y2="264"></line><line x1="90" y1="24" x2="90" y2="264"></line><line x1="120" y1="24" x2="120" y2="264"></line><line x1="150" y1="24" x2="150" y2="264"></line><line x1="180" y1="24" x2="180" y2="264"></line><line x1="210" y1="24" x2="210" y2="264"></line><line x1="240" y1="24" x2="240" y2="264"></line><line x1="270" y1="24" x2="270" y2="264"></line><line x1="300" y1="24" x2="300" y2="264"></line><line x1="330" y1="24" x2="330" y2="264"></line><line x1="360" y1="24" x2="360" y2="264"></line>
+              <line x1="30" y1="54" x2="390" y2="54"></line><line x1="30" y1="84" x2="390" y2="84"></line><line x1="30" y1="114" x2="390" y2="114"></line><line x1="30" y1="144" x2="390" y2="144"></line><line x1="30" y1="174" x2="390" y2="174"></line><line x1="30" y1="204" x2="390" y2="204"></line><line x1="30" y1="234" x2="390" y2="234"></line>
+              <rect x="30" y="24" width="360" height="240" fill="none"></rect>
+            </g>
+          </g>
+          <g class="svg-mono" font-size="10" text-anchor="middle">
+            <text x="45" y="17">0</text><text x="75" y="17">1</text><text x="105" y="17">2</text><text x="135" y="17">3</text><text x="165" y="17">4</text><text x="195" y="17">5</text><text x="225" y="17">6</text><text x="255" y="17">7</text><text x="285" y="17">8</text><text x="315" y="17">9</text><text x="345" y="17">10</text><text x="375" y="17">11</text>
+            <text x="16" y="43">0</text><text x="16" y="73">1</text><text x="16" y="103">2</text><text x="16" y="133">3</text><text x="16" y="163">4</text><text x="16" y="193">5</text><text x="16" y="223">6</text><text x="16" y="253">7</text>
+          </g>
+          <text x="398" y="17" class="svg-mono" font-size="10">x</text>
+          <text x="12" y="282" class="svg-mono" font-size="10">y</text>
+          <!-- chamados comuns -->
+          <g fill="var(--comum)">
+            <rect x="337" y="151" width="16" height="16"></rect>
+            <rect x="307" y="211" width="16" height="16"></rect>
+            <rect x="67" y="61" width="16" height="16"></rect>
+            <rect x="217" y="31" width="16" height="16"></rect>
+            <rect x="277" y="241" width="16" height="16"></rect>
+            <rect x="127" y="121" width="16" height="16"></rect>
+          </g>
+          <!-- chamado grave -->
+          <rect x="157" y="61" width="16" height="16" fill="var(--grave)"></rect>
+          <!-- hospital -->
+          <g fill="var(--hospital)">
+            <rect x="93" y="184" width="24" height="10"></rect>
+            <rect x="100" y="177" width="10" height="24"></rect>
+          </g>
+          <!-- caminho da ambulância livre -->
+          <polyline points="255,99 345,99 345,152" fill="none" stroke="var(--eq0)" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ponta)"></polyline>
+          <circle cx="255" cy="99" r="9" fill="var(--panel)" stroke="var(--eq0)" stroke-width="3"></circle>
+          <!-- ambulância ocupada indo ao hospital -->
+          <polyline points="195,219 105,219 105,203" fill="none" stroke="var(--eq0)" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ponta)"></polyline>
+          <circle cx="195" cy="219" r="9" fill="var(--eq0)"></circle>
+          <text x="300" y="91" class="svg-texto" font-size="11">3 para leste</text>
+          <text x="352" y="130" class="svg-texto" font-size="11">2</text>
+          <text x="150" y="246" class="svg-texto" font-size="11" text-anchor="middle">ocupada: vai ao hospital</text>
+        </svg>
+        <figcaption>A ambulância livre em (7, 2) segue para o chamado comum em (10, 4). Na grade aberta, a distância é a de Manhattan: |10 - 7| + |4 - 2| = 5 turnos. A ambulância ocupada em (5, 6) já recolheu um paciente e segue para o hospital em (2, 5). O chamado grave em (4, 1) vale mais, mas a escolha depende também da distância dele até um hospital.</figcaption>
+      </figure>
+
+      <div class="leitura">
+        <h3>Chamados</h3>
+        <ul>
+          <li>Cada chamado tem identificador, posição, valor e prazo. O <strong>prazo</strong> é o último turno em que o paciente ainda pode ser recolhido.</li>
+          <li>O identificador é um inteiro positivo, único na partida e <strong>sem ordem</strong>: não é sequencial e não serve de índice.</li>
+          <li>Cerca de 5% dos chamados são <strong>graves</strong>: valem de 60 a 100 pontos e têm prazo curto. Os demais valem de 1 a 20 pontos e têm prazo longo. A mensagem não marca o chamado como grave; o valor e o prazo bastam para reconhecê-lo.</li>
+          <li>Chamados nunca aparecem em célula bloqueada nem em hospital, e todo chamado é alcançável a partir de algum hospital.</li>
+          <li>O servidor avisa quando um chamado é recolhido por qualquer equipe. <strong>O servidor não avisa quando um chamado expira</strong>: o seu bot precisa saber, pelo prazo, quais chamados ainda valem.</li>
+        </ul>
+
+        <h3>Ordem de um turno</h3>
+      </div>
+      <ol class="passos leitura">
+        <li><div>O servidor envia ao bot o estado do turno <code>t</code>: chamados novos, chamados recolhidos no turno anterior, posição e estado das suas ambulâncias e o placar.</div></li>
+        <li><div>O bot responde com um movimento para cada ambulância.</div></li>
+        <li><div>O servidor aplica os movimentos de todas as equipes ao mesmo tempo.</div></li>
+        <li><div>Cada ambulância <strong>livre</strong> que termina o movimento na célula de um chamado aberto, com prazo maior ou igual a <code>t</code>, recolhe um paciente e passa a <strong>ocupada</strong>. Numa célula com vários chamados, os de maior valor são recolhidos primeiro; em caso de empate no valor, o de menor identificador.</div></li>
+        <li><div>Se uma célula tiver mais ambulâncias livres que chamados, da mesma equipe ou de equipes diferentes, o servidor sorteia quais recolhem, usando a semente da partida.</div></li>
+        <li><div>Cada ambulância <strong>ocupada</strong> que termina o movimento num hospital entrega o paciente, a equipe soma o valor do chamado e a ambulância volta a ficar livre. Ela só pode recolher outro paciente no turno seguinte.</div></li>
+      </ol>
+    </section>
+
+    <!-- ===================== ETAPAS ===================== -->
+    <section id="etapas">
+      <div class="leitura">
+        <h2><span class="num">03</span>Etapas</h2>
+        <h3>Etapa 1: grade aberta</h3>
+        <p>Não há células bloqueadas. A distância entre duas células é a distância de Manhattan, <code>|x1 - x2| + |y1 - y2|</code>, e qualquer sequência de movimentos que reduza essa distância é um caminho mais curto.</p>
+      </div>
+      <div class="caixa destaque leitura">
+        <h4>Decisões que o seu projeto precisa tomar</h4>
+        <ul>
+          <li>como achar, a cada turno, os chamados abertos próximos de cada ambulância;</li>
+          <li>como descartar os chamados que expiraram sem varrer todos eles;</li>
+          <li>como remover um chamado que outra equipe recolheu, sabendo só o identificador;</li>
+          <li>como evitar que duas ambulâncias da sua equipe sigam para o mesmo chamado;</li>
+          <li>como achar o hospital mais próximo de uma ambulância ocupada.</li>
+        </ul>
+        <p>Cada decisão é uma pergunta sobre estrutura de dados. O seu relatório de projeto e a defesa giram em torno delas.</p>
+      </div>
+
+      <div class="leitura">
+        <h3>Etapa 2: quarteirões e ruas fechadas</h3>
+        <p>O mapa ganha retângulos de células bloqueadas, que representam quarteirões e ruas fechadas. A distância de Manhattan deixa de valer: o caminho mais curto agora contorna os bloqueios, e calculá-lo é um problema de percurso em grafo, assunto da parte final da disciplina. Os bloqueios são fixos durante a partida.</p>
+      </div>
+
+      <div class="lado-a-lado">
+        <figure style="margin:0">
+          <svg viewBox="0 0 410 316" role="img" aria-label="Grade com um quarteirão bloqueado entre a ambulância e o chamado. A linha reta de Manhattan, com 6 células, atravessa o quarteirão. O caminho real contorna o quarteirão por cima e tem 12 células." style="background:var(--panel);border:1px solid var(--line)">
+            <use href="#grade-a"></use>
+            <rect x="150" y="54" width="90" height="150" fill="var(--quarteirao)"></rect>
+            <g class="svg-mono" font-size="10" text-anchor="middle">
+              <text x="45" y="17">0</text><text x="75" y="17">1</text><text x="105" y="17">2</text><text x="135" y="17">3</text><text x="165" y="17">4</text><text x="195" y="17">5</text><text x="225" y="17">6</text><text x="255" y="17">7</text><text x="285" y="17">8</text><text x="315" y="17">9</text><text x="345" y="17">10</text><text x="375" y="17">11</text>
+              <text x="16" y="43">0</text><text x="16" y="73">1</text><text x="16" y="103">2</text><text x="16" y="133">3</text><text x="16" y="163">4</text><text x="16" y="193">5</text><text x="16" y="223">6</text><text x="16" y="253">7</text>
+            </g>
+            <line x1="114" y1="129" x2="276" y2="129" stroke="var(--grave)" stroke-width="2" stroke-dasharray="4 4"></line>
+            <g stroke="var(--grave)" stroke-width="3"><line x1="187" y1="121" x2="203" y2="137"></line><line x1="203" y1="121" x2="187" y2="137"></line></g>
+            <polyline points="105,129 135,129 135,39 255,39 255,129 276,129" fill="none" stroke="var(--eq0)" stroke-width="2.5" marker-end="url(#ponta)"></polyline>
+            <circle cx="105" cy="129" r="9" fill="var(--panel)" stroke="var(--eq0)" stroke-width="3"></circle>
+            <rect x="277" y="121" width="16" height="16" fill="var(--comum)"></rect>
+            <text x="210" y="286" text-anchor="middle" class="svg-texto" font-size="12">Manhattan: 6 células, mas atravessa o quarteirão</text>
+            <text x="210" y="305" text-anchor="middle" class="svg-texto" font-size="12" font-weight="600">caminho real: 12 células</text>
+          </svg>
+          <figcaption>Com bloqueios, a distância de Manhattan subestima o caminho. A busca do caminho real é um percurso no grafo das células livres.</figcaption>
+        </figure>
+        <figure style="margin:0">
+          <img src="img/etapa2.png" alt="Trecho de mapa da etapa 2 no visualizador: quarteirões cinzentos de tamanhos variados separados por ruas claras, com chamados amarelos nas ruas, um hospital e ambulâncias." width="1100" height="851" loading="lazy">
+          <figcaption>Um mapa real da etapa 2: quarteirões de tamanhos diferentes, ruas de duas células e alguns trechos de rua fechados.</figcaption>
+        </figure>
+      </div>
+
+      <div class="leitura">
+        <p>Decisão nova: calcular caminhos a cada turno ou calcular uma vez, no tempo de preparo, e guardar o resultado. A memória disponível limita o que pode ser guardado.</p>
+      </div>
+    </section>
+
+    <!-- ===================== PROTOCOLO ===================== -->
+    <section id="protocolo">
+      <div class="leitura">
+        <h2><span class="num">04</span>Protocolo</h2>
+        <p>O servidor executa o seu programa como subprocesso. A conversa é por texto, uma informação por linha: o servidor escreve na entrada padrão do bot e lê a saída padrão. Os campos de uma linha são separados por um espaço. A saída de erro é descartada e pode ser usada para depuração. O bot ingênuo do kit já implementa o protocolo inteiro.</p>
+        <p>Abaixo, o começo de uma partida numa grade de 200 x 200, com duas equipes, mensagem por mensagem. Para caber aqui, o mapa tem só dois hospitais e duas ambulâncias por equipe.</p>
+      </div>
+
+      <div class="troca">
+        <div class="mensagem do-servidor">
+          <div class="quem">Servidor envia: início da partida</div>
+<pre>INICIO 200 200 500 100 2000 0 2
+HOSPITAIS 2
+20 30
+150 170
+AMBULANCIAS 2
+0 20 30
+1 150 170
+BLOQUEIOS 0
+FIM</pre>
+          <div class="notas">
+            <p><code>INICIO largura altura turnos limite_turno_ms limite_preparo_ms equipe num_equipes</code>. Aqui, grade de 200 x 200, 500 turnos, e você é a equipe 0 de 2.</p>
+            <p><code>AMBULANCIAS</code> lista só as suas, com identificadores de <code>0</code> a <code>k-1</code>, cada uma num hospital.</p>
+            <p><code>BLOQUEIOS</code> traz retângulos <code>x1 y1 x2 y2</code>, cantos incluídos. Na etapa 1 vem sempre <code>0</code>.</p>
+          </div>
+        </div>
+
+        <div class="mensagem do-bot">
+          <div class="quem">Seu bot responde</div>
+<pre>PRONTO</pre>
+          <div class="notas">
+            <p>Depois de ler o <code>FIM</code>, o bot tem <code>limite_preparo_ms</code> (2 segundos) para responder <code>PRONTO</code>. Use esse tempo para qualquer pré-processamento.</p>
+          </div>
+        </div>
+
+        <div class="mensagem do-servidor">
+          <div class="quem">Servidor envia: turno 1</div>
+<pre>TURNO 1
+CHAMADOS 2
+1683149752 25 30 15 120
+2096790314 140 160 75 60
+RECOLHIDOS 0
+AMBULANCIAS 2
+0 20 30 LIVRE
+1 150 170 LIVRE
+PLACAR 2
+0 0
+1 0
+FIM</pre>
+          <div class="notas">
+            <p><code>CHAMADOS</code> traz só os chamados que surgiram neste turno: <code>id x y valor prazo</code>.</p>
+            <p>O primeiro vale 15 e pode ser recolhido até o turno 120. O segundo vale 75 com prazo 60: é um chamado grave.</p>
+            <p><code>RECOLHIDOS</code> lista os chamados recolhidos no turno anterior, por qualquer equipe, inclusive a sua.</p>
+            <p>Cada ambulância vem com <code>id x y estado</code>, e <code>estado</code> é <code>LIVRE</code> ou <code>OCUPADA</code>.</p>
+          </div>
+        </div>
+
+        <div class="mensagem do-bot">
+          <div class="quem">Seu bot responde: turno 1</div>
+<pre>0 L
+1 N
+FIM</pre>
+          <div class="notas">
+            <p>Uma linha <code>id direcao</code> por ambulância, em qualquer ordem. A ambulância 0 vai para leste, rumo ao chamado comum a 5 células. A ambulância 1 vai para norte, rumo ao chamado grave a 20 células (10 para oeste e 10 para norte).</p>
+            <p>Ambulância que não aparece na resposta fica parada. Linha malformada, identificador inexistente ou repetido conta como infração.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="leitura">
+        <p>Os turnos vão de <code>1</code> a <code>turnos</code>. Ao fim do último turno, o servidor fecha a entrada padrão do bot, que deve terminar ao ler o fim da entrada.</p>
+        <h3>Tempo de cada turno</h3>
+        <p>O servidor mede o <strong>tempo de processador</strong> que o bot gasta entre o <code>FIM</code> do servidor e o <code>FIM</code> da resposta, somadas todas as threads. Tempo em que o bot espera, ou em que o sistema atende outro programa, não conta.</p>
+        <p><code>limite_turno_ms</code> é um teto de 100 ms, alto de propósito, para um bot travado não atrasar a partida. Acima dele, o servidor descarta a resposta, as ambulâncias da equipe ficam paradas naquele turno e o servidor registra um <strong>estouro de tempo</strong>. A velocidade do seu bot é avaliada pelo teste de tempo, descrito em <a href="#avaliacao">Avaliação</a>, e não pelo teto. O servidor também espera no máximo dez vezes o teto em tempo de relógio; uma resposta que chega depois disso é usada no turno seguinte, se a do próprio turno não chegar a tempo.</p>
+      </div>
+    </section>
+
+    <!-- ===================== CENÁRIOS ===================== -->
+    <section id="cenarios">
+      <div class="leitura">
+        <h2><span class="num">05</span>Cenários e limites</h2>
+        <p>Os três cenários existem nas duas etapas; na etapa 2, recebem quarteirões e ruas fechadas.</p>
+      </div>
+      <div class="tabela">
+        <table>
+          <thead>
+            <tr><th>Cenário</th><th class="n">Grade</th><th class="n">Ambulâncias por equipe</th><th class="n">Hospitais</th><th class="n">Chamados novos por turno</th><th class="n">Prazo dos comuns</th><th class="n">Prazo dos graves</th><th class="n">Chamados abertos (pico)</th><th class="n">Turnos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>pequeno</code></td><td class="n">200 x 200</td><td class="n">5</td><td class="n">4</td><td class="n">2</td><td class="n">50 a 200</td><td class="n">20 a 80</td><td class="n">cerca de 250</td><td class="n">500</td></tr>
+            <tr><td><code>medio</code></td><td class="n">1000 x 1000</td><td class="n">20</td><td class="n">10</td><td class="n">40</td><td class="n">100 a 600</td><td class="n">30 a 150</td><td class="n">cerca de 13 mil</td><td class="n">1000</td></tr>
+            <tr><td><code>estresse</code></td><td class="n">2000 x 2000</td><td class="n">100</td><td class="n">20</td><td class="n">1000</td><td class="n">100 a 1000</td><td class="n">30 a 150</td><td class="n">cerca de 500 mil</td><td class="n">1000</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="leitura">
+        <p>Os prazos são contados em turnos a partir do turno em que o chamado surge. O número de chamados novos varia até 25% para cima ou para baixo a cada turno. Cerca de 30% dos chamados nascem concentrados em torno de alguns pontos fixos do mapa; os demais se espalham por todo o mapa.</p>
+      </div>
+      <div class="tabela leitura">
+        <table>
+          <thead><tr><th>Limite</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Teto por turno (<code>limite_turno_ms</code>)</td><td>100 ms de tempo de processador</td></tr>
+            <tr><td>Tempo de preparo (<code>limite_preparo_ms</code>)</td><td>2000 ms</td></tr>
+            <tr><td>Memória do processo</td><td>512 MB; acima disso, o servidor encerra o bot, que fica parado até o fim da partida</td></tr>
+            <tr><td>Processadores</td><td>o bot roda com <code>GOMAXPROCS=1</code>, preso a um núcleo do processador</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== RESTRIÇÕES ===================== -->
+    <section id="restricoes">
+      <div class="leitura">
+        <h2><span class="num">06</span>Restrições de implementação</h2>
+        <ul>
+          <li>Linguagem Go, versão 1.22 ou posterior. A correção compila com Go 1.26, e o <code>go.mod</code> da entrega não pode pedir versão mais nova que essa. O programa deve compilar com <code>go build</code> na raiz da entrega, que contém <code>go.mod</code> e o pacote <code>main</code>.</li>
+          <li><strong>Não use o tipo <code>map</code> nem os pacotes <code>container/heap</code>, <code>container/list</code> e <code>container/ring</code></strong> em nenhum arquivo <code>.go</code> da entrega, exceto nos arquivos de teste (<code>_test.go</code>). Bibliotecas de terceiros também estão proibidas. O corretor procura esses usos, e a entrega que tiver algum fica com zero nos testes de pontuação da etapa, os que comparam a sua soma de pontos com a de um bot de referência.</li>
+          <li>Fora o que está proibido acima, a biblioteca padrão pode ser usada.</li>
+          <li>Você pode reaproveitar o código que escreveu nas atividades avaliativas da disciplina, como a árvore AVL e a tabela hash, desde que seja seu.</li>
+        </ul>
+      </div>
+      <div class="lado-a-lado">
+        <div class="caixa">
+          <h4>Leia e escreva com buffer</h4>
+          <p>Use <code>bufio</code>. No cenário de estresse chegam cerca de mil linhas por turno; com <code>fmt.Scan</code> direto, só a leitura consome boa parte do tempo do turno.</p>
+        </div>
+        <div class="caixa">
+          <h4>Cuidado com o custo amortizado</h4>
+          <p>O teste de tempo olha os turnos mais caros, e não a média. O <code>append</code> que dobra a capacidade de um slice tem custo amortizado constante, mas pode copiar dezenas de megabytes num turno só.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== KIT ===================== -->
+    <section id="kit">
+      <div class="leitura">
+        <h2><span class="num">07</span>Kit inicial</h2>
+        <p>Publicado no UFPR Virtual até 14/10:</p>
+        <ul>
+          <li>o <strong>servidor</strong> do jogo, em Go, com código-fonte;</li>
+          <li>o <strong>bot ingênuo</strong>, que já implementa o protocolo inteiro, guarda os chamados num slice e escolhe, para cada ambulância livre, o chamado mais próximo percorrendo todos;</li>
+          <li>o <strong>bot indexado</strong> de referência da etapa 1 e o <strong>bot de referência da etapa 2</strong>, só os executáveis;</li>
+          <li>dez <strong>sementes de treino</strong> para cada cenário;</li>
+          <li>o <strong>corretor</strong>, que roda com as sementes de treino a mesma suíte de testes usada na correção e mostra os pontos que a sua entrega faria;</li>
+          <li>o <strong>visualizador</strong>, que reproduz no navegador a partida gravada pelo servidor.</li>
+        </ul>
+        <p>O kit sai em cinco versões, com o mesmo conteúdo: uma para Linux, uma para Windows, duas para macOS (processador Apple e processador Intel) e uma para Docker. A versão para Docker traz um <code>Dockerfile</code> que monta, no seu computador, uma imagem com o Go na mesma versão da correção e com o servidor, o corretor e os bots de referência já instalados. O arquivo <code>LEIAME.md</code> de cada kit explica como usá-lo. As versões para Windows e macOS, e a versão para Docker fora do Linux, ainda não foram testadas nesses sistemas. Se alguma não funcionar no seu computador, avise o professor por mensagem no UFPR Virtual, com o sistema, o comando usado e a mensagem de erro.</p>
+        <p>O bot ingênuo passa no cenário pequeno. No estresse, fica dezenas de vezes mais lento que o bot indexado e passa do teto em cerca de 10% dos turnos. O trabalho começa por decidir o que substituir nele.</p>
+        <h3>Como jogar uma partida</h3>
+<pre>go build -o meubot .
+../bin/servidor -cenario medio -etapa 1 -semente 7 -replay partida.jsonl ./meubot ../bin/indexado</pre>
+        <p>Os comandos desta seção valem para Linux e macOS, a partir da pasta <code>ingenuo</code> do kit. No Windows, os executáveis têm a extensão <code>.exe</code>. No contêiner Docker, o servidor, o corretor e os bots de referência estão no PATH, e o comando fica <code>servidor ... ./meubot indexado</code>.</p>
+        <p>O servidor imprime o placar, as infrações, os estouros e o tempo de processador por turno de cada bot. Com <code>-replay</code>, grava a partida para o visualizador.</p>
+        <h3>Como ver a partida</h3>
+        <p>Abra <code>visualizador/index.html</code> no navegador e escolha o arquivo <code>partida.jsonl</code>. A roda do mouse aproxima, arrastar move o mapa, a barra de espaço reproduz ou pausa.</p>
+      </div>
+      <figure class="largo">
+        <img src="img/visualizador.png" alt="Visualizador com uma partida do cenário de estresse: o mapa inteiro coberto de chamados, ambulâncias das duas equipes em volta dos hospitais, controles de reprodução no topo e painel com placar e dados da partida à direita." width="1400" height="900" loading="lazy">
+        <figcaption>O visualizador com uma partida do cenário de estresse no turno 600. As manchas mais densas são os pontos do mapa em volta dos quais os chamados se concentram.</figcaption>
+      </figure>
+      <div class="leitura">
+        <h3>Como estimar a sua nota</h3>
+<pre>../bin/corretor -etapa 1 -sementes 1-10 -bin ../bin .</pre>
+        <p>O corretor compila a entrega do jeito que a correção compila, joga as partidas de cada teste e grava um relatório com os pontos, as partidas e o uso de recurso proibido, se houver. A correção usa outras sementes, então a pontuação final pode variar um pouco.</p>
+      </div>
+    </section>
+
+    <!-- ===================== PRAZOS ===================== -->
+    <section id="prazos">
+      <div class="leitura">
+        <h2><span class="num">08</span>Entregas e prazos</h2>
+      </div>
+      <ol class="prazos leitura">
+        <li class="contexto"><span class="data">14/10</span><span class="trilho"></span><div class="o-que"><b>Kit inicial</b><span>Publicado no UFPR Virtual. Não é entrega; marca o começo do trabalho.</span></div></li>
+        <li class="entrega"><span class="data">21/10</span><span class="trilho"></span><div class="o-que"><b>Declaração de uso de IA</b><span>Questionário no UFPR Virtual. A declaração é irrevogável.</span></div></li>
+        <li class="entrega"><span class="data">11/11</span><span class="trilho"></span><div class="o-que"><b>Etapa 1: código e relatório de projeto</b><span>Tarefa no UFPR Virtual</span></div></li>
+        <li class="contexto"><span class="data">25/11</span><span class="trilho"></span><div class="o-que"><b>Prova presencial 2</b><span>Não é entrega do trabalho; está aqui para você planejar a etapa 2.</span></div></li>
+        <li class="entrega"><span class="data">29/11</span><span class="trilho"></span><div class="o-que"><b>Etapa 2: código final</b><span>Tarefa no UFPR Virtual</span></div></li>
+        <li class="entrega"><span class="data">02/12</span><span class="trilho"></span><div class="o-que"><b>Defesa</b><span>Só na modalidade sem IA. Presencial, em sala.</span></div></li>
+      </ol>
+      <div class="leitura">
+        <p>Não há entrega com atraso. A tarefa do UFPR Virtual fecha às 23h59 do dia do prazo, e a etapa sem entrega fica com zero em tudo o que vale naquela etapa. A declaração de uso de IA segue a mesma regra: sem declaração até 21/10, o trabalho fica na modalidade com IA.</p>
+        <p>O trabalho pode ser feito individualmente ou em dupla. Em dupla, os dois enviam a declaração de uso de IA, que precisa ser a mesma, e os dois enviam o mesmo arquivo de código, com os dois nomes no <code>README.md</code>. Cada entrega é um <code>.zip</code> com a raiz do módulo Go; a da etapa 1 inclui o arquivo <code>relatorio_de_projeto.md</code>, opcional na modalidade com IA.</p>
+        <h3>Relatório de projeto</h3>
+        <p>No máximo uma página. Para cada decisão listada na <a href="#etapas">etapa 1</a>, responda qual estrutura você usou, qual o custo das operações que o bot faz nela a cada turno e qual alternativa você considerou e por que a descartou. Ele precisa descrever o código entregue, e é material da defesa: espere perguntas sobre cada linha dele. Um esqueleto possível:</p>
+<pre># Relatório de projeto: Fulana de Tal
+
+## Achar os chamados próximos de uma ambulância
+Estrutura: ...
+Custo por turno: ...
+Alternativa descartada: ..., porque ...
+
+## Descartar os chamados expirados
+Estrutura: ...
+...</pre>
+      </div>
+    </section>
+
+    <!-- ===================== AVALIAÇÃO ===================== -->
+    <section id="avaliacao">
+      <div class="leitura">
+        <h2><span class="num">09</span>Avaliação</h2>
+        <p>O trabalho vale 30% da média, com nota de 0 a 100. Até 21/10, você declara se vai usar IA generativa. A declaração define a modalidade:</p>
+      </div>
+      <div class="lado-a-lado">
+        <div class="caixa">
+          <h4>Sem IA: até 100 pontos</h4>
+          <div class="barra-nota" aria-hidden="true"><span class="suite" style="width:60%">Suíte 60</span><span class="notaproj" style="width:10%">10</span><span class="defesa" style="width:30%">Defesa 30</span></div>
+          <p>Suíte de testes (60), relatório de projeto (10) e defesa presencial de 10 a 15 minutos (30). Em dupla, cada um responde e recebe a própria nota de defesa.</p>
+        </div>
+        <div class="caixa">
+          <h4>Com IA: até 60 pontos</h4>
+          <div class="barra-nota" aria-hidden="true"><span class="suite" style="width:60%">Suíte 60</span><span class="vazio" style="width:40%"></span></div>
+          <p>Só a suíte de testes. Não há defesa, e o relatório de projeto é opcional e não é avaliado.</p>
+        </div>
+      </div>
+      <div class="leitura">
+        <p>Como prevê o plano de ensino, se você declarou que não usaria IA e não conseguir explicar partes do seu código na defesa, ou se o uso de IA for identificado por outro meio, a nota máxima do trabalho passa a ser 50.</p>
+
+        <h3>Suíte de testes</h3>
+        <p>A suíte vale 60 pontos e é a mesma nas duas modalidades. Cada teste joga partidas de um contra um: o seu bot contra um bot de referência, com sementes fixas que <strong>não</strong> são as de treino. O seu bot alterna de lado (equipe 0 ou 1) de uma semente para a outra. A nota sai por limiar, sem comparação com bots de colegas. Os limiares dos testes (a razão de tempo e as margens de pontuação) foram calibrados no computador que roda a correção. Se algum precisar de ajuste, o ajuste sai até 21/10, como aviso no UFPR Virtual e com um kit novo.</p>
+      </div>
+      <div class="tabela">
+        <table>
+          <thead><tr><th>Etapa</th><th>Teste</th><th>Critério</th><th class="n">Pontos</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Protocolo</td><td>Nenhuma infração em 10 partidas do cenário <code>pequeno</code></td><td class="n">10</td></tr>
+            <tr><td>1</td><td>Tempo</td><td>p99 do tempo de processador por turno até 4 vezes o do bot indexado, na mediana de 10 partidas do <code>estresse</code>, sem passar do teto em mais de 10 turnos de nenhuma partida</td><td class="n">15</td></tr>
+            <tr><td>1</td><td>Bot ingênuo</td><td>Soma de pontos pelo menos 10% maior que a do bot ingênuo em 10 partidas do <code>medio</code></td><td class="n">10</td></tr>
+            <tr><td>1</td><td>Bot indexado</td><td>Soma de pontos pelo menos 2% maior que a do bot indexado em 10 partidas do <code>estresse</code></td><td class="n">10</td></tr>
+            <tr><td>2</td><td>Protocolo e tempo</td><td>Nenhuma infração e p99 do tempo de processador por turno até 4 vezes o do bot da etapa 2, na mediana de 10 partidas do <code>estresse</code> com bloqueios, sem passar do teto em mais de 10 turnos de nenhuma partida</td><td class="n">7</td></tr>
+            <tr><td>2</td><td>Bot de referência</td><td>Soma de pontos pelo menos 2% maior que a do bot da etapa 2 em 10 partidas do <code>medio</code> com bloqueios</td><td class="n">8</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="leitura">
+        <p>Os testes da etapa 1 rodam sobre a entrega da etapa 1; os da etapa 2, sobre a entrega da etapa 2. A margem exigida nos testes de pontuação existe porque dois bots idênticos terminam com somas diferentes, por causa dos sorteios de desempate.</p>
+
+        <h3>Como funciona o teste de tempo</h3>
+        <p>O <strong>p99</strong> é o tempo de processador abaixo do qual ficam 99% dos turnos do bot. A <strong>razão</strong> é o p99 do seu bot dividido pelo p99 do bot de referência, <strong>medidos na mesma partida</strong>. Como os dois rodam na mesma máquina, no mesmo momento, a razão quase não depende da velocidade do computador: com o corretor do kit, você mede em casa a mesma razão que a correção vai medir. Fora do Linux, o servidor mede tempo de relógio em vez de tempo de processador, e a razão fica menos precisa. No Windows e no macOS, use o kit para Docker, ou o WSL2 no Windows, para medir como a correção mede.</p>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 660 200" role="img" aria-label="Gráfico de barras da razão do p99 em relação à referência. Bot de referência contra ele mesmo: 1,1. Busca em largura refeita a cada turno para toda ambulância, na etapa 2: 6,0. Varredura linear de todos os chamados, na etapa 1: 11,6. Limite do teste: 4." style="max-width:660px;background:var(--panel);border:1px solid var(--line)">
+          <g class="svg-mono" font-size="11" text-anchor="middle">
+            <line x1="250" y1="24" x2="250" y2="150" stroke="var(--line)"></line><text x="250" y="168">0</text>
+            <line x1="310" y1="24" x2="310" y2="150" stroke="var(--line)"></line><text x="310" y="168">2</text>
+            <line x1="430" y1="24" x2="430" y2="150" stroke="var(--line)"></line><text x="430" y="168">6</text>
+            <line x1="490" y1="24" x2="490" y2="150" stroke="var(--line)"></line><text x="490" y="168">8</text>
+            <line x1="550" y1="24" x2="550" y2="150" stroke="var(--line)"></line><text x="550" y="168">10</text>
+            <line x1="610" y1="24" x2="610" y2="150" stroke="var(--line)"></line><text x="610" y="168">12</text>
+          </g>
+          <text x="430" y="190" text-anchor="middle" class="svg-suave" font-size="12">razão do p99 (seu bot / referência)</text>
+          <!-- barras: escala 30 px por unidade a partir de x = 250 -->
+          <text x="240" y="50" text-anchor="end" class="svg-texto" font-size="13">referência contra ela mesma</text>
+          <rect x="250" y="36" width="33" height="22" fill="var(--hospital)"></rect>
+          <text x="289" y="52" class="svg-texto" font-size="12" font-weight="600">1,1</text>
+          <text x="240" y="88" text-anchor="end" class="svg-texto" font-size="13">busca refeita a cada turno (etapa 2)</text>
+          <rect x="250" y="74" width="179" height="22" fill="var(--grave)"></rect>
+          <text x="435" y="90" class="svg-texto" font-size="12" font-weight="600">6,0</text>
+          <text x="240" y="126" text-anchor="end" class="svg-texto" font-size="13">varredura linear (etapa 1)</text>
+          <rect x="250" y="112" width="348" height="22" fill="var(--grave)"></rect>
+          <text x="604" y="128" class="svg-texto" font-size="12" font-weight="600">11,6</text>
+          <!-- limite -->
+          <line x1="370" y1="18" x2="370" y2="150" stroke="var(--fg)" stroke-width="2" stroke-dasharray="5 4"></line>
+          <text x="370" y="14" text-anchor="middle" class="svg-texto" font-size="12" font-weight="600">limite: 4</text>
+          <text x="370" y="168" text-anchor="middle" class="svg-mono" font-size="11">4</text>
+        </svg>
+        <figcaption>Razões medidas pelo professor ao calibrar o jogo, na mediana de 5 partidas do cenário de estresse. A versão com varredura linear guarda o alvo de cada ambulância e só procura outro quando perde o alvo, e mesmo assim fica perto de 12 vezes mais lenta nos turnos caros.</figcaption>
+      </figure>
+
+      <div class="leitura">
+        <h3>Exemplos de perguntas da defesa</h3>
+        <ul>
+          <li>Qual o custo, por turno, de achar o chamado mais próximo no seu projeto?</li>
+          <li>O que acontece com a sua estrutura quando os chamados se concentram numa região pequena do mapa?</li>
+          <li>Por que, na etapa 2, um percurso em largura basta para achar o caminho mais curto?</li>
+          <li>Quanta memória ocupa o que você pré-calcula no preparo?</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== TORNEIO E ODS ===================== -->
+    <section id="torneio">
+      <div class="leitura">
+        <h2><span class="num">10</span>Torneio e ODS</h2>
+        <p>Depois do prazo da etapa 2, o professor roda um torneio com os bots entregues na etapa 2, cada um uma vez só, mesmo em dupla. O torneio tem 20 rodadas no cenário <code>medio</code> com bloqueios, cada uma com uma semente nova. Em cada rodada, os bots são sorteados em grupos de quatro, e cada grupo joga uma partida no mesmo mapa. O grupo que ficar incompleto recebe cópias do bot de referência da etapa 2, que não entram na classificação. A classificação é pela colocação média nas 20 partidas, de 1 (primeiro do grupo) a 4 (último), e o empate se desfaz pela média de pontos do jogo. O professor publica a classificação no UFPR Virtual.</p>
+        <p>Os dois bots mais bem colocados da modalidade sem IA ganham 5 pontos a mais na nota do trabalho, que continua limitada a 100. Em dupla, os dois integrantes recebem o bônus. Os bots da modalidade com IA e os que usam recurso proibido pelas restrições de implementação jogam o torneio e aparecem na classificação, mas não recebem bônus, que passa para os seguintes. Se houver tempo no encontro de 02/12, uma partida entre os quatro primeiros colocados passa no projetor.</p>
+        <p>O jogo é um modelo simplificado de despacho de atendimento de urgência. A escolha da ambulância e do hospital influencia o tempo de resposta, um indicador de saúde pública (ODS 3, Saúde e Bem-Estar). A etapa 2 traz o problema para a malha urbana, em que o caminho real depende do traçado da cidade (ODS 11, Cidades e Comunidades Sustentáveis).</p>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
