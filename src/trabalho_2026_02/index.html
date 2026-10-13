@@ -432,7 +432,7 @@ ol.prazos .o-que span { font-size: 14px; color: var(--muted); }
       <div class="lado-a-lado">
         <div class="caixa">
           <h4>Movimentos</h4>
-          <svg viewBox="0 0 220 170" role="img" aria-label="Rosa dos ventos: N diminui y, S aumenta y, L aumenta x, O diminui x, P fica parado." style="max-width:260px">
+          <svg viewBox="-12 0 244 170" role="img" aria-label="Rosa dos ventos: N diminui y, S aumenta y, L aumenta x, O diminui x, P fica parado." style="max-width:260px">
             <defs>
               <marker id="ponta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
@@ -444,12 +444,10 @@ ol.prazos .o-que span { font-size: 14px; color: var(--muted); }
             <line x1="110" y1="104" x2="110" y2="140" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
             <line x1="129" y1="85" x2="165" y2="85" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
             <line x1="91" y1="85" x2="55" y2="85" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ponta)"></line>
-            <text x="110" y="20" text-anchor="middle" class="svg-texto" font-size="14" font-weight="600">N  y - 1</text>
-            <text x="110" y="160" text-anchor="middle" class="svg-texto" font-size="14" font-weight="600">S  y + 1</text>
-            <text x="172" y="90" class="svg-texto" font-size="14" font-weight="600">L</text>
-            <text x="172" y="106" class="svg-suave" font-size="12">x + 1</text>
-            <text x="48" y="90" text-anchor="end" class="svg-texto" font-size="14" font-weight="600">O</text>
-            <text x="48" y="106" text-anchor="end" class="svg-suave" font-size="12">x - 1</text>
+            <text x="110" y="20" text-anchor="middle"><tspan class="svg-texto" font-size="14" font-weight="600">N</tspan><tspan class="svg-suave" font-size="12" dx="6">y - 1</tspan></text>
+            <text x="110" y="160" text-anchor="middle"><tspan class="svg-texto" font-size="14" font-weight="600">S</tspan><tspan class="svg-suave" font-size="12" dx="6">y + 1</tspan></text>
+            <text x="172" y="90"><tspan class="svg-texto" font-size="14" font-weight="600">L</tspan><tspan class="svg-suave" font-size="12" dx="6">x + 1</tspan></text>
+            <text x="48" y="90" text-anchor="end"><tspan class="svg-texto" font-size="14" font-weight="600">O</tspan><tspan class="svg-suave" font-size="12" dx="6">x - 1</tspan></text>
           </svg>
         </div>
         <div class="caixa">
