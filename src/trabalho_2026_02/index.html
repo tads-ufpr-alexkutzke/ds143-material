@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <style>
-/* Layout: enunciado longo em coluna de leitura, com índice fixo à esquerda em telas largas; cores do mapa do jogo (rua, quarteirão, hospital, chamado comum, chamado grave). */
+/* Layout: enunciado longo, com parágrafos na mesma largura das tabelas e figuras, com índice fixo à esquerda em telas largas; cores do mapa do jogo (rua, quarteirão, hospital, chamado comum, chamado grave). */
 :root {
   --bg: #f3f5f7;
   --panel: #ffffff;
@@ -133,7 +133,7 @@ nav.indice a {
 nav.indice a:hover { color: var(--fg); border-left-color: var(--accent); }
 
 main { min-width: 0; }
-.leitura { max-width: 70ch; }
+.leitura { max-width: none; }
 
 /* ---------- cabeçalho ---------- */
 header.abertura { padding-block: 40px 8px; }
@@ -161,7 +161,7 @@ h1 .faixa {
   font-size: 19px;
   line-height: 1.55;
   margin: 24px 0 0;
-  max-width: 62ch;
+  max-width: none;
 }
 .aviso {
   margin: 20px 0 0;
@@ -224,7 +224,7 @@ figure { margin: 24px 0; }
 figure.largo { max-width: 100%; }
 figure img, figure svg { display: block; max-width: 100%; height: auto; border-radius: 6px; }
 figure img { border: 1px solid var(--line); }
-figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; max-width: 70ch; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
 
 .legenda { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 10px 0 0; font-size: 14px; }
 .legenda span { display: inline-flex; align-items: center; gap: 8px; }
@@ -550,7 +550,7 @@ ol.prazos .o-que span { font-size: 14px; color: var(--muted); }
 
       <div class="leitura">
         <h3>Etapa 2: quarteirões e ruas fechadas</h3>
-        <p>O mapa ganha retângulos de células bloqueadas, que representam quarteirões e ruas fechadas. A distância de Manhattan deixa de valer: o caminho mais curto agora contorna os bloqueios, e calculá-lo é um problema de percurso em grafo, assunto da parte final da disciplina. Os bloqueios são fixos durante a partida.</p>
+        <p>O mapa ganha retângulos de células bloqueadas, que representam quarteirões e ruas fechadas. As ruas têm duas células de largura, inclusive na borda do mapa, e um trecho de rua fechado bloqueia a largura inteira. A distância de Manhattan deixa de valer: o caminho mais curto agora contorna os bloqueios, e calculá-lo é um problema de percurso em grafo, assunto da parte final da disciplina. Os bloqueios são fixos durante a partida.</p>
       </div>
 
       <div class="lado-a-lado">
