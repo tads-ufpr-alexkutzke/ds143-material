@@ -7,14 +7,15 @@ use uma das máquinas do laboratório.
 |---|---|
 | **Peso** | 5% da nota final |
 | **Formato** | individual ou em dupla |
-| **Prazo** | 14/10/2026, 23h59, na UFPR Virtual |
+| **Prazo** | 18/10/2026 (domingo), 23h59, na UFPR Virtual |
 
 Feita em sala, com consulta livre ao material da disciplina. O conteúdo é o da
 [aula de tabelas de dispersão](aula_10.md), e cai na Prova 2, em 25/11.
 
 São três funções a escrever, nas Partes 1 e 2, e uma série de medidas a fazer e
 comentar, na Parte 3. Os últimos 15 minutos do encontro são da apresentação do
-Trabalho Prático; o que faltar da atividade pode ser terminado até 23h59.
+Trabalho Prático; o que faltar da atividade pode ser terminado até domingo,
+18/10, às 23h59.
 
 ## Dupla
 
