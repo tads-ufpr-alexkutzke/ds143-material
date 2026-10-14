@@ -136,6 +136,44 @@ O 1 fica onde está, e o 10, que vem depois dele, desce. A remoção não pode p
 na primeira chave que não desce: só uma posição vazia encerra o percurso. A
 pergunta 1 do `respostas.md` trata deste exemplo.
 
+Um segundo exemplo mostra por que a comparação de distâncias resolve a volta no
+fim do vetor. Com $m = 11$, inserindo 9, 20, 21, 31 e 2:
+
+```
+   0   1   2   3   4   5   6   7   8   9  10
+  21  31   2   .   .   .   .   .   .   9  20
+```
+
+O 21 ($h = 10$) achou a 10 ocupada e parou na 0. O 31 ($h = 9$) passou pela 9,
+pela 10 e pela 0 até parar na 1. O 2 ($h = 2$) está na posição de origem.
+`Remove(20)` esvazia a posição 10, e o percurso segue a partir da 0:
+
+| $j$ | chave | $h$ | buraco $i$ | desce? |
+|---|---|---|---|---|
+| 0 | 21 | 10 | 10 | sim |
+| 1 | 31 | 9 | 0 | sim |
+| 2 | 2 | 2 | 1 | não |
+| 3 | vazia | | | fim |
+
+A tabela fica assim, e a `Busca` acha todas as chaves:
+
+```
+   0   1   2   3   4   5   6   7   8   9  10
+  31   .   2   .   .   .   .   .   .   9  21
+```
+
+O 31 mostra por que comparar as posições diretamente não funciona. O caminho
+dele foi 9, 10, 0, 1, e o buraco na 0 está nesse caminho, mas o teste
+$h \le i < j$ dá $9 \le 0$, falso. Com esse teste, o 31 ficaria na posição 1
+com a 0 vazia, e a `Busca(31)` passaria pela 9 e pela 10, pararia na 0 e não o
+acharia. Contadas até $j$ com a `distancia`, as posições 9, 10, 0 e 1 ficam a
+3, 2, 1 e 0 passos, e a volta no fim do vetor deixa de existir. O buraco está no
+caminho quando fica a no máximo tantos passos de $j$ quanto a origem.
+
+O 2 fica onde está. A origem dele vem depois do buraco: até $j$, ela fica a 0
+passos, e o buraco a 1. Se o 2 descesse para a posição 1, ficaria antes da
+própria origem, e a `Busca(2)`, que começa na 2, não o acharia.
+
 Ao terminar, `go test ./...` passa inteiro.
 
 ## Parte 3: medidas contra o `map` (20 min)
