@@ -32,9 +32,12 @@ com `misturar = true`. Volte para `false` antes de enviar.
 
 ## Perguntas
 
-1. Na sua `Remove`, em que condição a chave da posição `j` desce para o buraco
-   `i`? No teste `TestRemoveVoltaCircular`, por que o 1 fica na posição 1 e o
-   10, que está depois dele, desce para a posição 0?
+1. Na sua `Remove`, depois que a chave removida deixa a posição vazia, as
+   chaves seguintes podem descer para ela. Em que condição uma dessas chaves
+   desce? Responda em função de três posições: a de origem da chave, a posição
+   em que ela está e a posição vazia. No teste `TestRemoveVoltaCircular`, por
+   que o 1 fica na posição 1 e o 10, que está depois dele, desce para a
+   posição 0?
 
 2. Com `misturar = false`, a linha da janela da `Tabela` fica centenas de vezes
    mais lenta que a do `map`. Quantas posições a sua `Remove` examina, mais ou

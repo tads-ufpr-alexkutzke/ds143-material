@@ -180,15 +180,20 @@ Ao terminar, `go test ./...` passa inteiro.
 
 O arquivo [tabela/bench_test.go](11/lab/tabela/bench_test.go) traz medidas de
 desempenho (*benchmarks*) que fazem as mesmas operações na sua `Tabela` e num
-`map[int]int`, com 100.000 chaves:
+`map[int]int`. As de inserção e de busca usam 100.000 chaves:
 
 * `Insere`: inserções a partir de uma tabela vazia, com chaves aleatórias e com
   chaves sequenciais (0, 1, 2, ...);
 * `Busca`: buscas por chaves presentes e, no caso das aleatórias, por chaves
   ausentes;
-* `Janela`: a cada passo, insere a chave $i$, remove a chave $i - 1000$ e busca
-  uma chave que está na tabela. A tabela fica sempre com cerca de 1000 chaves,
-  como uma lista de pedidos que chegam e saem em ordem.
+* `Janela`: começa com a tabela vazia e repete um passo numerado por $i$, com
+  $i = 0, 1, 2, ...$ Nos primeiros 1000 passos, o passo só insere a chave $i$.
+  Do passo 1000 em diante, ele insere a chave $i$, remove a chave $i - 1000$,
+  inserida 1000 passos antes, e busca a chave $i - 500$, que está na tabela. A
+  partir daí, a tabela termina cada passo com as 1000 chaves mais recentes, como
+  uma lista de pedidos que chegam e saem em ordem. O Go repete o passo dezenas
+  de milhares de vezes ou mais, e os primeiros 1000 passos quase não pesam na
+  média.
 
 Rode as medidas com:
 
