@@ -1,0 +1,171 @@
+% Grafos da aula de representação e percursos. Compartilhado entre o roteiro
+% (figuras.tex) e os slides (grafos.tex da pasta 00_grafos). Os grafos são os
+% mesmos dos programas da pasta codes.
+
+\tikzset{
+  gv/.style = {circle, draw=black, fill=white, inner sep=0pt,
+    minimum size=1.6em, line width=0.6pt, font=\sffamily\small},
+  ga/.style = {draw=black!55, line width=0.7pt},
+  garv/.style = {draw=blue!70!black, line width=2.2pt},
+  gnota/.style = {font=\sffamily\scriptsize, text=blue!70!black},
+  arco/.style = {-{Stealth[length=2.4mm]}, draw=black!70, line width=0.7pt},
+  pv/.style = {rectangle, rounded corners=2pt, draw=black, fill=white,
+    inner sep=3pt, line width=0.6pt, font=\ttfamily\small},
+  arcov/.style = {-{Stealth[length=2.4mm]}, draw=red!75!black, line width=1.6pt}
+}
+
+% ------------------------------------------------------------------
+% Grafo G, de bfs.go, dfs.go e representacao.go.
+\newcommand{\Gnos}{%
+  \node [gv] (g0) at (0, 1.5) {0};
+  \node [gv] (g1) at (1.5, 3) {1};
+  \node [gv] (g2) at (1.5, 1.5) {2};
+  \node [gv] (g5) at (1.5, 0) {5};
+  \node [gv] (g3) at (3, 3) {3};
+  \node [gv] (g4) at (3, 0) {4};
+  \node [gv] (g6) at (4.5, 1.5) {6};
+  \node [gv] (g7) at (6, 1.5) {7};
+}
+\newcommand{\Garestas}{%
+  \foreach \a/\b in {0/1, 0/2, 0/5, 1/3, 2/3, 2/4, 3/6, 4/5, 4/6, 6/7}
+    \draw [ga] (g\a) -- (g\b);
+}
+
+\newcommand{\grafoG}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+\end{tikzpicture}}
+
+% Árvore da busca em largura a partir de 0, com a distância de cada vértice.
+\newcommand{\grafoGbfs}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {0/1, 0/2, 0/5, 1/3, 2/4, 3/6, 6/7}
+    \draw [garv] (g\a) -- (g\b);
+  \Gnos
+  \foreach \v/\d/\p in {0/0/left, 1/1/above, 2/1/right, 5/1/below,
+                        3/2/above, 4/2/below, 6/3/below, 7/4/above}
+    \node [gnota, \p=1pt of g\v] {d=\d};
+\end{tikzpicture}}
+
+% Árvore da busca em profundidade a partir de 0, com a ordem de visita.
+\newcommand{\grafoGdfs}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {0/1, 1/3, 3/2, 2/4, 4/5, 4/6, 6/7}
+    \draw [garv] (g\a) -- (g\b);
+  \Gnos
+  \foreach \v/\d/\p in {0/1/left, 1/2/above, 3/3/above, 2/4/right,
+                        4/5/below, 5/6/below, 6/7/below, 7/8/above}
+    \node [gnota, \p=1pt of g\v] {\d\textordmasculine};
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
+% Grafo de componentes.go: 10 vértices, 4 componentes.
+\newcommand{\grafoComp}{%
+\begin{tikzpicture}
+  \node [gv] (h0) at (0, 1.6) {0};
+  \node [gv] (h1) at (-0.7, 0.4) {1};
+  \node [gv] (h2) at (0.7, 0.4) {2};
+  \node [gv] (h3) at (2.2, 1.6) {3};
+  \node [gv] (h4) at (2.2, 0.4) {4};
+  \node [gv] (h5) at (3.7, 1.6) {5};
+  \node [gv] (h6) at (5.0, 1.6) {6};
+  \node [gv] (h7) at (3.7, 0.4) {7};
+  \node [gv] (h8) at (5.0, 0.4) {8};
+  \node [gv] (h9) at (6.5, 1.0) {9};
+  \foreach \a/\b in {0/1, 0/2, 1/2, 3/4, 5/6, 5/7, 6/8, 7/8}
+    \draw [ga] (h\a) -- (h\b);
+  \node [gnota, below=0.25cm of h1, xshift=0.7cm] {id 0};
+  \node [gnota, below=0.25cm of h4] {id 1};
+  \node [gnota, below=0.25cm of h7, xshift=0.65cm] {id 2};
+  \node [gnota, below=0.85cm of h9] {id 3};
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
+% Pacotes de topologica.go. O arco B -> A significa que A importa B.
+\newcommand{\Pnos}{%
+  \node [pv] (modelo) at (0, 2.4) {modelo};
+  \node [pv] (log) at (0, 1.2) {log};
+  \node [pv] (config) at (0, 0) {config};
+  \node [pv] (banco) at (2.6, 1.2) {banco};
+  \node [pv] (servico) at (5.2, 2.4) {servico};
+  \node [pv] (http) at (7.8, 1.2) {http};
+  \node [pv] (main) at (10.4, 1.2) {main};
+}
+\newcommand{\Parcos}{%
+  \draw [arco] (modelo) -- (banco);
+  \draw [arco] (log) -- (banco);
+  \draw [arco] (config) -- (banco);
+  \draw [arco] (banco) -- (servico);
+  \draw [arco] (modelo) -- (servico);
+  \draw [arco] (log) -- (servico);
+  \draw [arco] (log) to [bend right=14] (http);
+  \draw [arco] (servico) -- (http);
+  \draw [arco] (servico) -- (main);
+  \draw [arco] (http) -- (main);
+  \draw [arco] (config) to [bend right=8] (main);
+}
+\newcommand{\grafoPacotes}{%
+\begin{tikzpicture}
+  \Pnos
+  \Parcos
+\end{tikzpicture}}
+
+% O mesmo grafo com o arco servico -> modelo, que fecha um ciclo.
+\newcommand{\grafoPacotesCiclo}{%
+\begin{tikzpicture}
+  \Pnos
+  \Parcos
+  \draw [arcov] (modelo) -- (banco);
+  \draw [arcov] (banco) -- (servico);
+  \draw [arcov] (servico) to [bend right=25] (modelo);
+\end{tikzpicture}}
+
+% A ordem topológica encontrada, da esquerda para a direita: todo arco aponta
+% para a direita.
+\newcommand{\grafoPacotesOrdem}{%
+\begin{tikzpicture}
+  \foreach \n/\x in {log/0, config/1.7, modelo/3.4, banco/5.1,
+                     servico/6.8, http/8.5, main/10.2}
+    \node [pv] (\n) at (\x, 0) {\n};
+  \draw [arco] (modelo) -- (banco);
+  \draw [arco] (banco) -- (servico);
+  \draw [arco] (servico) -- (http);
+  \draw [arco] (http) -- (main);
+  \draw [arco] (log.north) .. controls +(0, 1.0) and +(0, 1.0) .. (banco.north);
+  \draw [arco] (log.north) .. controls +(0, 1.4) and +(0, 1.4) .. (servico.north);
+  \draw [arco] (log.north) .. controls +(0, 1.8) and +(0, 1.8) .. (http.north);
+  \draw [arco] (servico.north) .. controls +(0, 0.8) and +(0, 0.8) .. (main.north);
+  \draw [arco] (config.south) .. controls +(0, -0.8) and +(0, -0.8) .. (banco.south);
+  \draw [arco] (modelo.south) .. controls +(0, -1.1) and +(0, -1.1) .. (servico.south);
+  \draw [arco] (config.south) .. controls +(0, -1.6) and +(0, -1.6) .. (main.south);
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
+% Componentes fortemente conexas: três componentes, destacadas pelo fundo.
+\newcommand{\grafoCFC}{%
+\begin{tikzpicture}
+  \fill [orange!18, rounded corners=8pt] (-0.55, -0.6) rectangle (2.05, 2.1);
+  \fill [green!18, rounded corners=8pt] (3.15, -0.6) rectangle (5.75, 2.1);
+  \fill [blue!12, rounded corners=8pt] (6.85, 0.15) rectangle (7.95, 1.35);
+  \node [gv] (c0) at (0, 1.5) {0};
+  \node [gv] (c1) at (1.5, 1.5) {1};
+  \node [gv] (c2) at (0.75, 0) {2};
+  \node [gv] (c3) at (3.7, 1.5) {3};
+  \node [gv] (c4) at (5.2, 1.5) {4};
+  \node [gv] (c5) at (4.45, 0) {5};
+  \node [gv] (c6) at (7.4, 0.75) {6};
+  \draw [arco] (c0) -- (c1);
+  \draw [arco] (c1) -- (c2);
+  \draw [arco] (c2) -- (c0);
+  \draw [arco] (c3) -- (c4);
+  \draw [arco] (c4) -- (c5);
+  \draw [arco] (c5) -- (c3);
+  \draw [arco] (c1) -- (c3);
+  \draw [arco] (c2) -- (c5);
+  \draw [arco] (c4) -- (c6);
+\end{tikzpicture}}

@@ -1,0 +1,741 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, calc}
+% Grafos compartilhados com o roteiro.
+\input{../img/grafos.tex}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+\title{12 - Representação e percursos em grafos}
+\author{Prof. Alex Kutzke}
+\date{Outubro de 2026}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+	\begin{center}
+		\large{Setor de Educação Profissional e Tecnológica}\\
+		Tecnologia em Análise e Desenvolvimento de Sistemas\\
+		\vspace{1cm}
+		\small{DS143 - Estruturas de Dados II}
+	\end{center}
+	\titlepage
+\end{frame}
+
+% ==========================================
+\begin{frame}{Objetivos da aula}
+	\footnotesize
+	Ao final desta aula você deve ser capaz de:
+	\begin{enumerate}
+		\itemsep=0pt
+		\item Usar a terminologia básica de grafos: vértice, aresta, grau,
+		      caminho, ciclo, grafo conexo, componente conexa, grafo dirigido;
+		\item Representar um grafo por matriz e por listas de adjacência, e
+		      escolher entre as duas;
+		\item Executar à mão a busca em largura e a busca em profundidade,
+		      registrando a ordem de visita e o vetor \texttt{pai};
+		\item Explicar por que a busca em largura encontra o caminho com menos
+		      arestas, e a busca em profundidade não;
+		\item Usar a busca em profundidade para encontrar componentes conexas e
+		      detectar ciclos;
+		\item Obter uma ordenação topológica pela pós-ordem invertida;
+		\item Reconhecer as componentes fortemente conexas de um grafo dirigido
+		      pequeno.
+	\end{enumerate}
+	\vspace{0.1cm}
+	Este conteúdo cai na Prova 2.
+\end{frame}
+
+% ==========================================
+\begin{frame}{Roteiro}
+	\tableofcontents
+\end{frame}
+
+% ==========================================
+\section{Grafos}
+
+\begin{frame}[fragile]{Demonstração: um labirinto}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run labirinto.go
+Busca em largura                 Busca em profundidade
+  #####################            #####################
+  #S....   #          #            #S.......#          #
+  #    .   #   ####   #            #       .#   ####   #
+  #####.   #      #   #            #####   .#      #   #
+  #  ...   #####  #   #            #  ......#####  #   #
+  #  .###             #            #  .###.............#
+  #E..  #             #            #E..  #.............#
+  #####################            #####################
+  13 passos, 43 células visitadas  45 passos, 48 células visitadas
+\end{minted}
+
+	\begin{itemize}
+		\item a mesma regra nas duas: de uma célula livre se passa para as
+		      células livres vizinhas;
+		\item a busca em largura achou o caminho mais curto; a em profundidade,
+		      um caminho qualquer.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Grafo}
+	Um \textbf{grafo} $G = (V, E)$: um conjunto $V$ de \textbf{vértices} e um
+	conjunto $E$ de \textbf{arestas}, cada uma ligando dois vértices.
+
+	\begin{center}
+		\scalebox{0.85}{\grafoG}
+	\end{center}
+
+	\begin{itemize}
+		\item 8 vértices, 10 arestas. $V$ e $E$ também indicam as quantidades:
+		      ``a busca custa $O(V + E)$'';
+		\item o desenho não faz parte do grafo: o que define o grafo é a lista de
+		      arestas.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Terminologia}
+	\footnotesize
+	\begin{tabular}{p{3.2cm}p{4.2cm}p{2.4cm}}
+		\toprule
+		Termo & Definição & No grafo \\
+		\midrule
+		adjacentes (vizinhos) & ligados por uma aresta & 2 e 4 \\
+		grau & número de arestas que tocam o vértice & 3 tem grau 3 \\
+		caminho & sequência de vértices, cada um adjacente ao seguinte & 0, 2, 4, 6 \\
+		comprimento & número de arestas do caminho & 3 \\
+		ciclo & caminho que volta ao início, sem repetir arestas & 0, 1, 3, 2, 0 \\
+		conexo & existe caminho entre quaisquer dois vértices & sim \\
+		componente conexa & conjunto máximo de vértices ligados por caminhos & uma só \\
+		\bottomrule
+	\end{tabular}
+
+	\vspace{0.3cm}
+	Sem laço (aresta de $v$ para $v$) e sem arestas paralelas.
+\end{frame}
+
+\begin{frame}{Graus, densidade e árvores}
+	\begin{itemize}
+		\item cada aresta soma 1 ao grau de cada ponta: a soma dos graus é
+		      $2E$. No exemplo, $3+2+3+3+3+2+3+1 = 20$;
+		\item no máximo $V(V-1)/2$ arestas. Perto disso, grafo \textbf{denso};
+		      com $E$ da ordem de $V$, \textbf{esparso};
+		\item um cruzamento de ruas tem 4 vizinhos, e não milhares: a maior parte
+		      dos grafos de aplicações é esparsa.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	\begin{itemize}
+		\item \textbf{árvore}: grafo conexo e sem ciclos, com $V - 1$ arestas.
+		      As árvores das aulas anteriores, com uma raiz escolhida;
+		\item em um grafo qualquer pode haver mais de um caminho entre dois
+		      vértices. É isso que muda os algoritmos;
+		\item \textbf{grafo dirigido}: o arco $v \to w$ vai de $v$ a $w$, e não
+		      volta.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Onde aparecem}
+	\small
+	\begin{tabular}{lll}
+		\toprule
+		Aplicação & Vértices & Arestas \\
+		\midrule
+		malha viária & cruzamentos & trechos de rua; dirigido com mão única \\
+		rede social & pessoas & amizade; dirigido se for ``seguir'' \\
+		web & páginas & links, dirigido \\
+		dependências & pacotes & ``A importa B'', dirigido \\
+		labirinto, grade & células livres & passagem entre vizinhas \\
+		\bottomrule
+	\end{tabular}
+
+	\vspace{0.4cm}
+	As duas próximas aulas acrescentam um \textbf{peso} a cada aresta. Nesta,
+	as arestas não têm peso.
+\end{frame}
+
+% ==========================================
+\section{Representação}
+
+\begin{frame}[fragile]{Matriz de adjacência}
+	\begin{columns}[T]
+		\begin{column}{0.6\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{go}
+type Matriz struct {
+	adj [][]bool
+}
+
+func (g *Matriz) AdicionaAresta(v, w int) {
+	g.adj[v][w] = true
+	g.adj[w][v] = true
+}
+\end{minted}
+		\end{column}
+		\begin{column}{0.38\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+     0 1 2 3 4 5 6 7
+  0  . 1 1 . . 1 . .
+  1  1 . . 1 . . . .
+  2  1 . . 1 1 . . .
+  3  . 1 1 . . . 1 .
+  4  . . 1 . . 1 1 .
+  5  1 . . . 1 . . .
+  6  . . . 1 1 . . 1
+  7  . . . . . . 1 .
+\end{minted}
+		\end{column}
+	\end{columns}
+
+	\begin{itemize}
+		\item vértices numerados de 0 a $V-1$, como os itens do Union-Find;
+		\item cada aresta aparece duas vezes: a matriz é simétrica;
+		\item a aresta $v$-$w$ existe? Uma consulta, \texttt{adj[v][w]};
+		\item $V^2$ posições, quaisquer que sejam as arestas.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Listas de adjacência}
+	\begin{columns}[T]
+		\begin{column}{0.68\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{go}
+type Grafo struct {
+	adj [][]int
+}
+
+func NovoGrafo(n int) *Grafo {
+	return &Grafo{adj: make([][]int, n)}
+}
+
+func (g *Grafo) V() int { return len(g.adj) }
+
+func (g *Grafo) AdicionaAresta(v, w int) {
+	g.adj[v] = append(g.adj[v], w)
+	g.adj[w] = append(g.adj[w], v)
+}
+\end{minted}
+		\end{column}
+		\begin{column}{0.3\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+  0: [1 2 5]
+  1: [0 3]
+  2: [0 3 4]
+  3: [1 2 6]
+  4: [2 5 6]
+  5: [0 4]
+  6: [3 4 7]
+  7: [6]
+\end{minted}
+		\end{column}
+	\end{columns}
+
+	\begin{itemize}
+		\item total de posições nas listas: a soma dos graus, $2E$;
+		\item as buscas visitam os vizinhos na ordem da lista.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Matriz ou listas}
+	\begin{center}
+		\begin{tabular}{lcc}
+			\toprule
+			Operação & Matriz & Listas \\
+			\midrule
+			memória & $V^2$ & $V + 2E$ \\
+			inserir aresta & $O(1)$ & $O(1)$ \\
+			a aresta $v$-$w$ existe? & $O(1)$ & $O(\text{grau}(v))$ \\
+			percorrer os vizinhos de $v$ & $O(V)$ & $O(\text{grau}(v))$ \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.2cm}
+	1 milhão de cruzamentos, 4 vizinhos em média:
+	\begin{itemize}
+		\item listas: $4 \times 10^6$ inteiros de 8 bytes (32 MB), mais 24 bytes
+		      de cabeçalho por \textit{slice} (24 MB);
+		\item matriz de \texttt{bool}: $10^{12}$ bytes, 1 TB.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	Buscas em grafo esparso: listas. Grafo denso, ou muita pergunta ``a aresta
+	existe?'': matriz.
+\end{frame}
+
+\begin{frame}[fragile]{Lista de arestas e vértices com nome}
+	\begin{itemize}
+		\item a \textbf{lista de arestas}, como a entrada dos programas, é uma
+		      terceira representação. Não serve para buscas; é a entrada do
+		      algoritmo de Kruskal, na próxima aula;
+		\item vértices com nome: um \texttt{map} de nome para número, e um
+		      \textit{slice} para o caminho inverso.
+	\end{itemize}
+
+	\begin{minted}[fontsize=\scriptsize]{go}
+var indice = map[string]int{}
+var nomes []string
+
+func numero(nome string) int {
+	if v, ok := indice[nome]; ok {
+		return v
+	}
+	indice[nome] = len(nomes)
+	nomes = append(nomes, nome)
+	return len(nomes) - 1
+}
+\end{minted}
+\end{frame}
+
+% ==========================================
+\section{Buscas}
+
+\begin{frame}[fragile]{Busca em largura (BFS)}
+	\begin{minted}[fontsize=\scriptsize]{go}
+func BuscaEmLargura(g *Grafo, s int) *BFS {
+	b := &BFS{marcado: make([]bool, g.V()),
+		pai: make([]int, g.V()), dist: make([]int, g.V())}
+	b.pai[s] = -1
+	b.marcado[s] = true
+	fila := []int{s}
+	for len(fila) > 0 {
+		v := fila[0]
+		fila = fila[1:]
+		for _, w := range g.adj[v] {
+			if !b.marcado[w] {
+				b.marcado[w] = true
+				b.pai[w] = v
+				b.dist[w] = b.dist[v] + 1
+				fila = append(fila, w)
+			}
+		}
+	}
+	return b
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Busca em largura em $G$, a partir de 0}
+	\begin{columns}[T]
+		\begin{column}{0.48\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+retira 0   fila: [1 2 5]
+retira 1   fila: [2 5 3]
+retira 2   fila: [5 3 4]
+retira 5   fila: [3 4]
+retira 3   fila: [4 6]
+retira 4   fila: [6]
+retira 6   fila: [7]
+retira 7   fila: []
+\end{minted}
+		\end{column}
+		\begin{column}{0.48\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+  v | dist | pai
+  --+------+----
+  0 |    0 |  -1
+  1 |    1 |   0
+  2 |    1 |   0
+  3 |    2 |   1
+  4 |    2 |   2
+  5 |    1 |   0
+  6 |    3 |   3
+  7 |    4 |   6
+\end{minted}
+		\end{column}
+	\end{columns}
+
+	\begin{itemize}
+		\item ao retirar o 2: o 0 e o 3 já estão marcados, só o 4 entra;
+		\item ao retirar o 5: nada entra;
+		\item é o percurso em largura do material de árvores, com o vetor
+		      \texttt{marcado}: em grafo, um vértice pode ser alcançado por mais de
+		      um caminho.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Árvore da busca em largura}
+	\begin{center}
+		\scalebox{0.9}{\grafoGbfs}
+	\end{center}
+
+	As arestas \texttt{pai[w]}-\texttt{w} formam uma árvore. Os vértices saem
+	da fila em ordem de distância: 0; depois 1, 2, 5; depois 3, 4; depois 6;
+	depois 7.
+
+	\vspace{0.2cm}
+	Custo: cada vértice entra uma vez na fila, e cada lista é percorrida uma
+	vez. $O(V + E)$ com listas, $O(V^2)$ com matriz.
+\end{frame}
+
+\begin{frame}[fragile]{Caminho com menos arestas}
+	\begin{itemize}
+		\item um vértice à distância $d+1$ só entra na fila quando um vizinho à
+		      distância $d$ sai, e todos os mais próximos já entraram;
+		\item \texttt{dist[v]} é o menor número de arestas de $s$ até $v$.
+	\end{itemize}
+
+	\begin{minted}[fontsize=\scriptsize]{go}
+func (b *BFS) Caminho(v int) []int {
+	if !b.marcado[v] {
+		return nil
+	}
+	var cam []int
+	for x := v; x != -1; x = b.pai[x] {
+		cam = append(cam, x)
+	}
+	slices.Reverse(cam)
+	return cam
+}
+\end{minted}
+
+	\begin{itemize}
+		\item de 0 até 7: \texttt{[0 1 3 6 7]}, 4 arestas. O caminho 0, 2, 3, 6, 7
+		      também tem 4: a busca garante o número de arestas, e não o caminho.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Busca em profundidade (DFS)}
+	\begin{minted}{go}
+func (d *DFS) visita(v int) {
+	d.marcado[v] = true
+	for _, w := range d.g.adj[v] {
+		if !d.marcado[w] {
+			d.pai[w] = v
+			d.visita(w)
+		}
+	}
+}
+\end{minted}
+
+	\begin{itemize}
+		\item vai o mais longe possível por um caminho, e volta quando não há
+		      vizinho novo;
+		\item a pilha de chamadas faz o papel da fila da busca em largura;
+		\item custo: $O(V + E)$ com listas, pelo mesmo argumento.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Busca em profundidade em $G$, a partir de 0}
+	\begin{columns}[T]
+		\begin{column}{0.45\textwidth}
+			\begin{minted}[fontsize=\scriptsize]{text}
+visita(0)
+  visita(1)
+    visita(3)
+      visita(2)
+        visita(4)
+          visita(5)
+          termina 5
+          visita(6)
+            visita(7)
+            termina 7
+          termina 6
+        termina 4
+      termina 2
+    termina 3
+  termina 1
+termina 0
+\end{minted}
+		\end{column}
+		\begin{column}{0.52\textwidth}
+			\begin{itemize}
+				\small
+				\item de 3, lista \texttt{[1 2 6]}: desce para o 2, e não para o 6;
+				\item o 6 só é alcançado pelo 4;
+				\item \textbf{pré-ordem}, quando a chamada começa:\\
+				      \texttt{0 1 3 2 4 5 6 7}
+				\item \textbf{pós-ordem}, quando a chamada termina:\\
+				      \texttt{5 7 6 4 2 3 1 0}
+				\item na pós-ordem, o 4 vem depois de 5, 6 e 7, que ele alcança.
+			\end{itemize}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Árvore da busca em profundidade}
+	\begin{center}
+		\scalebox{0.9}{\grafoGdfs}
+	\end{center}
+
+	Caminho de 0 até 7 pelo vetor \texttt{pai}: 0, 1, 3, 2, 4, 6, 7, com 6
+	arestas. A busca em largura achou um com 4. A busca em profundidade não dá
+	garantia nenhuma sobre o número de arestas.
+\end{frame}
+
+% ==========================================
+\section{Aplicações}
+
+\begin{frame}[fragile]{Componentes conexas}
+	\begin{minted}[fontsize=\scriptsize]{go}
+quantas := 0
+for v := 0; v < g.V(); v++ {
+	if !marcado[v] {
+		visita(v, quantas) // marca tudo o que v alcança, com id = quantas
+		quantas++
+	}
+}
+\end{minted}
+
+	\begin{center}
+		\scalebox{0.8}{\grafoComp}
+	\end{center}
+
+	\begin{minted}[fontsize=\scriptsize]{text}
+  v  | 0 1 2 3 4 5 6 7 8 9
+  id | 0 0 0 1 1 2 2 2 2 3
+\end{minted}
+\end{frame}
+
+\begin{frame}{Componentes conexas e Union-Find}
+	Mesmo papel do \texttt{id} do Quick-Find: $v$ e $w$ estão conectados se, e
+	somente se, \texttt{id[v] == id[w]}.
+
+	\vspace{0.3cm}
+	\begin{tabular}{p{4.8cm}p{4.8cm}}
+		\toprule
+		Busca & Union-Find \\
+		\midrule
+		precisa do grafo inteiro guardado & recebe as arestas uma de cada vez,
+		sem guardá-las \\
+		$O(V + E)$ uma vez, depois $O(1)$ por consulta & consultas entre uma
+		aresta e outra \\
+		\bottomrule
+	\end{tabular}
+
+	\vspace{0.3cm}
+	O algoritmo de Kruskal, na próxima aula, usa o Union-Find desse segundo jeito.
+\end{frame}
+
+\begin{frame}[fragile]{Detecção de ciclo}
+	Na busca em profundidade, a aresta $v$-$w$ examinada leva a três casos:
+	\begin{itemize}
+		\item $w$ não marcado: desce para $w$;
+		\item $w$ marcado e pai de $v$: a aresta pela qual a busca chegou a $v$;
+		\item $w$ marcado e não é o pai: outro caminho de $w$ até $v$. A aresta
+		      fecha um \textbf{ciclo}.
+	\end{itemize}
+
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run componentes.go
+Ciclo: a aresta 2-0 leva a um vértice já marcado
+Sem as arestas 1-2 e 7-8, tem ciclo? false
+\end{minted}
+
+	A busca desce 0, 1, 2. Na lista do 2, o 0 está marcado e o pai do 2 é o 1:
+	ciclo 0, 1, 2.
+\end{frame}
+
+% ==========================================
+\section{Grafos dirigidos}
+
+\begin{frame}[fragile]{Grafos dirigidos}
+	\begin{minted}{go}
+func (g *Digrafo) AdicionaArco(v, w int) {
+	g.adj[v] = append(g.adj[v], w)
+}
+\end{minted}
+
+	\begin{itemize}
+		\item o arco $v \to w$ entra só na lista de $v$;
+		\item as duas buscas funcionam sem mudança, seguindo o sentido dos arcos;
+		\item a busca a partir de $s$ marca os vértices \textbf{alcançáveis} a
+		      partir de $s$;
+		\item $w$ pode ser alcançável a partir de $v$ sem que $v$ seja alcançável
+		      a partir de $w$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Dependências entre pacotes}
+	Arco $B \to A$: o pacote $A$ importa $B$, e $B$ é compilado antes.
+
+	\begin{center}
+		\scalebox{0.85}{\grafoPacotes}
+	\end{center}
+
+	\textbf{Ordenação topológica}: uma ordem dos vértices em que todo arco
+	aponta para a frente. Aqui, uma ordem de compilação.
+\end{frame}
+
+\begin{frame}{Pós-ordem invertida}
+	\begin{itemize}
+		\item grafo sem ciclo: quando a chamada de $v$ termina, tudo o que $v$
+		      alcança já terminou, dentro da chamada de $v$ ou antes dela;
+		\item na pós-ordem, cada vértice aparece depois de tudo o que ele
+		      alcança;
+		\item invertida, cada vértice aparece antes de tudo o que ele alcança: é
+		      uma ordenação topológica.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	Uma busca a partir de cada vértice ainda não visitado, como em componentes,
+	e no fim a pós-ordem invertida.
+\end{frame}
+
+\begin{frame}[fragile]{Ordem de compilação}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run topologica.go
+Ordem de compilação: [log config modelo banco servico http main]
+\end{minted}
+
+	\begin{center}
+		\scalebox{0.82}{\grafoPacotesOrdem}
+	\end{center}
+
+	Todos os arcos apontam para a direita. A ordem não é única:
+	\texttt{config log modelo banco servico http main} também serve.
+\end{frame}
+
+\begin{frame}{Ciclo em grafo dirigido}
+	\texttt{modelo} passa a importar \texttt{servico}:
+
+	\begin{center}
+		\scalebox{0.85}{\grafoPacotesCiclo}
+	\end{center}
+
+	\begin{itemize}
+		\item nenhuma ordem resolve: ordenação topológica existe se, e somente
+		      se, não há ciclo (\textbf{DAG}, \textit{directed acyclic graph});
+		\item a regra ``marcado e não é o pai'' falha: sem esse arco, a busca
+		      a partir de \texttt{modelo} já termina o \texttt{servico} via
+		      \texttt{banco}, e depois o arco \texttt{modelo -> servico} chega a
+		      um vértice marcado sem ciclo nenhum.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Três estados}
+	\begin{itemize}
+		\item \textbf{branco}: ainda não visitado;
+		\item \textbf{cinza}: chamada em andamento, ainda na pilha de chamadas;
+		\item \textbf{preto}: chamada terminada.
+	\end{itemize}
+
+	\vspace{0.1cm}
+	Arco $v \to w$ com $w$ cinza: $v$ foi alcançado a partir de $w$, e o arco
+	volta. Ciclo. Arco para vértice preto não fecha ciclo.
+
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run topologica.go
+Com modelo importando servico:
+  ciclo: [modelo banco servico]
+
+$ go build .
+...
+	imports ciclo/b from a.go
+	imports ciclo/a from b.go: import cycle not allowed
+\end{minted}
+\end{frame}
+
+\begin{frame}{Componentes fortemente conexas}
+	$v$ e $w$ \textbf{fortemente conectados}: cada um alcança o outro.
+
+	\begin{center}
+		\scalebox{0.85}{\grafoCFC}
+	\end{center}
+
+	\begin{itemize}
+		\item do 3 não se volta ao 1; o 6 fica sozinho;
+		\item ruas de mão única: em cada componente, vai-se de qualquer
+		      cruzamento a qualquer outro e volta-se;
+		\item trocando cada componente por um vértice, o grafo não tem ciclo;
+		\item Kosaraju-Sharir e Tarjan: $O(V + E)$, com busca em profundidade.
+		      Fora desta disciplina.
+	\end{itemize}
+\end{frame}
+
+% ==========================================
+\section{Fechamento}
+
+\begin{frame}[fragile]{De volta ao labirinto: grafo implícito}
+	\begin{minted}[fontsize=\scriptsize]{go}
+func vizinhos(v int) []int {
+	l, c := v/colunas, v%colunas
+	var viz []int
+	for _, d := range [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}} {
+		nl, nc := l+d[0], c+d[1]
+		if mapa[nl][nc] != '#' {
+			viz = append(viz, celula(nl, nc))
+		}
+	}
+	return viz
+}
+\end{minted}
+
+	\begin{itemize}
+		\item vértice: a célula \texttt{linha*colunas + coluna};
+		\item sem listas guardadas: os vizinhos são calculados quando a busca
+		      pede. As buscas trocam \texttt{g.adj[v]} por \texttt{vizinhos(v)};
+		\item a grade da etapa 2 do trabalho prático é um grafo desse tipo.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{De volta ao labirinto: os dois caminhos}
+	\begin{itemize}
+		\item busca em largura: 13 passos, porque \texttt{dist[E]} é 13, o menor
+		      número de arestas de \texttt{S} até \texttt{E};
+		\item busca em profundidade: vizinhos na ordem direita, abaixo,
+		      esquerda, acima. Segue pela região aberta da direita antes de voltar
+		      para \texttt{E}, e o vetor \texttt{pai} registra 45 passos;
+		\item células visitadas: 43 e 48, de 92 livres. Nenhuma das duas
+		      garante visitar menos; depende da posição de \texttt{E} e da ordem
+		      dos vizinhos.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Escolher entre as buscas}
+	\begin{center}
+		\begin{tabular}{ll}
+			\toprule
+			Problema & Busca \\
+			\midrule
+			caminho com menos arestas & em largura \\
+			vértices alcançáveis & qualquer uma \\
+			componentes conexas & qualquer uma \\
+			ciclo, grafo não dirigido & qualquer uma \\
+			ciclo, grafo dirigido & em profundidade, três estados \\
+			ordenação topológica & em profundidade, pós-ordem invertida \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+\end{frame}
+
+\begin{frame}{Para a próxima aula}
+	\begin{itemize}
+		\item exercícios 1 a 11 do roteiro da aula, sem entrega e sem nota. O
+		      conteúdo cai na Prova 2;
+		\item rodar \texttt{representacao.go}, \texttt{bfs.go}, \texttt{dfs.go},
+		      \texttt{componentes.go} e \texttt{topologica.go}, trocando as
+		      arestas;
+		\item leitura: Sedgewick, seções 4.1 e 4.2; Cormen, capítulo 22.
+	\end{itemize}
+
+	\vspace{0.5cm}
+	Próxima aula: árvores geradoras mínimas, com os algoritmos de Kruskal e de
+	Prim. As arestas passam a ter peso.
+\end{frame}
+
+\end{document}

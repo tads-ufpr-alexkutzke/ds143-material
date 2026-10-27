@@ -22,13 +22,17 @@
 - [Aula 10: Tabelas de dispersão](./aula_10.md)
 - [Aula 11: Atividade Avaliativa 3](./aula_11.md)
 
+# Grafos
+
+- [Aula 12: Representação e percursos em grafos](./aula_12.md)
+
 # Material anterior (em C, numeração antiga)
 
 - [Árvores e percursos](./aula_07_old.md)
 - [Árvores binárias de busca](./aula_08.md)
 - [Tabelas hash](./aula_10_old.md)
 - [Grafos não direcionados](./aula_11_old.md)
-- [Grafos direcionados e caminhos mínimos](./aula_12.md)
+- [Grafos direcionados e caminhos mínimos](./aula_12_old.md)
 
 # Listas e trabalhos de semestres anteriores
 

@@ -1,0 +1,43 @@
+% Figuras do roteiro da aula de grafos: representação e percursos. Cada
+% tikzpicture vira uma página do PDF e um SVG (ver Makefile).
+
+\documentclass[tikz, border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usetikzlibrary{backgrounds, arrows.meta, positioning, calc}
+
+\tikzset{
+  every picture/.style = {background rectangle/.style={fill=white},
+    show background rectangle}
+}
+
+% Grafos compartilhados com os slides.
+\input{grafos.tex}
+
+\begin{document}
+
+% 1. Grafo G.
+\grafoG
+
+% 2. Árvore da busca em largura em G, a partir de 0.
+\grafoGbfs
+
+% 3. Árvore da busca em profundidade em G, a partir de 0.
+\grafoGdfs
+
+% 4. Grafo com quatro componentes conexas.
+\grafoComp
+
+% 5. Pacotes e importações.
+\grafoPacotes
+
+% 6. Pacotes com o ciclo.
+\grafoPacotesCiclo
+
+% 7. Pacotes na ordem topológica.
+\grafoPacotesOrdem
+
+% 8. Componentes fortemente conexas.
+\grafoCFC
+
+\end{document}
