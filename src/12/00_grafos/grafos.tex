@@ -162,22 +162,30 @@ Busca em largura                 Busca em profundidade
 \end{frame}
 
 \begin{frame}{Onde aparecem}
-	\small
+	\footnotesize
 	\begin{tabular}{lll}
 		\toprule
 		Aplicação & Vértices & Arestas \\
 		\midrule
-		malha viária & cruzamentos & trechos de rua; dirigido com mão única \\
-		rede social & pessoas & amizade; dirigido se for ``seguir'' \\
+		malha viária & cruzamentos & ruas; dirigido com mão única \\
+		rede de computadores & roteadores & enlaces \\
+		circuito eletrônico & portas lógicas & fios \\
+		rede social & pessoas & amizade; dirigido se ``seguir'' \\
+		jogo de tabuleiro & posições & jogadas permitidas \\
+		biologia & proteínas & interação entre proteínas \\
 		web & páginas & links, dirigido \\
+		artigos científicos & artigos & ``A cita B'', dirigido \\
 		dependências & pacotes & ``A importa B'', dirigido \\
+		memória de um programa & objetos & ponteiros, dirigido \\
 		labirinto, grade & células livres & passagem entre vizinhas \\
 		\bottomrule
 	\end{tabular}
 
-	\vspace{0.4cm}
-	As duas próximas aulas acrescentam um \textbf{peso} a cada aresta. Nesta,
-	as arestas não têm peso.
+	\vspace{0.3cm}
+	\small
+	Exemplos dos slides de Sedgewick e Wayne e desta aula. As duas próximas
+	aulas acrescentam um \textbf{peso} a cada aresta. Nesta, as arestas não têm
+	peso.
 \end{frame}
 
 % ==========================================
@@ -339,6 +347,20 @@ func BuscaEmLargura(g *Grafo, s int) *BFS {
 \end{minted}
 \end{frame}
 
+\begin{frame}{Busca em largura passo a passo}
+	\begin{center}
+		\only<1>{\bfsPasso{1}}
+		\only<2>{\bfsPasso{2}}
+		\only<3>{\bfsPasso{3}}
+		\only<4>{\bfsPasso{4}}
+		\only<5>{\bfsPasso{5}}
+		\only<6>{\bfsPasso{6}}
+		\only<7>{\bfsPasso{7}}
+		\only<8>{\bfsPasso{8}}
+		\only<9>{\bfsPasso{9}}
+	\end{center}
+\end{frame}
+
 \begin{frame}[fragile]{Busca em largura em $G$, a partir de 0}
 	\begin{columns}[T]
 		\begin{column}{0.48\textwidth}
@@ -419,6 +441,26 @@ func (b *BFS) Caminho(v int) []int {
 	\end{itemize}
 \end{frame}
 
+\begin{frame}{Aplicações da busca em largura}
+	\begin{itemize}
+		\item \textbf{graus de separação}: conexões de 1\textordmasculine, 2\textordmasculine{} e 3\textordmasculine{} grau do
+		      LinkedIn; número de Kevin Bacon (atores ligados por um filme em
+		      comum); número de Erd\H{o}s (coautoria de artigos);
+		\item \textbf{redes de computadores}: rota com menos saltos
+		      (\textit{hops}) entre dois roteadores;
+		\item \textbf{coletor da web} (\textit{web crawler}): fila de páginas e
+		      conjunto de endereços já vistos; os vizinhos de uma página só
+		      aparecem depois que ela é baixada;
+		\item \textbf{quebra-cabeça de 8 peças}: cada arrumação do tabuleiro é
+		      um vértice, cada movimento é uma aresta; 181.440 arrumações,
+		      nenhuma a mais de 31 movimentos da solução.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	Em todos os casos, cada passo tem o mesmo custo. Passos com custos
+	diferentes são o assunto da aula de caminhos mínimos.
+\end{frame}
+
 \begin{frame}[fragile]{Busca em profundidade (DFS)}
 	\begin{minted}{go}
 func (d *DFS) visita(v int) {
@@ -438,6 +480,27 @@ func (d *DFS) visita(v int) {
 		\item a pilha de chamadas faz o papel da fila da busca em largura;
 		\item custo: $O(V + E)$ com listas, pelo mesmo argumento.
 	\end{itemize}
+\end{frame}
+
+\begin{frame}{Busca em profundidade passo a passo}
+	\begin{center}
+		\only<1>{\dfsPasso{1}}
+		\only<2>{\dfsPasso{2}}
+		\only<3>{\dfsPasso{3}}
+		\only<4>{\dfsPasso{4}}
+		\only<5>{\dfsPasso{5}}
+		\only<6>{\dfsPasso{6}}
+		\only<7>{\dfsPasso{7}}
+		\only<8>{\dfsPasso{8}}
+		\only<9>{\dfsPasso{9}}
+		\only<10>{\dfsPasso{10}}
+		\only<11>{\dfsPasso{11}}
+		\only<12>{\dfsPasso{12}}
+		\only<13>{\dfsPasso{13}}
+		\only<14>{\dfsPasso{14}}
+		\only<15>{\dfsPasso{15}}
+		\only<16>{\dfsPasso{16}}
+	\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{Busca em profundidade em $G$, a partir de 0}
@@ -531,6 +594,21 @@ for v := 0; v < g.V(); v++ {
 	O algoritmo de Kruskal, na próxima aula, usa o Union-Find desse segundo jeito.
 \end{frame}
 
+\begin{frame}{Componentes em imagens}
+	\begin{center}
+		\imagemBalde{0}\hspace{1cm}\imagemBalde{1}
+	\end{center}
+
+	\begin{itemize}
+		\item cada pixel é um vértice, ligado aos vizinhos de mesma cor: grafo
+		      implícito em grade, como o do labirinto;
+		\item \textbf{balde de tinta} (\textit{flood fill}): pinta a componente
+		      do pixel clicado; a varinha mágica seleciona da mesma forma;
+		\item imagem de microscópio: cada componente de pixels claros é uma
+		      partícula, e contar componentes é contar partículas.
+	\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]{Detecção de ciclo}
 	Na busca em profundidade, a aresta $v$-$w$ examinada leva a três casos:
 	\begin{itemize}
@@ -567,6 +645,24 @@ func (g *Digrafo) AdicionaArco(v, w int) {
 		      partir de $s$;
 		\item $w$ pode ser alcançável a partir de $v$ sem que $v$ seja alcançável
 		      a partir de $w$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Alcançabilidade: coleta de lixo}
+	\begin{center}
+		\scalebox{0.9}{\grafoMemoria}
+	\end{center}
+
+	\begin{itemize}
+		\small
+		\item objetos são vértices, ponteiros são arcos; as \textbf{raízes} são
+		      as variáveis locais e globais;
+		\item \textbf{marca e varre} (\textit{mark-sweep}, McCarthy, 1960): marca
+		      o que as raízes alcançam e libera o resto;
+		\item o coletor de lixo de Go é desse tipo; o código do \texttt{runtime}
+		      usa branco, cinza (ponteiros por examinar) e preto;
+		\item análise de código: um trecho que o início da função não alcança
+		      nunca executa (\texttt{go vet}: \texttt{unreachable code}).
 	\end{itemize}
 \end{frame}
 
@@ -648,6 +744,30 @@ $ go build .
 	imports ciclo/b from a.go
 	imports ciclo/a from b.go: import cycle not allowed
 \end{minted}
+\end{frame}
+
+\begin{frame}{Ordenação topológica e ciclos em outras ferramentas}
+	\footnotesize
+	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{3.5cm}@{}}
+		\toprule
+		Onde & Vértice & Arco & Ciclo \\
+		\midrule
+		\texttt{make} & alvo & pré-requisito &
+		\texttt{Circular c <- a dependency dropped.} \\
+		planilha & célula & fórmula que usa a célula &
+		\texttt{Err:522}, referência circular (LibreOffice) \\
+		grade curricular & disciplina & pré-requisito &
+		nenhum aluno conclui o curso \\
+		compilador de Go & tipo & \texttt{struct} dentro de \texttt{struct} &
+		\texttt{invalid recursive type} \\
+		compilador de Java & classe & herança & \texttt{cyclic inheritance} \\
+		\bottomrule
+	\end{tabular}
+
+	\vspace{0.3cm}
+	\small
+	Sem ciclo, uma ordenação topológica dá a ordem de construção, de recálculo
+	ou de matrícula.
 \end{frame}
 
 \begin{frame}{Componentes fortemente conexas}

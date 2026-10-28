@@ -10,6 +10,10 @@
   (*Elementary Graph Algorithms*), seções 22.1 a 22.5;
 * [algs4 - Undirected Graphs](https://algs4.cs.princeton.edu/41graph/) e
   [algs4 - Directed Graphs](https://algs4.cs.princeton.edu/42digraph/);
+* slides de Sedgewick e Wayne para
+  [grafos](https://algs4.cs.princeton.edu/lectures/keynote/41UndirectedGraphs.pdf)
+  e [grafos dirigidos](https://algs4.cs.princeton.edu/lectures/keynote/42DirectedGraphs.pdf),
+  com as aplicações citadas ao longo desta aula;
 * visualizações interativas da USF para a
   [busca em largura](https://www.cs.usfca.edu/~galles/visualization/BFS.html),
   a [busca em profundidade](https://www.cs.usfca.edu/~galles/visualization/DFS.html),
@@ -148,12 +152,22 @@ dele, e **grau de entrada**. As seções 7 e 8 tratam desses grafos.
 
 ### Onde aparecem
 
+Grafos modelam qualquer conjunto de objetos ligados dois a dois. A tabela
+reúne exemplos dos slides de Sedgewick e Wayne e exemplos desta aula:
+
 | Aplicação | Vértices | Arestas |
 |---|---|---|
 | malha viária | cruzamentos | trechos de rua; dirigido, se houver mão única |
+| rede de computadores | computadores e roteadores | cabos e enlaces |
+| circuito eletrônico | portas lógicas, registradores | fios |
 | rede social | pessoas | amizade; dirigido, se for "seguir" |
+| jogo de tabuleiro | posições do tabuleiro | jogadas permitidas |
+| biologia | proteínas | interação entre duas proteínas |
+| cadeia alimentar | espécies | "A serve de alimento a B", dirigido |
 | web | páginas | links, dirigido |
+| artigos científicos | artigos | "A cita B", dirigido |
 | dependências de software | pacotes | "A importa B", dirigido |
+| memória de um programa | objetos | ponteiros, dirigido |
 | labirinto ou mapa em grade | células livres | passagem entre células vizinhas |
 
 As duas próximas aulas acrescentam um **peso** a cada aresta, como a distância
@@ -434,6 +448,37 @@ listas de adjacência, o custo total é a soma dos tamanhos das listas, $2E$,
 mais o trabalho constante de cada vértice: $O(V + E)$. Com matriz, percorrer os
 vizinhos de cada vértice custa $V$, e a busca custa $O(V^2)$.
 
+### Aplicações
+
+A busca em largura resolve os problemas de menor número de passos, desde que
+todos os passos tenham o mesmo custo.
+
+* **Graus de separação em redes sociais.** Com pessoas como vértices e
+  amizades como arestas, `dist[v]` a partir de $s$ é o grau de separação entre
+  $s$ e $v$. As conexões de 1º, 2º e 3º grau que o LinkedIn mostra no perfil de
+  cada pessoa são as distâncias 1, 2 e 3. O número de Kevin Bacon de um ator é
+  a distância até Kevin Bacon no grafo em que dois atores estão ligados se
+  atuaram no mesmo filme; o site [Oracle of Bacon](https://oracleofbacon.org)
+  calcula esse número para qualquer ator. O número de Erdős é a mesma ideia na
+  matemática, com a distância até Paul Erdős no grafo de coautoria de artigos.
+* **Menor número de saltos em uma rede.** Em uma rede de computadores, com
+  roteadores como vértices e enlaces como arestas, a busca em largura encontra
+  a rota com menos saltos (*hops*) entre dois pontos. O exemplo dos slides de
+  Sedgewick e Wayne é o mapa de 1977 da ARPANET, a rede que deu origem à
+  internet.
+* **Coleta de páginas da web.** Um coletor (*web crawler*) começa por uma
+  página, põe na fila os links que encontra nela e segue retirando páginas da
+  fila. No lugar do vetor `marcado`, ele guarda um conjunto de endereços já
+  vistos, como um `map[string]bool`. O grafo é implícito, como o do labirinto da seção 9: os
+  vizinhos de uma página só são conhecidos depois que ela é baixada. As páginas
+  a poucos links da página inicial são coletadas primeiro.
+* **Quebra-cabeças.** No quebra-cabeça de 8 peças, cada arrumação do tabuleiro
+  é um vértice, e cada movimento de uma peça para o espaço vazio é uma aresta.
+  A busca em largura a partir da arrumação inicial encontra a solução com menos
+  movimentos. São 181.440 arrumações alcançáveis a partir da arrumação
+  resolvida, e nenhuma precisa de mais de 31 movimentos; os dois números saem
+  de uma única busca em largura a partir da arrumação resolvida.
+
 ## 5. Busca em profundidade
 
 A **busca em profundidade** (*depth-first search*, DFS) a partir de $v$ marca
@@ -577,6 +622,22 @@ Union-Find recebe as arestas uma de cada vez, sem guardá-las, e responde
 consultas entre uma aresta e outra. É esse segundo uso que o algoritmo de
 Kruskal faz na próxima aula.
 
+### Componentes em imagens
+
+Uma imagem é um grafo implícito em grade, como o labirinto da seção 9: cada
+pixel é um vértice, ligado aos pixels vizinhos de cor igual ou parecida. A
+componente conexa de um pixel é a região de mesma cor que contém esse pixel.
+
+* O **balde de tinta** dos editores de imagem pinta a componente do pixel
+  clicado. O algoritmo é chamado de preenchimento por inundação (*flood
+  fill*). A varinha mágica de editores como o GIMP e o Photoshop, com a opção
+  de região contígua, seleciona a componente da mesma forma, com uma tolerância
+  na comparação das cores.
+* Em uma imagem de microscópio, as partículas aparecem como manchas claras
+  sobre fundo escuro. Ligando só os pixels vizinhos acima de um limiar de
+  brilho, cada componente com o tamanho esperado é uma partícula, e contar
+  componentes é contar partículas. O exemplo é dos slides de Sedgewick e Wayne.
+
 ### Detecção de ciclo
 
 Durante a busca em profundidade, cada aresta $v$-$w$ examinada leva a um de
@@ -617,6 +678,45 @@ As duas buscas funcionam sem mudança nenhuma, seguindo os arcos no sentido
 deles. A busca a partir de $s$ marca os vértices **alcançáveis** a partir de
 $s$. Em um grafo dirigido, $w$ pode ser alcançável a partir de $v$ sem que $v$
 seja alcançável a partir de $w$.
+
+### Alcançabilidade: coleta de lixo
+
+A memória de um programa em execução é um grafo dirigido: cada objeto alocado é
+um vértice, e cada ponteiro de um objeto para outro é um arco. As **raízes**
+são os objetos que o programa acessa diretamente, pelas variáveis locais e
+globais. Um objeto que não é alcançável a partir de nenhuma raiz não pode mais
+ser usado pelo programa, e a memória dele pode ser liberada.
+
+O coletor de lixo do tipo **marca e varre** (*mark-sweep*), descrito por John
+McCarthy em 1960 para a linguagem Lisp, trabalha em duas fases. Na marcação,
+uma busca a partir das raízes marca todos os objetos alcançáveis. Na varredura,
+ele percorre toda a memória e libera os objetos não marcados.
+
+O coletor de lixo de Go é desse tipo. O código dele, no pacote `runtime`,
+descreve os objetos com três cores: branco, ainda não alcançado; cinza,
+alcançado, com os ponteiros ainda por examinar; preto, examinado. São os mesmos
+sentidos das cores na execução passo a passo da busca em largura, nos slides.
+Um slice que nenhuma variável alcança mais é liberado em uma coleta seguinte.
+Em C, a mesma memória precisaria de uma chamada a `free`.
+
+A mesma pergunta, o que é alcançável a partir de um ponto de partida, aparece
+na análise de código. Cada trecho de instruções sem desvio é um vértice, e cada
+desvio possível (`if`, laço, `return`) é um arco. Um trecho que não é
+alcançável a partir do início da função nunca executa. O `go vet` aponta o
+caso mais simples, uma instrução depois de `return`:
+
+```go
+func main() {
+    fmt.Println("antes")
+    return
+    fmt.Println("depois")
+}
+```
+
+```
+$ go vet
+main.go:8:2: unreachable code
+```
 
 ### Dependências entre pacotes
 
@@ -713,6 +813,48 @@ O compilador de Go faz essa verificação. Com dois pacotes que se importam
 mutuamente, `go build` termina com a mensagem `import cycle not allowed`, e
 mostra a sequência de importações que fecha o ciclo.
 
+### Outras ordenações e ciclos
+
+A ordenação topológica e a detecção de ciclo aparecem em outras ferramentas.
+
+* **`make`.** Cada alvo de um `Makefile` é um vértice, e cada pré-requisito,
+  um arco. O `make` constrói os pré-requisitos de um alvo antes do próprio
+  alvo, descendo pelos pré-requisitos como uma busca em profundidade. Uma
+  dependência que fecha um ciclo é descartada, com um aviso como
+  `make: Circular c <- a dependency dropped.`
+* **Planilhas.** Cada célula é um vértice, e uma fórmula que usa outra célula
+  cria um arco. Ao mudar um valor, a planilha precisa recalcular cada célula
+  depois das células de que ela depende, em uma ordenação topológica. Uma
+  fórmula que depende de si mesma, direta ou indiretamente, forma um ciclo: o
+  LibreOffice Calc mostra `Err:522` (referência circular), e o Excel mostra um
+  aviso de referência circular.
+* **Grade curricular.** Com as disciplinas como vértices e os pré-requisitos
+  como arcos, uma ordem de cursar que respeite todos os pré-requisitos é uma
+  ordenação topológica. Um ciclo de pré-requisitos impediria qualquer aluno de
+  concluir o curso.
+* **Tipos em Go.** Um `struct` que contém outro `struct` por valor depende do
+  tamanho dele. O compilador recusa um ciclo nessas dependências:
+
+  ```go
+  type Pedido struct {
+      cliente Cliente
+  }
+
+  type Cliente struct {
+      ultimo Pedido
+  }
+  ```
+
+  ```
+  ./main.go:3:6: invalid recursive type Pedido
+      ./main.go:3:6: Pedido refers to Cliente
+      ./main.go:7:6: Cliente refers to Pedido
+  ```
+
+  Com um ponteiro, `ultimo *Pedido`, o ciclo desaparece, porque o tamanho de um
+  ponteiro não depende do tipo apontado. O compilador de Java faz a mesma
+  verificação na herança entre classes, com o erro `cyclic inheritance`.
+
 ## 8. Componentes fortemente conexas
 
 Em um grafo dirigido, dois vértices $v$ e $w$ são **fortemente conectados**
@@ -736,6 +878,13 @@ Trocando cada componente por um vértice só, o grafo resultante não tem ciclo:
 um ciclo entre componentes juntaria as duas em uma componente maior. No
 exemplo, o resultado tem três vértices e dois arcos, da componente de 0, 1 e 2
 para a de 3, 4 e 5, e desta para o 6.
+
+Em um grafo de dependências entre módulos de software, uma componente
+fortemente conexa com mais de um módulo é um grupo de módulos que dependem uns
+dos outros e só podem ser compilados juntos. Em Go, uma componente assim entre
+pacotes é proibida: é o `import cycle not allowed` da seção 7. Em uma cadeia
+alimentar, uma componente fortemente conexa é um grupo de espécies por onde a
+energia circula.
 
 Os algoritmos de Kosaraju-Sharir e de Tarjan encontram as componentes
 fortemente conexas em $O(V + E)$, os dois com busca em profundidade. Eles não
