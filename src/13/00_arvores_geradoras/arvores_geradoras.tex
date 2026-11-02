@@ -1,0 +1,816 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, calc}
+% Grafo G e estilos da aula de representação e percursos, e as figuras desta
+% aula, compartilhadas com o roteiro.
+\input{../../12/img/grafos.tex}
+\input{../img/agm.tex}
+\input{../img/heap.tex}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+% slides de prática e de resposta: fundo e título em cores próprias
+\newcommand{\estilopratica}{%
+  \setbeamercolor{frametitle}{fg=orange!85!black}%
+  \setbeamercolor{background canvas}{bg=orange!8}}
+\newcommand{\estiloresposta}{%
+  \setbeamercolor{frametitle}{fg=green!45!black}%
+  \setbeamercolor{background canvas}{bg=green!6}}
+
+\title{13 - Árvores geradoras mínimas}
+\author{Prof. Alex Kutzke}
+\date{Novembro de 2026}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+	\begin{center}
+		\large{Setor de Educação Profissional e Tecnológica}\\
+		Tecnologia em Análise e Desenvolvimento de Sistemas\\
+		\vspace{1cm}
+		\small{DS143 - Estruturas de Dados II}
+	\end{center}
+	\titlepage
+\end{frame}
+
+% ==========================================
+\begin{frame}{Objetivos da aula}
+	\footnotesize
+	Ao final desta aula você deve ser capaz de:
+	\begin{enumerate}
+		\item Definir árvore geradora e árvore geradora mínima de um grafo com
+		      pesos;
+		\item Enunciar a propriedade do corte e usá-la para justificar que uma
+		      aresta pertence à árvore mínima;
+		\item Executar à mão os algoritmos de Kruskal e de Prim, registrando a
+		      ordem em que as arestas entram e as que são descartadas;
+		\item Explicar o papel do Union-Find no Kruskal e o da fila de
+		      prioridade no Prim, e o custo de cada algoritmo;
+		\item Discutir o que a árvore geradora mínima modela bem num projeto de
+		      infraestrutura, e o que ela deixa de fora.
+	\end{enumerate}
+	\vspace{0.1cm}
+	Este conteúdo cai na Prova 2.
+\end{frame}
+
+% ==========================================
+\begin{frame}{Roteiro}
+	\tableofcontents
+\end{frame}
+
+% ==========================================
+\section{Árvores geradoras}
+
+\begin{frame}[fragile]{Demonstração: fibra óptica para escolas rurais}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run escolas.go
+Tudo ligado à sede                  Árvore geradora mínima
+|            K             .G   |   |           .K....       ...G   |
+|   A.        .      F   ..     |   |   A..   ..      ...F...       |
+|     ...B.   .     . ...       |   |      ..B.                     |
+|        ....  .  ....          |   |          ..                   |
+|           .... ...            |   |            ..                 |
+|             ..S...            |   |              .S...            |
+|        ....... .......H       |   |              .    ....H       |
+|     C....   .  .    ...       |   |     C.      .          ..     |
+|   ....     .    .      ....   |   |   ..  ...  .             ..   |
+| D.        E     .          .I |   | D.       .E...             .I |
+|                  J            |   |               ...J            |
+11 ligações, 129.8 km               11 ligações, 81.6 km
+\end{minted}
+
+	\begin{itemize}
+		\item município fictício: a sede S já tem conexão, as escolas A a K não;
+		\item as duas redes ligam todas as escolas; a da direita usa 63\% do cabo.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Grafo com pesos}
+	Cada aresta tem um \textbf{peso}: distância, custo, tempo.
+
+	\begin{center}
+		\scalebox{0.85}{\grafoGP}
+	\end{center}
+
+	\begin{itemize}
+		\item o grafo $G$ da aula de representação e percursos, agora com pesos;
+		\item os pesos são números quaisquer, inclusive negativos ou repetidos.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Representação em Go}
+	\begin{minted}{go}
+type Aresta struct {
+	V, W int
+	Peso float64
+}
+
+// Outro devolve o extremo da aresta que não é v.
+func (a Aresta) Outro(v int) int {
+	if v == a.V {
+		return a.W
+	}
+	return a.V
+}
+
+type GrafoP struct {
+	adj [][]Aresta // a aresta v-w está na lista de v e na de w
+}
+\end{minted}
+	As listas de adjacência guardam a aresta inteira, e não só o vizinho.
+\end{frame}
+
+\begin{frame}{Árvore geradora}
+	Uma \textbf{árvore geradora} de um grafo conexo é um subconjunto das arestas
+	que liga todos os vértices e não tem ciclo.
+
+	\begin{columns}[c]
+		\begin{column}{0.5\textwidth}
+			\begin{center}
+				\scalebox{0.7}{\grafoGPbfs}
+			\end{center}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\small
+			\begin{itemize}
+				\item tem sempre $V - 1$ arestas;
+				\item a árvore da busca em largura é uma árvore geradora;
+				\item à esquerda, a de $G$ a partir de 0, com peso 43:
+				      \\ $4 + 3 + 7 + 2 + 6 + 9 + 12$.
+			\end{itemize}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Árvore geradora mínima}
+	A \textbf{árvore geradora mínima} (AGM, \emph{minimum spanning tree}) é a
+	árvore geradora de menor peso total.
+
+	\begin{columns}[c]
+		\begin{column}{0.5\textwidth}
+			\begin{center}
+				\scalebox{0.7}{\grafoGPagm}
+			\end{center}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\small
+			\begin{itemize}
+				\item em $G$, peso 36;
+				\item $G$ tem 50 árvores geradoras; o grafo completo com 12
+				      vértices da demonstração tem $12^{10}$, cerca de 62 bilhões;
+				\item testar todas está fora de questão.
+			\end{itemize}
+		\end{column}
+	\end{columns}
+
+	\vspace{0.2cm}
+	\footnotesize
+	Com pesos distintos, a árvore mínima é única. Com pesos repetidos, pode
+	haver mais de uma, todas com o mesmo peso.
+\end{frame}
+
+\begin{frame}{Propriedade do corte}
+	\small
+	Um \textbf{corte} divide os vértices em dois conjuntos não vazios. Uma
+	\textbf{aresta de travessia} liga um vértice de cada lado.
+
+	\begin{columns}[c]
+		\begin{column}{0.55\textwidth}
+			\begin{center}
+				\scalebox{0.65}{\grafoGPcorte}
+			\end{center}
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			\footnotesize
+			Arestas de travessia: 0-5 (7), 2-4 (6) e 3-6 (9).
+
+			\vspace{0.2cm}
+			\textbf{Propriedade do corte}: em qualquer corte, a aresta de
+			travessia de menor peso está na árvore geradora mínima (pesos
+			distintos).
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Por que a propriedade do corte vale}
+	\small
+	Seja $e$ a aresta de travessia mais leve, e suponha uma árvore mínima $T$
+	sem $e$.
+	\begin{enumerate}
+		\item acrescentar $e$ a $T$ fecha um ciclo;
+		\item o ciclo atravessa o corte por $e$ e precisa voltar: alguma outra
+		      aresta $f$ do ciclo também é de travessia;
+		\item trocar $f$ por $e$ dá outra árvore geradora;
+		\item $e$ pesa menos que $f$, então a árvore nova pesa menos que $T$.
+	\end{enumerate}
+	Contradição: $T$ não era mínima.
+
+	\vspace{0.3cm}
+	No corte do slide anterior: sem 2-4, a árvore teria de usar 0-5 ou 3-6, e
+	trocar essa aresta por 2-4 diminuiria o peso.
+\end{frame}
+
+\begin{frame}{Algoritmo guloso}
+	\begin{enumerate}
+		\item comece sem nenhuma aresta;
+		\item escolha um corte que nenhuma aresta já escolhida atravessa;
+		\item acrescente a aresta de travessia mais leve desse corte;
+		\item repita até ter $V - 1$ arestas.
+	\end{enumerate}
+
+	\vspace{0.3cm}
+	Cada aresta acrescentada está na árvore mínima, pela propriedade do corte.
+	Kruskal e Prim são duas formas de escolher o corte a cada passo.
+\end{frame}
+
+% ==========================================
+\section{Kruskal}
+
+\begin{frame}{Algoritmo de Kruskal}
+	\begin{enumerate}
+		\item ordene as arestas por peso, da mais leve para a mais pesada;
+		\item examine cada aresta $v$-$w$ nessa ordem:
+		      \begin{itemize}
+			      \item se $v$ e $w$ já estão ligados pelas arestas escolhidas, a
+			            aresta fecharia um ciclo: descarte;
+			      \item se não, a aresta entra;
+		      \end{itemize}
+		\item pare com $V - 1$ arestas.
+	\end{enumerate}
+
+	\vspace{0.3cm}
+	``$v$ e $w$ já estão ligados?'' é a pergunta do Union-Find, a primeira
+	estrutura do semestre: \texttt{Connected} e \texttt{Union}, na versão com
+	união por tamanho.
+\end{frame}
+
+\begin{frame}[fragile]{Kruskal em Go}
+	\begin{minted}[fontsize=\scriptsize]{go}
+func Kruskal(n int, arestas []Aresta) []Aresta {
+	ordem := make([]Aresta, len(arestas))
+	copy(ordem, arestas)
+	sort.Slice(ordem, func(i, j int) bool {
+		return ordem[i].Peso < ordem[j].Peso
+	})
+
+	uf := NovoUF(n)
+	var arvore []Aresta
+	for _, a := range ordem {
+		if len(arvore) == n-1 {
+			break // a árvore já tem V-1 arestas
+		}
+		if uf.Connected(a.V, a.W) {
+			continue // fecharia um ciclo
+		}
+		uf.Union(a.V, a.W)
+		arvore = append(arvore, a)
+	}
+	return arvore
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Kruskal passo a passo}
+	\begin{center}
+		\only<1>{\kruskalPasso{1}}
+		\only<2>{\kruskalPasso{2}}
+		\only<3>{\kruskalPasso{3}}
+		\only<4>{\kruskalPasso{4}}
+		\only<5>{\kruskalPasso{5}}
+		\only<6>{\kruskalPasso{6}}
+		\only<7>{\kruskalPasso{7}}
+		\only<8>{\kruskalPasso{8}}
+		\only<9>{\kruskalPasso{9}}
+		\only<10>{\kruskalPasso{10}}
+		\only<11>{\kruskalPasso{11}}
+	\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Kruskal em $G$}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run kruskal.go
+Kruskal: arestas da mais leve para a mais pesada
+  4-5     1   entra
+  1-3     2   entra
+  0-2     3   entra
+  0-1     4   entra
+  2-3     5   descarta: 2 e 3 já estão ligados
+  2-4     6   entra
+  0-5     7   descarta: 0 e 5 já estão ligados
+  4-6     8   entra
+  3-6     9   descarta: 3 e 6 já estão ligados
+  6-7    12   entra
+
+Árvore geradora mínima: 4-5 1-3 0-2 0-1 2-4 4-6 6-7
+7 arestas, peso total 36
+\end{minted}
+	\footnotesize
+	Custo: ordenar as arestas, $O(E \log E)$, mais até $E$ consultas ao
+	Union-Find, $O(\log V)$ cada. Total $O(E \log E)$.
+\end{frame}
+
+% ==========================================
+\section{Prim}
+
+\begin{frame}{Algoritmo de Prim}
+	\begin{enumerate}
+		\item comece a árvore por um vértice $s$;
+		\item acrescente a aresta mais leve que liga a árvore a um vértice fora
+		      dela, e esse vértice;
+		\item repita até a árvore ter todos os vértices.
+	\end{enumerate}
+
+	\vspace{0.3cm}
+	O corte de cada passo é \{vértices da árvore\} e \{os demais\}.
+
+	\vspace{0.3cm}
+	Para achar a aresta mais leve sem percorrer todas a cada passo, as
+	candidatas ficam numa \textbf{fila de prioridade}.
+\end{frame}
+
+\begin{frame}{Heap de mínimo}
+	\begin{columns}[c,onlytextwidth]
+		\begin{column}{0.56\textwidth}
+			\centering
+			\scalebox{0.74}{\heapPasso{0}}
+		\end{column}
+		\begin{column}{0.42\textwidth}
+			\footnotesize
+			Fila de prioridade: insere em qualquer ordem e retira sempre o
+			menor.
+			\begin{itemize}
+				\item árvore binária completa, com os níveis preenchidos da
+				      esquerda para a direita;
+				\item cada elemento é menor ou igual aos filhos, então o menor
+				      está na raiz;
+				\item guardada num vetor: os filhos de $i$ estão em $2i+1$ e
+				      $2i+2$, e o pai em $(i-1)/2$.
+			\end{itemize}
+			A altura é $\lfloor \log_2 n \rfloor$: inserir e retirar o menor
+			custam $O(\log n)$.
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Inserção: o novo elemento sobe}
+	\begin{center}
+		\only<1>{\heapPasso{0}}
+		\only<2>{\heapPasso{1}}
+		\only<3>{\heapPasso{2}}
+		\only<4>{\heapPasso{3}}
+	\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Inserção em Go}
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.44\textwidth}
+			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+type HeapMin struct {
+	v []int
+}
+
+func (h *HeapMin) Insere(x int) {
+	h.v = append(h.v, x)
+	h.sobe(len(h.v) - 1)
+}
+\end{minted}
+		\end{column}
+		\begin{column}{0.54\textwidth}
+			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+func (h *HeapMin) sobe(i int) {
+	for i > 0 {
+		pai := (i - 1) / 2
+		if h.v[pai] <= h.v[i] {
+			return
+		}
+		h.v[pai], h.v[i] = h.v[i], h.v[pai]
+		i = pai
+	}
+}
+\end{minted}
+		\end{column}
+	\end{columns}
+	\footnotesize
+	O novo elemento entra no fim do vetor e troca de lugar com o pai enquanto
+	for menor que ele. São no máximo $\lfloor \log_2 n \rfloor$ trocas, uma
+	por nível.
+\end{frame}
+
+\begin{frame}{Retirada do mínimo: o último elemento desce}
+	\begin{center}
+		\only<1>{\heapPasso{4}}
+		\only<2>{\heapPasso{5}}
+		\only<3>{\heapPasso{6}}
+		\only<4>{\heapPasso{7}}
+	\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Retirada do mínimo em Go}
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.44\textwidth}
+			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+func (h *HeapMin) RetiraMin() int {
+	menor := h.v[0]
+	ultimo := len(h.v) - 1
+	h.v[0] = h.v[ultimo]
+	h.v = h.v[:ultimo]
+	if len(h.v) > 0 {
+		h.desce(0)
+	}
+	return menor
+}
+\end{minted}
+		\end{column}
+		\begin{column}{0.54\textwidth}
+			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+func (h *HeapMin) desce(i int) {
+	n := len(h.v)
+	for {
+		menor := i
+		esq, dir := 2*i+1, 2*i+2
+		if esq < n && h.v[esq] < h.v[menor] {
+			menor = esq
+		}
+		if dir < n && h.v[dir] < h.v[menor] {
+			menor = dir
+		}
+		if menor == i {
+			return
+		}
+		h.v[menor], h.v[i] = h.v[i], h.v[menor]
+		i = menor
+	}
+}
+\end{minted}
+		\end{column}
+	\end{columns}
+	\footnotesize
+	O último elemento vai para a raiz e troca de lugar com o menor dos filhos
+	enquanto for maior que ele. Também são no máximo
+	$\lfloor \log_2 n \rfloor$ trocas.
+\end{frame}
+
+\begin{frame}[fragile]{Fila de prioridade com \texttt{container/heap}}
+	\small
+	O pacote faz o sobe e o desce. O tipo informa o tamanho, a comparação e a
+	troca, e como acrescentar e retirar do fim do \textit{slice}.
+
+	\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+// O pacote container/heap organiza o slice como heap de mínimo.
+type FilaArestas []Aresta
+
+func (f FilaArestas) Len() int { return len(f) }
+func (f FilaArestas) Less(i, j int) bool { return f[i].Peso < f[j].Peso }
+func (f FilaArestas) Swap(i, j int) { f[i], f[j] = f[j], f[i] }
+func (f *FilaArestas) Push(x any) { *f = append(*f, x.(Aresta)) }
+func (f *FilaArestas) Pop() any {
+	antigo := *f
+	n := len(antigo)
+	a := antigo[n-1]
+	*f = antigo[:n-1]
+	return a
+}
+\end{minted}
+	\footnotesize
+	O programa usa \texttt{heap.Push(fila, a)} e \texttt{heap.Pop(fila)}, e não
+	os métodos diretamente. No trabalho prático, \texttt{container/*} é
+	proibido.
+\end{frame}
+
+\begin{frame}[fragile]{Prim em Go}
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.5\textwidth}
+			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+func Prim(g *GrafoP, s int) []Aresta {
+	naArvore := make([]bool, g.V())
+	fila := &FilaArestas{}
+	var arvore []Aresta
+
+	// v entra na árvore, e as
+	// arestas de v para fora dela,
+	// na fila.
+	visita := func(v int) {
+		naArvore[v] = true
+		for _, a := range g.adj[v] {
+			if !naArvore[a.Outro(v)] {
+				heap.Push(fila, a)
+			}
+		}
+	}
+\end{minted}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
+	visita(s)
+	for fila.Len() > 0 &&
+		len(arvore) < g.V()-1 {
+		a := heap.Pop(fila).(Aresta)
+		if naArvore[a.V] && naArvore[a.W] {
+			continue // descarta
+		}
+		arvore = append(arvore, a)
+		novo := a.V
+		if naArvore[a.V] {
+			novo = a.W
+		}
+		visita(novo)
+	}
+	return arvore
+}
+\end{minted}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Prim passo a passo}
+	\begin{center}
+		\only<1>{\primPasso{1}}
+		\only<2>{\primPasso{2}}
+		\only<3>{\primPasso{3}}
+		\only<4>{\primPasso{4}}
+		\only<5>{\primPasso{5}}
+		\only<6>{\primPasso{6}}
+		\only<7>{\primPasso{7}}
+		\only<8>{\primPasso{8}}
+		\only<9>{\primPasso{9}}
+		\only<10>{\primPasso{10}}
+		\only<11>{\primPasso{11}}
+	\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Prim em $G$, a partir de 0}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run prim.go
+Prim a partir de 0
+  início            fila: 0-2(3) 0-1(4) 0-5(7)
+  0-2  3 entra 2    fila: 0-1(4) 2-3(5) 2-4(6) 0-5(7)
+  0-1  4 entra 1    fila: 1-3(2) 2-3(5) 2-4(6) 0-5(7)
+  1-3  2 entra 3    fila: 2-3(5) 2-4(6) 0-5(7) 3-6(9)
+  2-3  5 descarta   fila: 2-4(6) 0-5(7) 3-6(9)
+  2-4  6 entra 4    fila: 4-5(1) 0-5(7) 4-6(8) 3-6(9)
+  4-5  1 entra 5    fila: 0-5(7) 4-6(8) 3-6(9)
+  0-5  7 descarta   fila: 4-6(8) 3-6(9)
+  4-6  8 entra 6    fila: 3-6(9) 6-7(12)
+  3-6  9 descarta   fila: 6-7(12)
+  6-7 12 entra 7    fila:
+
+Árvore geradora mínima: 0-2 0-1 1-3 2-4 4-5 4-6 6-7
+7 arestas, peso total 36
+\end{minted}
+	\footnotesize
+	A mesma árvore do Kruskal, em outra ordem. A aresta 4-5, a mais leve, é
+	a quinta a entrar.
+\end{frame}
+
+\begin{frame}{Custo do Prim}
+	\begin{itemize}
+		\item cada aresta entra na fila no máximo uma vez e sai no máximo uma
+		      vez: $O(E \log E)$, com até $E$ arestas na fila;
+		\item esta é a versão \textbf{preguiçosa}: arestas que deixaram de servir
+		      ficam na fila e são descartadas quando saem;
+		\item a versão \textbf{ansiosa} guarda na fila um vértice por vez, com a
+		      melhor aresta conhecida até ele: $O(E \log V)$, com no máximo $V$
+		      itens na fila;
+		\item em grafo denso, um vetor no lugar da fila dá $O(V^2)$, sem heap.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Kruskal ou Prim}
+	\small
+	\begin{center}
+		\begin{tabular}{>{\raggedright}p{2.6cm}>{\raggedright}p{3.4cm}>{\raggedright\arraybackslash}p{3.4cm}}
+			\toprule
+			& Kruskal & Prim \\
+			\midrule
+			o que cresce & uma floresta, que vira árvore no fim & uma árvore, a partir de $s$ \\
+			estrutura auxiliar & ordenação e Union-Find & fila de prioridade \\
+			custo & $O(E \log E)$ & $O(E \log E)$, ou $O(E \log V)$ na versão ansiosa \\
+			grafo desconexo & floresta geradora mínima & só a componente de $s$ \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+
+	\vspace{0.3cm}
+	Como $E < V^2$, $\log E < 2 \log V$: $O(E \log E)$ e $O(E \log V)$ diferem
+	por uma constante.
+\end{frame}
+
+% ==========================================
+\section{Infraestrutura}
+
+\begin{frame}{Origem do problema}
+	\small
+	\begin{itemize}
+		\item 1926, Otakar Bor\r{u}vka: rede elétrica da Morávia, na atual República
+		      Tcheca, com o menor comprimento de linhas;
+		\item 1930, Vojt\v{e}ch Jarník: o algoritmo que hoje se chama de Prim;
+		\item 1956, Joseph Kruskal; 1957, Robert Prim, nos Bell Labs, para redes
+		      telefônicas;
+		\item 1959, Edsger Dijkstra redescobre o algoritmo de Jarník e Prim.
+	\end{itemize}
+
+	\vspace{0.2cm}
+	ODS 9, Indústria, Inovação e Infraestrutura:
+	\begin{itemize}
+		\footnotesize
+		\item[9.1] infraestrutura de qualidade, confiável, sustentável e
+		      \textbf{resiliente}, com acesso equitativo e a preços acessíveis;
+		\item[9.c] aumentar o acesso às tecnologias de informação e comunicação
+		      e oferecer acesso universal à internet.
+	\end{itemize}
+\end{frame}
+
+{\estilopratica
+\begin{frame}{Prática: a rede das escolas}
+	\small
+	Custo de cada ligação possível, em km de cabo. A sede S já tem conexão.
+
+	\begin{center}
+		\scalebox{0.8}{\mapaEscolas{}{}}
+	\end{center}
+
+	\begin{enumerate}
+		\item execute o Kruskal à mão: liste as arestas na ordem em que são
+		      examinadas e marque as que entram e as que são descartadas;
+		\item calcule o custo total da rede.
+	\end{enumerate}
+	Em dupla. Tempo: 7 minutos.
+\end{frame}
+}
+
+{\estiloresposta
+\begin{frame}{Resposta: a rede das escolas}
+	\small
+	\begin{columns}[c]
+		\begin{column}{0.55\textwidth}
+			\begin{center}
+				\scalebox{0.7}{\mapaEscolas{S/A, A/B, B/C, B/D, D/E}{}}
+			\end{center}
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			\footnotesize
+			D-E 2 entra\\
+			A-B 3 entra\\
+			S-A 4 entra\\
+			B-C 5 entra\\
+			S-B 6 descarta\\
+			B-D 7 entra: 5 arestas, fim\\[0.2cm]
+			Custo: $2 + 3 + 4 + 5 + 7 = 21$ km.
+		\end{column}
+	\end{columns}
+
+	\vspace{0.2cm}
+	\footnotesize
+	A-D, S-C, C-E e C-D nem chegam a ser examinadas.
+\end{frame}
+}
+
+{\estilopratica
+\begin{frame}{Prática: e se um cabo for cortado?}
+	\small
+	Na rede de 21 km:
+	\begin{enumerate}
+		\item qual ligação, se for cortada, deixa mais escolas sem conexão com a
+		      sede? Quantas?
+		\item acrescente uma única ligação, a mais barata possível, de modo que
+		      nenhum corte isole mais de duas escolas;
+		\item quais ligações é preciso acrescentar para que nenhum corte isole
+		      escola alguma? Qual o custo total da rede?
+	\end{enumerate}
+	Em dupla. Tempo: 8 minutos.
+\end{frame}
+}
+
+{\estiloresposta
+\begin{frame}{Resposta: e se um cabo for cortado?}
+	\footnotesize
+	\begin{columns}[c]
+		\begin{column}{0.5\textwidth}
+			\begin{center}
+				\scalebox{0.6}{\mapaEscolas{S/A, A/B, B/C, B/D, D/E}{S/B, C/E}}
+			\end{center}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\begin{enumerate}
+				\item S-A: as cinco escolas;
+				\item S-B, 6 km. O pior corte passa a ser B-D, que isola D e E;
+				\item S-B e C-E: 16 km a mais, rede de 37 km, 76\% mais cara.
+			\end{enumerate}
+		\end{column}
+	\end{columns}
+
+	\vspace{0.2cm}
+	Na árvore, toda aresta é uma ponte: retirada, desconecta o grafo. A
+	redundância custa caro. A rede mais barata sem ponte custa 35 km, e não
+	contém A-B nem B-D: partir da árvore e acrescentar arestas não dá o ótimo.
+\end{frame}
+}
+
+\begin{frame}{O que o modelo deixa de fora}
+	\small
+	\begin{itemize}
+		\item \textbf{resiliência}: a árvore mínima não tem nenhuma redundância,
+		      e a meta 9.1 pede infraestrutura resiliente;
+		\item \textbf{pontos de junção}: com três escolas nos vértices de um
+		      triângulo de 10 km de lado, a árvore mínima usa 20 km; uma caixa de
+		      emenda no centro liga as três com 17,3 km. Escolher os pontos
+		      extras é o problema da árvore de Steiner, NP-difícil;
+		\item \textbf{custo real}: travessia de rio, licença ambiental, poste já
+		      existente. O peso da aresta é uma decisão de modelagem;
+		\item \textbf{quem fica de fora}: a árvore liga todos os vértices que
+		      estão no grafo. Quem decide quais escolas entram é o projeto, e não
+		      o algoritmo.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Onde aparecem as árvores geradoras mínimas}
+	\footnotesize
+	\begin{tabular}{>{\raggedright}p{3.6cm}>{\raggedright\arraybackslash}p{6.4cm}}
+		\toprule
+		Aplicação & O que a árvore representa \\
+		\midrule
+		projeto de redes & elétrica, telefônica, de dados, de água, viária \\
+		agrupamento (\emph{single-link}) & tirar as $k-1$ arestas mais pesadas
+		da árvore deixa $k$ grupos \\
+		segmentação de imagens & pixels como vértices, diferença de cor como
+		peso \\
+		caixeiro-viajante & a árvore dá uma rota no máximo duas vezes maior que a
+		ótima, com pesos que obedecem à desigualdade triangular \\
+		taxonomia e biologia & árvores de semelhança entre espécies ou genes \\
+		\bottomrule
+	\end{tabular}
+
+	\vspace{0.2cm}
+	\scriptsize
+	Lista baseada nos slides de Sedgewick e Wayne, \emph{Minimum Spanning
+	Trees}.
+\end{frame}
+
+% ==========================================
+\section{Fechamento}
+
+\begin{frame}[fragile]{De volta às escolas}
+	\begin{minted}[fontsize=\scriptsize]{text}
+Ligações da árvore e escolas isoladas da sede se a ligação for cortada:
+  A-B   5.4 km   A
+  B-K   5.7 km   F G K
+  C-D   5.7 km   D
+  C-E   7.2 km   C D
+  E-J   7.3 km   J
+  F-G   7.3 km   G
+  F-K   8.2 km   F G
+  S-H   8.2 km   H I
+  H-I   8.5 km   I
+  S-E   8.9 km   C D E J
+  S-B   9.2 km   A B F G K
+\end{minted}
+	\footnotesize
+	\begin{itemize}
+		\item 66 ligações possíveis, Kruskal sobre o grafo completo;
+		\item o corte de S-B deixa cinco escolas sem conexão.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Para a próxima aula}
+	\begin{itemize}
+		\item exercícios do roteiro da aula, sem entrega e sem nota. O conteúdo
+		      cai na Prova 2;
+		\item rodar \texttt{kruskal.go}, \texttt{prim.go} e
+		      \texttt{escolas.go}, trocando as arestas e os locais;
+		\item leitura: Sedgewick, seção 4.3; Cormen, capítulo 23.
+	\end{itemize}
+
+	\vspace{0.4cm}
+	Próxima aula, 11/11: caminhos mínimos, com a Atividade Avaliativa 4. O
+	algoritmo de Dijkstra tem a estrutura do Prim, com outra prioridade na fila.
+	No mesmo dia vence a etapa 1 do trabalho prático.
+\end{frame}
+
+\end{document}

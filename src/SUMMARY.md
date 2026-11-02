@@ -25,6 +25,7 @@
 # Grafos
 
 - [Aula 12: Representação e percursos em grafos](./aula_12.md)
+- [Aula 13: Árvores geradoras mínimas](./aula_13.md)
 
 # Material anterior (em C, numeração antiga)
 

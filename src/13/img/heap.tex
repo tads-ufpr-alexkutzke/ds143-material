@@ -1,0 +1,111 @@
+% Heap de mínimo do exemplo da aula de árvores geradoras mínimas: a árvore
+% binária completa e o vetor que a guarda. Compartilhado entre o roteiro
+% (figuras.tex) e os slides. Os estados seguem a saída de codes/heap.go. Usa o
+% estilo gv de ../../12/img/grafos.tex, que precisa ser carregado antes.
+
+\tikzset{
+  hv/.style = {gv, minimum size=1.7em},
+  hmov/.style = {fill=orange!45},
+  hcmp/.style = {draw=orange!80!black, line width=1.6pt},
+  hsai/.style = {fill=red!15, draw=red!75!black, dashed, line width=1.2pt},
+  hcel/.style = {rectangle, draw=black, fill=white, minimum width=0.62cm,
+    minimum height=0.55cm, inner sep=0pt, line width=0.6pt,
+    font=\sffamily\small},
+  hidx/.style = {font=\sffamily\scriptsize, text=black!55, inner sep=1pt},
+  htexto/.style = {font=\sffamily\small, text width=7.6cm, align=center,
+    execute at begin node={\hyphenpenalty=10000}}
+}
+
+% Posições dos índices 0 a 7 na árvore.
+\newcommand{\heapPos}{%
+  \coordinate (h0) at (0, 0);
+  \coordinate (h1) at (-1.8, -0.95);
+  \coordinate (h2) at (1.8, -0.95);
+  \coordinate (h3) at (-2.7, -1.9);
+  \coordinate (h4) at (-0.9, -1.9);
+  \coordinate (h5) at (0.9, -1.9);
+  \coordinate (h6) at (2.7, -1.9);
+  \coordinate (h7) at (-3.2, -2.85);
+}
+
+% Um estado do heap. #1: elementos do vetor, do índice 0 em diante; #2:
+% índices do elemento que se move, em laranja; #3: índices com que ele é
+% comparado, com borda laranja; #4: índice do elemento que sai, em vermelho
+% tracejado; #5: legenda.
+\newcommand{\heapEstado}[5]{%
+  \heapPos
+  \foreach \x [count=\i from 0] in {#1} {
+    \expandafter\xdef\csname hval\i\endcsname{\x}
+    \ifnum\i>0
+      \pgfmathtruncatemacro{\p}{(\i - 1) / 2}
+      \draw [ga] (h\p) -- (h\i);
+    \fi
+  }
+  \foreach \x [count=\i from 0] in {#1} {
+    \node [hv] at (h\i) {\x};
+    \node [hidx, anchor=north] at ($(h\i) + (0, -0.31)$) {\i};
+    \node [hcel] (c\i) at (-2.17 + 0.62*\i, -3.85) {\x};
+    \node [hidx, below=0pt of c\i] {\i};
+  }
+  \foreach \i in {#2} {
+    \node [hv, hmov] at (h\i) {\csname hval\i\endcsname};
+    \node [hcel, hmov] at (c\i) {\csname hval\i\endcsname};
+  }
+  \foreach \i in {#3} {
+    \node [hv, hcmp] at (h\i) {\csname hval\i\endcsname};
+    \node [hcel, hcmp] at (c\i) {\csname hval\i\endcsname};
+  }
+  \foreach \i in {#4} {
+    \node [hv, hsai] at (h\i) {\csname hval\i\endcsname};
+    \node [hcel, hsai] at (c\i) {\csname hval\i\endcsname};
+  }
+  \node [htexto, anchor=north] at (0, -4.5) {#5};
+}
+
+% Passos da inserção do 5 (0 a 3) e da retirada do mínimo (4 a 7).
+\newcommand{\heapEstadoN}[1]{\ifcase#1
+  \heapEstado{2, 9, 4, 12, 10, 6, 8}{}{}{}%
+    {Heap de mínimo com 7 elementos: cada um é menor ou igual aos filhos.}
+\or\heapEstado{2, 9, 4, 12, 10, 6, 8, 5}{7}{3}{}%
+    {Insere o 5: ele entra no fim do vetor, no índice 7. O pai, no índice 3,
+     é 12. Como $5 < 12$, os dois trocam.}
+\or\heapEstado{2, 9, 4, 5, 10, 6, 8, 12}{3}{1}{}%
+    {O pai do índice 3 é o índice 1, com 9. Como $5 < 9$, os dois trocam.}
+\or\heapEstado{2, 5, 4, 9, 10, 6, 8, 12}{1}{0}{}%
+    {O pai do índice 1 é a raiz, com 2. Como $2 \le 5$, o 5 para.
+     Foram duas trocas.}
+\or\heapEstado{2, 5, 4, 9, 10, 6, 8, 12}{7}{}{0}%
+    {Retira o menor, o 2, que está na raiz. O último elemento, 12, vai para
+     o lugar dele.}
+\or\heapEstado{12, 5, 4, 9, 10, 6, 8}{0}{1, 2}{}%
+    {Os filhos do 12 são 5 e 4. O menor é o 4, e como $4 < 12$, os dois
+     trocam.}
+\or\heapEstado{4, 5, 12, 9, 10, 6, 8}{2}{5, 6}{}%
+    {Os filhos do 12 agora são 6 e 8. O menor é o 6, e como $6 < 12$, os
+     dois trocam.}
+\or\heapEstado{4, 5, 6, 9, 10, 12, 8}{5}{}{}%
+    {O 12 chegou a uma folha e para. O novo menor, 4, está na raiz.}
+\fi}
+
+\newcommand{\heapPasso}[1]{%
+\begin{tikzpicture}
+  \useasboundingbox (-3.9, 0.45) rectangle (3.9, -5.15);
+  \heapEstadoN{#1}
+\end{tikzpicture}}
+
+% Quatro passos em grade 2 x 2, para o roteiro. #1: primeiro passo.
+\newcommand{\heapQuatro}[1]{%
+\begin{tikzpicture}
+  \begin{scope}
+    \pgfmathtruncatemacro{\k}{#1}\heapEstadoN{\k}
+  \end{scope}
+  \begin{scope}[xshift=8.4cm]
+    \pgfmathtruncatemacro{\k}{#1 + 1}\heapEstadoN{\k}
+  \end{scope}
+  \begin{scope}[yshift=-6.2cm]
+    \pgfmathtruncatemacro{\k}{#1 + 2}\heapEstadoN{\k}
+  \end{scope}
+  \begin{scope}[xshift=8.4cm, yshift=-6.2cm]
+    \pgfmathtruncatemacro{\k}{#1 + 3}\heapEstadoN{\k}
+  \end{scope}
+\end{tikzpicture}}

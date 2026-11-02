@@ -1,0 +1,45 @@
+% Figuras do roteiro da aula de árvores geradoras mínimas. Cada tikzpicture
+% vira uma página do PDF e um SVG (ver Makefile).
+
+\documentclass[tikz, border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usetikzlibrary{backgrounds, arrows.meta, positioning, calc}
+
+\tikzset{
+  every picture/.style = {background rectangle/.style={fill=white},
+    show background rectangle}
+}
+
+% Grafo G e estilos da aula de representação e percursos.
+\input{../../12/img/grafos.tex}
+\input{agm.tex}
+\input{heap.tex}
+
+\begin{document}
+
+% 1. Grafo G com pesos.
+\grafoGP
+
+% 2. Árvore da busca em largura, com os pesos.
+\grafoGPbfs
+
+% 3. Árvore geradora mínima de G.
+\grafoGPagm
+
+% 4. Um corte de G.
+\grafoGPcorte
+
+% 5. Mapa da atividade.
+\mapaEscolas{}{}
+
+% 6. Heap de mínimo e o vetor que o guarda.
+\heapPasso{0}
+
+% 7. Inserção do 5.
+\heapQuatro{0}
+
+% 8. Retirada do mínimo.
+\heapQuatro{4}
+
+\end{document}

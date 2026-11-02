@@ -1,0 +1,189 @@
+% Figuras da aula de árvores geradoras mínimas. Compartilhado entre o roteiro
+% (figuras.tex) e os slides (agm.tex da pasta 00_arvores_geradoras). Usa o
+% grafo G e os estilos de ../../12/img/grafos.tex, que precisa ser carregado
+% antes. Os pesos são os de kruskal.go e prim.go.
+
+\tikzset{
+  gpeso/.style = {fill=white, inner sep=1pt, font=\sffamily\scriptsize},
+  grej/.style = {draw=red!75!black, dashed, line width=1.6pt},
+  gcorte/.style = {draw=black!60, dashed, line width=0.8pt},
+  gtravessia/.style = {draw=green!50!black, line width=2.2pt},
+  glinha/.style = {anchor=west, font=\ttfamily\small, inner sep=0pt}
+}
+
+% Pesos de G, no meio de cada aresta.
+\newcommand{\GPpesos}{%
+  \foreach \a/\b/\p in {0/1/4, 0/2/3, 0/5/7, 1/3/2, 2/3/5, 2/4/6, 3/6/9,
+                        4/5/1, 4/6/8, 6/7/12}
+    \path (g\a) -- node [gpeso] {\p} (g\b);
+}
+
+% Grafo G com pesos.
+\newcommand{\grafoGP}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+  \GPpesos
+\end{tikzpicture}}
+
+% Árvore geradora mínima de G, peso 36.
+\newcommand{\grafoGPagm}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {4/5, 1/3, 0/2, 0/1, 2/4, 4/6, 6/7}
+    \draw [garv] (g\a) -- (g\b);
+  \GPpesos
+  \Gnos
+\end{tikzpicture}}
+
+% Árvore da busca em largura de G a partir de 0, com os pesos: também é uma
+% árvore geradora, de peso 43.
+\newcommand{\grafoGPbfs}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {0/1, 0/2, 0/5, 1/3, 2/4, 3/6, 6/7}
+    \draw [garv] (g\a) -- (g\b);
+  \GPpesos
+  \Gnos
+\end{tikzpicture}}
+
+% Um corte de G: {0, 1, 2, 3} de um lado, {4, 5, 6, 7} do outro. As arestas de
+% travessia estão em verde; a mais leve delas, 2-4, está na árvore mínima.
+\newcommand{\grafoGPcorte}{%
+\begin{tikzpicture}
+  \fill [black!10, rounded corners=8pt] (-0.5, 1.0) -- (-0.5, 3.5) -- (3.5, 3.5)
+    -- (3.5, 2.4) -- (2.1, 1.0) -- cycle;
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {0/5, 2/4, 3/6} \draw [gtravessia] (g\a) -- (g\b);
+  \GPpesos
+  \Gnos
+  \foreach \v in {0, 1, 2, 3} \node [gv, gcinza] at (g\v) {\v};
+  \node [gnota, text=black!70, anchor=west] at (3.6, 3.2) {lado $S$};
+  \node [gnota, text=black!70, anchor=west] at (4.6, 0.2) {lado $V - S$};
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
+% Mapa da atividade: a sede S e as escolas A a E, com o custo de cada ligação
+% possível em km de cabo.
+\newcommand{\Mnos}{%
+  \node [gv] (mS) at (0, 1.5) {S};
+  \node [gv] (mA) at (1.8, 3) {A};
+  \node [gv] (mB) at (1.8, 0) {B};
+  \node [gv] (mD) at (4.2, 3) {D};
+  \node [gv] (mC) at (4.2, 0) {C};
+  \node [gv] (mE) at (6, 1.5) {E};
+}
+% #1: arestas da árvore, em azul; #2: arestas acrescentadas, em laranja.
+\newcommand{\mapaEscolas}[2]{%
+\begin{tikzpicture}
+  \Mnos
+  \foreach \a/\b in {S/A, S/B, A/B, A/D, B/C, B/D, C/E, D/E, C/D}
+    \draw [ga] (m\a) -- (m\b);
+  \draw [ga] (mS) .. controls (0.5, -1.3) and (3.2, -1.4) .. (mC);
+  \foreach \a/\b in {#1} \draw [garv] (m\a) -- (m\b);
+  \foreach \a/\b in {#2} \draw [gnova] (m\a) -- (m\b);
+  \foreach \a/\b/\p in {S/A/4, S/B/6, A/B/3, A/D/8, B/C/5, B/D/7, C/E/10,
+                        D/E/2, C/D/11}
+    \path (m\a) -- node [gpeso] {\p} (m\b);
+  \path (mS) .. controls (0.5, -1.3) and (3.2, -1.4) .. node [gpeso, pos=0.45] {9} (mC);
+  \Mnos
+  \node [gv, gpreto] at (mS) {S};
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
+% Execução passo a passo de Kruskal e de Prim em G. Os estados seguem a saída
+% de kruskal.go e prim.go, e esta parte do arquivo foi gerada por script a
+% partir da mesma simulação. Em azul, as arestas da árvore; em laranja, a
+% aresta que entra no passo; em vermelho tracejado, a aresta descartada no
+% passo.
+
+% Grafo G com pesos no estado de um passo. #1: vértices da árvore (Prim; vazio
+% em Kruskal); #2: arestas da árvore; #3: aresta que entra; #4: aresta
+% descartada; #5: vértice que acabou de entrar.
+\newcommand{\GPestado}[5]{%
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {#2} \draw [garv] (g\a) -- (g\b);
+  \foreach \a/\b in {#3} \draw [gnova] (g\a) -- (g\b);
+  \foreach \a/\b in {#4} \draw [grej] (g\a) -- (g\b);
+  \GPpesos
+  \Gnos
+  \foreach \v in {#1} \node [gv, gpreto] at (g\v) {\v};
+  \foreach \v in {#5} \draw [gatual] (g\v) circle (0.8em);
+}
+
+% Um passo de Kruskal. #1 a #4 como em \GPestado (sem #1 e #5); #4: linhas
+% da tabela já examinadas, em pares i/situação; #5: linha em exame (0 para
+% nenhuma); #6: componentes do Union-Find; #7: o que o passo faz.
+\newcommand{\passoKruskal}[7]{%
+\begin{tikzpicture}
+  \useasboundingbox (-1.1, -2.55) rectangle (8.8, 3.65);
+  \GPestado{}{#1}{#2}{#3}{}
+  \node [glinha] at (6.55, 3.4) {aresta};
+  \node [glegenda] at (7.85, 3.4) {situação};
+  \draw [black!60] (6.45, 3.18) -- (8.95, 3.18);
+  \foreach \t [count=\i] in {4-5\ \ 1, 1-3\ \ 2, 0-2\ \ 3, 0-1\ \ 4, 2-3\ \ 5,
+                             2-4\ \ 6, 0-5\ \ 7, 4-6\ \ 8, 3-6\ \ 9, 6-7\ 12}
+    \node [glinha] at (6.55, 3.27 - 0.33*\i) {\t};
+  \foreach \i/\s in {#4}
+    \node [glegenda] at (7.85, 3.27 - 0.33*\i) {\s};
+  \ifnum#5>0
+    \draw [gatual] (6.45, 3.27 - 0.33*#5 - 0.16) rectangle (8.95, 3.27 - 0.33*#5 + 0.16);
+  \fi
+  \node [gtexto] at (-1.1, -0.85) {componentes: \texttt{#6}};
+  \node [gtexto] at (-1.1, -1.4) {#7};
+  \draw [garv] (-1.0, -2.35) -- (-0.5, -2.35);
+  \node [glegenda] at (-0.35, -2.35) {na árvore};
+  \draw [gnova] (1.3, -2.35) -- (1.8, -2.35);
+  \node [glegenda] at (1.95, -2.35) {entra agora};
+  \draw [grej] (3.8, -2.35) -- (4.3, -2.35);
+  \node [glegenda] at (4.45, -2.35) {descartada: fecharia um ciclo};
+\end{tikzpicture}}
+
+% Um passo de Prim. #1 a #5 como em \GPestado; #6: fila de prioridade em
+% ordem de peso, em pares aresta/peso; #7: o que o passo faz.
+\newcommand{\passoPrim}[7]{%
+\begin{tikzpicture}
+  \useasboundingbox (-1.1, -2.55) rectangle (8.8, 3.65);
+  \GPestado{#1}{#2}{#3}{#4}{#5}
+  \node [glegenda, anchor=center] at (7.9, 3.4) {fila de prioridade};
+  \foreach \a/\p [count=\i] in {#6}
+    \node [gquadro, fill=white] at (7.9, 3.4 - 0.42*\i) {\a\ (\p)};
+  \node [gtexto] at (-1.1, -1.05) {#7};
+  \node [gv, gpreto, minimum size=1em] at (-0.9, -2.35) {};
+  \node [glegenda] at (-0.65, -2.35) {na árvore};
+  \draw [gnova] (1.0, -2.35) -- (1.5, -2.35);
+  \node [glegenda] at (1.65, -2.35) {entra agora};
+  \draw [grej] (3.4, -2.35) -- (3.9, -2.35);
+  \node [glegenda] at (4.05, -2.35) {descartada: os dois extremos na árvore};
+\end{tikzpicture}}
+
+\newcommand{\kruskalPasso}[1]{\ifcase#1
+\or\passoKruskal{}{}{}{}{0}{\{0\} \{1\} \{2\} \{3\} \{4\} \{5\} \{6\} \{7\}}{início: arestas em ordem de peso; cada vértice é uma componente}
+\or\passoKruskal{}{4/5}{}{1/entra}{1}{\{0\} \{1\} \{2\} \{3\} \{4 5\} \{6\} \{7\}}{4-5, peso 1: 4 e 5 em componentes diferentes, entra}
+\or\passoKruskal{4/5}{1/3}{}{1/entra, 2/entra}{2}{\{0\} \{1 3\} \{2\} \{4 5\} \{6\} \{7\}}{1-3, peso 2: 1 e 3 em componentes diferentes, entra}
+\or\passoKruskal{4/5, 1/3}{0/2}{}{1/entra, 2/entra, 3/entra}{3}{\{0 2\} \{1 3\} \{4 5\} \{6\} \{7\}}{0-2, peso 3: 0 e 2 em componentes diferentes, entra}
+\or\passoKruskal{4/5, 1/3, 0/2}{0/1}{}{1/entra, 2/entra, 3/entra, 4/entra}{4}{\{0 1 2 3\} \{4 5\} \{6\} \{7\}}{0-1, peso 4: 0 e 1 em componentes diferentes, entra}
+\or\passoKruskal{4/5, 1/3, 0/2, 0/1}{}{2/3}{1/entra, 2/entra, 3/entra, 4/entra, 5/descarta}{5}{\{0 1 2 3\} \{4 5\} \{6\} \{7\}}{2-3, peso 5: 2 e 3 na mesma componente, descarta}
+\or\passoKruskal{4/5, 1/3, 0/2, 0/1}{2/4}{}{1/entra, 2/entra, 3/entra, 4/entra, 5/descarta, 6/entra}{6}{\{0 1 2 3 4 5\} \{6\} \{7\}}{2-4, peso 6: 2 e 4 em componentes diferentes, entra}
+\or\passoKruskal{4/5, 1/3, 0/2, 0/1, 2/4}{}{0/5}{1/entra, 2/entra, 3/entra, 4/entra, 5/descarta, 6/entra, 7/descarta}{7}{\{0 1 2 3 4 5\} \{6\} \{7\}}{0-5, peso 7: 0 e 5 na mesma componente, descarta}
+\or\passoKruskal{4/5, 1/3, 0/2, 0/1, 2/4}{4/6}{}{1/entra, 2/entra, 3/entra, 4/entra, 5/descarta, 6/entra, 7/descarta, 8/entra}{8}{\{0 1 2 3 4 5 6\} \{7\}}{4-6, peso 8: 4 e 6 em componentes diferentes, entra}
+\or\passoKruskal{4/5, 1/3, 0/2, 0/1, 2/4, 4/6}{}{3/6}{1/entra, 2/entra, 3/entra, 4/entra, 5/descarta, 6/entra, 7/descarta, 8/entra, 9/descarta}{9}{\{0 1 2 3 4 5 6\} \{7\}}{3-6, peso 9: 3 e 6 na mesma componente, descarta}
+\or\passoKruskal{4/5, 1/3, 0/2, 0/1, 2/4, 4/6}{6/7}{}{1/entra, 2/entra, 3/entra, 4/entra, 5/descarta, 6/entra, 7/descarta, 8/entra, 9/descarta, 10/entra}{10}{\{0 1 2 3 4 5 6 7\}}{6-7, peso 12: entra; a árvore tem $V-1 = 7$ arestas, fim}
+\fi}
+\newcommand{\primPasso}[1]{\ifcase#1
+\or\passoPrim{0}{}{}{}{0}{0-2/3, 0-1/4, 0-5/7}{início: 0 entra na árvore, e as arestas de 0 vão para a fila}
+\or\passoPrim{0, 2}{}{0/2}{}{2}{0-1/4, 2-3/5, 2-4/6, 0-5/7}{retira 0-2, peso 3: 2 entra, e 2-3 e 2-4 vão para a fila}
+\or\passoPrim{0, 2, 1}{0/2}{0/1}{}{1}{1-3/2, 2-3/5, 2-4/6, 0-5/7}{retira 0-1, peso 4: 1 entra, e 1-3 vai para a fila}
+\or\passoPrim{0, 2, 1, 3}{0/2, 0/1}{1/3}{}{3}{2-3/5, 2-4/6, 0-5/7, 3-6/9}{retira 1-3, peso 2: 3 entra, e 3-6 vai para a fila}
+\or\passoPrim{0, 2, 1, 3}{0/2, 0/1, 1/3}{}{2/3}{}{2-4/6, 0-5/7, 3-6/9}{retira 2-3, peso 5: 2 e 3 já estão na árvore, descarta}
+\or\passoPrim{0, 2, 1, 3, 4}{0/2, 0/1, 1/3}{2/4}{}{4}{4-5/1, 0-5/7, 4-6/8, 3-6/9}{retira 2-4, peso 6: 4 entra, e 4-5 e 4-6 vão para a fila}
+\or\passoPrim{0, 2, 1, 3, 4, 5}{0/2, 0/1, 1/3, 2/4}{4/5}{}{5}{0-5/7, 4-6/8, 3-6/9}{retira 4-5, peso 1: 5 entra, sem arestas novas para a fila}
+\or\passoPrim{0, 2, 1, 3, 4, 5}{0/2, 0/1, 1/3, 2/4, 4/5}{}{0/5}{}{4-6/8, 3-6/9}{retira 0-5, peso 7: 0 e 5 já estão na árvore, descarta}
+\or\passoPrim{0, 2, 1, 3, 4, 5, 6}{0/2, 0/1, 1/3, 2/4, 4/5}{4/6}{}{6}{3-6/9, 6-7/12}{retira 4-6, peso 8: 6 entra, e 6-7 vai para a fila}
+\or\passoPrim{0, 2, 1, 3, 4, 5, 6}{0/2, 0/1, 1/3, 2/4, 4/5, 4/6}{}{3/6}{}{6-7/12}{retira 3-6, peso 9: 3 e 6 já estão na árvore, descarta}
+\or\passoPrim{0, 2, 1, 3, 4, 5, 6, 7}{0/2, 0/1, 1/3, 2/4, 4/5, 4/6}{6/7}{}{7}{}{retira 6-7, peso 12: 7 entra; árvore completa, fim}
+\fi}
