@@ -193,6 +193,14 @@ Isso contradiz a suposição de que $T$ era mínima. No exemplo: uma árvore
 geradora sem 2-4 precisa atravessar o corte por 0-5 ou por 3-6, e trocar essa
 aresta por 2-4 diminui o peso.
 
+A figura abaixo faz a troca numa árvore geradora $T$ sem 2-4, que atravessa o
+corte só por 3-6 e pesa 39. Acrescentar $e$ = 2-4 fecha o ciclo
+2-4-6-3-1-0-2, que sai do lado \{0, 1, 2, 3\} por $e$ e volta por $f$ = 3-6.
+Retirar $f$ desfaz o ciclo, e a árvore nova pesa $39 - 9 + 6 = 36$. É a árvore
+geradora mínima de $G$.
+
+![Prova da propriedade do corte em três passos, no corte com 0, 1, 2 e 3 de um lado. Primeiro, uma árvore geradora sem a aresta 2-4, com as arestas 0-1, 0-2, 1-3, 3-6, 4-5, 4-6 e 6-7 e peso 39. Depois, a aresta 2-4 é acrescentada e fecha o ciclo 2-4-6-3-1-0-2, que cruza o corte por 2-4 e por 3-6. Por fim, a aresta 3-6 é retirada, e a árvore resultante pesa 36](13/img/prova_corte.svg)
+
 A propriedade do corte leva a um **algoritmo guloso**:
 
 1. comece sem nenhuma aresta;

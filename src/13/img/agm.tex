@@ -66,6 +66,58 @@
 \end{tikzpicture}}
 
 % ------------------------------------------------------------------
+% Prova da propriedade do corte, no corte de \grafoGPcorte. T é uma árvore
+% geradora sem e = 2-4, de peso 39. Acrescentar e fecha o ciclo
+% 2-4-6-3-1-0-2, que volta ao lado S por f = 3-6. Trocar f por e dá a árvore
+% mínima, de peso 36.
+\tikzset{
+  gciclo/.style = {draw=yellow!60, line width=8pt, line cap=round},
+  grotulo/.style = {font=\sffamily\small\bfseries, inner sep=1pt}
+}
+% #1: arestas da árvore; #2: arestas do ciclo; #3: aresta que entra (e);
+% #4: aresta que sai (f); #5: legenda.
+\newcommand{\provaCorteEstado}[5]{%
+  \fill [black!10, rounded corners=8pt] (-0.5, 1.0) -- (-0.5, 3.5) -- (3.5, 3.5)
+    -- (3.5, 2.4) -- (2.1, 1.0) -- cycle;
+  \Gnos
+  \foreach \a/\b in {#2} \draw [gciclo] (g\a) -- (g\b);
+  \Garestas
+  \foreach \a/\b in {#1} \draw [garv] (g\a) -- (g\b);
+  \foreach \a/\b in {#3} \draw [gnova] (g\a) -- (g\b);
+  \foreach \a/\b in {#4} \draw [grej] (g\a) -- (g\b);
+  \GPpesos
+  \Gnos
+  \node [grotulo, text=orange!90!black] at (2.5, 0.95) {$e$};
+  \node [grotulo, text=red!75!black] at (3.95, 2.5) {$f$};
+  \node [gtexto, anchor=north west, text width=6.8cm,
+    execute at begin node={\hyphenpenalty=10000}] at (-0.5, -0.45) {#5};
+}
+\newcommand{\provaCorteN}[1]{\ifcase#1
+\or\provaCorteEstado{0/1, 0/2, 1/3, 3/6, 4/5, 4/6, 6/7}{}{}{}%
+  {Uma árvore geradora $T$ sem $e$ = 2-4, de peso 39. Ela atravessa o corte
+   só por $f$ = 3-6.}
+\or\provaCorteEstado{0/1, 0/2, 1/3, 3/6, 4/5, 4/6, 6/7}%
+  {2/4, 4/6, 6/3, 3/1, 1/0, 0/2}{2/4}{}%
+  {Acrescentar $e$ fecha o ciclo 2-4-6-3-1-0-2. Ele sai do lado cinza por
+   $e$ e volta por $f$.}
+\or\provaCorteEstado{0/1, 0/2, 1/3, 4/5, 4/6, 6/7}{}{2/4}{3/6}%
+  {Retirar $f$ (peso 9) e manter $e$ (peso 6) dá outra árvore geradora, de
+   peso $39 - 9 + 6 = 36$.}
+\fi}
+\newcommand{\provaCorte}[1]{%
+\begin{tikzpicture}
+  \useasboundingbox (-0.5, -1.55) rectangle (6.4, 3.55);
+  \provaCorteN{#1}
+\end{tikzpicture}}
+% Os três passos lado a lado, para o roteiro.
+\newcommand{\provaCorteTudo}{%
+\begin{tikzpicture}
+  \begin{scope}\provaCorteN{1}\end{scope}
+  \begin{scope}[xshift=7.4cm]\provaCorteN{2}\end{scope}
+  \begin{scope}[xshift=14.8cm]\provaCorteN{3}\end{scope}
+\end{tikzpicture}}
+
+% ------------------------------------------------------------------
 % Mapa da atividade: a sede S e as escolas A a E, com o custo de cada ligação
 % possível em km de cabo.
 \newcommand{\Mnos}{%

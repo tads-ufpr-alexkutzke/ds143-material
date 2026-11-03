@@ -15,6 +15,7 @@ svg: pdf
 	pdftocairo -svg -f 6 -l 6 $(file).pdf heap.svg
 	pdftocairo -svg -f 7 -l 7 $(file).pdf heap_insere.svg
 	pdftocairo -svg -f 8 -l 8 $(file).pdf heap_retira.svg
+	pdftocairo -svg -f 9 -l 9 $(file).pdf prova_corte.svg
 
 dist:
 	latexmk -C $(file).tex

@@ -221,21 +221,29 @@ type GrafoP struct {
 \end{frame}
 
 \begin{frame}{Por que a propriedade do corte vale}
-	\small
-	Seja $e$ a aresta de travessia mais leve, e suponha uma árvore mínima $T$
-	sem $e$.
-	\begin{enumerate}
-		\item acrescentar $e$ a $T$ fecha um ciclo;
-		\item o ciclo atravessa o corte por $e$ e precisa voltar: alguma outra
-		      aresta $f$ do ciclo também é de travessia;
-		\item trocar $f$ por $e$ dá outra árvore geradora;
-		\item $e$ pesa menos que $f$, então a árvore nova pesa menos que $T$.
-	\end{enumerate}
-	Contradição: $T$ não era mínima.
-
-	\vspace{0.3cm}
-	No corte do slide anterior: sem 2-4, a árvore teria de usar 0-5 ou 3-6, e
-	trocar essa aresta por 2-4 diminuiria o peso.
+	\begin{columns}[T,onlytextwidth]
+		\begin{column}{0.44\textwidth}
+			\footnotesize
+			Seja $e$ a aresta de travessia mais leve, e suponha uma árvore
+			mínima $T$ sem $e$.
+			\begin{enumerate}
+				\item acrescentar $e$ a $T$ fecha um ciclo;
+				\item o ciclo atravessa o corte por $e$ e precisa voltar: alguma
+				      outra aresta $f$ do ciclo também é de travessia;
+				\item trocar $f$ por $e$ dá outra árvore geradora;
+				\item $e$ pesa menos que $f$, então a árvore nova pesa menos que
+				      $T$.
+			\end{enumerate}
+			Contradição: $T$ não era mínima.
+		\end{column}
+		\begin{column}{0.54\textwidth}
+			\centering
+			\scalebox{0.83}{%
+				\only<1>{\provaCorte{1}}%
+				\only<2>{\provaCorte{2}}%
+				\only<3>{\provaCorte{3}}}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Algoritmo guloso}
