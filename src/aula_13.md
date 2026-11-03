@@ -384,80 +384,10 @@ continuaria violada.
 
 ![Retirada do mínimo do heap 2, 5, 4, 9, 10, 6, 8, 12, em quatro passos. O 2 sai da raiz e o último elemento, 12, vai para o lugar dele. Os filhos do 12 são 5 e 4; ele troca com o 4. Os filhos agora são 6 e 8; ele troca com o 6. No índice 5 o 12 é folha e para. O vetor final é 4, 5, 6, 9, 10, 12, 8](13/img/heap_retira.svg)
 
-#### Heap de mínimo em Go
-
-O programa `heap.go`
-([ver no GitHub](https://github.com/tads-ufpr-alexkutzke/ds143-material/blob/main/src/13/codes/heap.go))
-implementa o heap de mínimo de inteiros e repete o exemplo das figuras.
-
-```go
-type HeapMin struct {
-    v []int
-}
-
-func (h *HeapMin) Insere(x int) {
-    h.v = append(h.v, x)
-    h.sobe(len(h.v) - 1)
-}
-
-func (h *HeapMin) RetiraMin() int {
-    menor := h.v[0]
-    ultimo := len(h.v) - 1
-    h.v[0] = h.v[ultimo]
-    h.v = h.v[:ultimo]
-    if len(h.v) > 0 {
-        h.desce(0)
-    }
-    return menor
-}
-
-// sobe troca o elemento do índice i com o pai enquanto ele for menor que o pai.
-func (h *HeapMin) sobe(i int) {
-    for i > 0 {
-        pai := (i - 1) / 2
-        if h.v[pai] <= h.v[i] {
-            return
-        }
-        h.v[pai], h.v[i] = h.v[i], h.v[pai]
-        i = pai
-    }
-}
-
-// desce troca o elemento do índice i com o menor dos filhos enquanto esse
-// filho for menor que ele.
-func (h *HeapMin) desce(i int) {
-    n := len(h.v)
-    for {
-        menor := i
-        esq, dir := 2*i+1, 2*i+2
-        if esq < n && h.v[esq] < h.v[menor] {
-            menor = esq
-        }
-        if dir < n && h.v[dir] < h.v[menor] {
-            menor = dir
-        }
-        if menor == i {
-            return // nenhum filho é menor: o elemento está no lugar
-        }
-        h.v[menor], h.v[i] = h.v[i], h.v[menor]
-        i = menor
-    }
-}
-```
-
-```
-$ go run heap.go
-heap inicial:   [2 9 4 12 10 6 8]
-insere 5:       [2 5 4 9 10 6 8 12]
-retira o menor: 2
-heap:           [4 5 6 9 10 12 8]
-retira todos:   4 5 6 8 9 10 12
-```
-
 O vetor do heap não fica ordenado: depois da retirada, o 8 está no fim, atrás
 do 12. Mesmo assim, retirar o menor repetidas vezes devolve os elementos em
-ordem crescente, e essa é a ideia do *heapsort*. Na fila do Prim, os elementos
-são arestas, e a comparação `<` entre inteiros dá lugar à comparação entre os
+ordem crescente, 4, 5, 6, 8, 9, 10 e 12, e essa é a ideia do *heapsort*. Na
+fila do Prim, os elementos são arestas, e a comparação passa a ser entre os
 pesos.
 
 #### O pacote `container/heap`
@@ -571,13 +501,8 @@ extremos entra na árvore, e sai no máximo uma vez. A fila chega a ter até $E$
 arestas, e cada operação custa $O(\log E)$. O total é $O(E \log E)$, com
 $O(E)$ de memória para a fila.
 
-A versão **ansiosa** (*eager*) guarda na fila um vértice por vez, com a aresta
-mais leve conhecida que o liga à árvore, e atualiza essa aresta quando aparece
-uma melhor. A fila tem no máximo $V$ itens e o custo cai para $O(E \log V)$,
-mas a fila precisa de uma operação a mais, a de diminuir a prioridade de um
-item, que o Sedgewick implementa como fila de prioridade indexada. Em grafo
-denso, um vetor simples no lugar da fila, percorrido inteiro a cada passo, dá
-$O(V^2)$ sem heap nenhum.
+Em grafo denso, um vetor simples no lugar da fila, percorrido inteiro a cada
+passo, dá $O(V^2)$ sem heap nenhum.
 
 ### Prim e Dijkstra
 
@@ -598,14 +523,18 @@ caminho mínimo é a aresta 0-5, com peso 7.
 |---|---|---|
 | O que cresce | uma floresta, que vira árvore no fim | uma árvore, a partir de $s$ |
 | Estrutura auxiliar | ordenação e Union-Find | fila de prioridade |
-| Custo | $O(E \log E)$ | $O(E \log E)$; $O(E \log V)$ na versão ansiosa |
+| Custo | $O(E \log E)$ | $O(E \log E)$ |
 | Grafo desconexo | encontra a floresta geradora mínima | encontra a árvore da componente de $s$ |
 
-Como um grafo sem arestas paralelas tem $E < V^2$, vale $\log E < 2 \log V$:
-$O(E \log E)$ e $O(E \log V)$ diferem por uma constante. Na prática, a escolha
-depende mais da forma como o grafo chega ao programa. Se as arestas chegam numa
-lista, o Kruskal não precisa montar as listas de adjacência. Se o grafo é denso
-e já está em matriz, o Prim com vetor faz $O(V^2)$.
+Como os dois algoritmos custam $O(E \log E)$, a escolha entre eles costuma
+depender da representação do grafo que o programa já tem. O Kruskal trabalha
+sobre uma lista com todas as arestas. Se o grafo chega nesse formato, por
+exemplo lido de um arquivo com uma aresta por linha, o Kruskal pode ser usado
+direto, sem montar as listas de adjacência. O Prim percorre as arestas de cada
+vértice que entra na árvore, e por isso precisa das listas de adjacência ou de
+uma matriz de adjacência. Em grafo denso, com $E$ próximo de $V^2$, como o
+grafo completo das escolas da seção 1, a versão do Prim com um vetor no lugar
+da fila, descrita no fim da seção 6, faz $O(V^2)$, menos que $O(E \log E)$.
 
 ## 8. Árvores geradoras e infraestrutura
 
@@ -788,7 +717,7 @@ que o custo é $O(V^2)$.
   Union-Find para descartar as que fechariam um ciclo. Custo $O(E \log E)$.
 * O algoritmo de Prim cresce uma árvore a partir de um vértice, sempre pela
   aresta mais leve que sai dela, guardada numa fila de prioridade. Custo
-  $O(E \log E)$ na versão preguiçosa, $O(E \log V)$ na ansiosa.
+  $O(E \log E)$.
 * O heap de mínimo é uma árvore binária completa, guardada num vetor, em que
   cada elemento é menor ou igual aos filhos. Na inserção, o novo elemento sobe;
   na retirada do mínimo, o último elemento vai para a raiz e desce. As duas

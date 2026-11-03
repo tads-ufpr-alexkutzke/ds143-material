@@ -397,41 +397,6 @@ Kruskal: arestas da mais leve para a mais pesada
 	\end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Inserção em Go}
-	\begin{columns}[T,onlytextwidth]
-		\begin{column}{0.44\textwidth}
-			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
-type HeapMin struct {
-	v []int
-}
-
-func (h *HeapMin) Insere(x int) {
-	h.v = append(h.v, x)
-	h.sobe(len(h.v) - 1)
-}
-\end{minted}
-		\end{column}
-		\begin{column}{0.54\textwidth}
-			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
-func (h *HeapMin) sobe(i int) {
-	for i > 0 {
-		pai := (i - 1) / 2
-		if h.v[pai] <= h.v[i] {
-			return
-		}
-		h.v[pai], h.v[i] = h.v[i], h.v[pai]
-		i = pai
-	}
-}
-\end{minted}
-		\end{column}
-	\end{columns}
-	\footnotesize
-	O novo elemento entra no fim do vetor e troca de lugar com o pai enquanto
-	for menor que ele. São no máximo $\lfloor \log_2 n \rfloor$ trocas, uma
-	por nível.
-\end{frame}
-
 \begin{frame}{Retirada do mínimo: o último elemento desce}
 	\begin{center}
 		\only<1>{\heapPasso{4}}
@@ -439,51 +404,6 @@ func (h *HeapMin) sobe(i int) {
 		\only<3>{\heapPasso{6}}
 		\only<4>{\heapPasso{7}}
 	\end{center}
-\end{frame}
-
-\begin{frame}[fragile]{Retirada do mínimo em Go}
-	\begin{columns}[T,onlytextwidth]
-		\begin{column}{0.44\textwidth}
-			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
-func (h *HeapMin) RetiraMin() int {
-	menor := h.v[0]
-	ultimo := len(h.v) - 1
-	h.v[0] = h.v[ultimo]
-	h.v = h.v[:ultimo]
-	if len(h.v) > 0 {
-		h.desce(0)
-	}
-	return menor
-}
-\end{minted}
-		\end{column}
-		\begin{column}{0.54\textwidth}
-			\begin{minted}[fontsize=\fontsize{7}{8.5}\selectfont]{go}
-func (h *HeapMin) desce(i int) {
-	n := len(h.v)
-	for {
-		menor := i
-		esq, dir := 2*i+1, 2*i+2
-		if esq < n && h.v[esq] < h.v[menor] {
-			menor = esq
-		}
-		if dir < n && h.v[dir] < h.v[menor] {
-			menor = dir
-		}
-		if menor == i {
-			return
-		}
-		h.v[menor], h.v[i] = h.v[i], h.v[menor]
-		i = menor
-	}
-}
-\end{minted}
-		\end{column}
-	\end{columns}
-	\footnotesize
-	O último elemento vai para a raiz e troca de lugar com o menor dos filhos
-	enquanto for maior que ele. Também são no máximo
-	$\lfloor \log_2 n \rfloor$ trocas.
 \end{frame}
 
 \begin{frame}[fragile]{Fila de prioridade com \texttt{container/heap}}
@@ -604,9 +524,6 @@ Prim a partir de 0
 		      vez: $O(E \log E)$, com até $E$ arestas na fila;
 		\item esta é a versão \textbf{preguiçosa}: arestas que deixaram de servir
 		      ficam na fila e são descartadas quando saem;
-		\item a versão \textbf{ansiosa} guarda na fila um vértice por vez, com a
-		      melhor aresta conhecida até ele: $O(E \log V)$, com no máximo $V$
-		      itens na fila;
 		\item em grafo denso, um vetor no lugar da fila dá $O(V^2)$, sem heap.
 	\end{itemize}
 \end{frame}
@@ -620,15 +537,15 @@ Prim a partir de 0
 			\midrule
 			o que cresce & uma floresta, que vira árvore no fim & uma árvore, a partir de $s$ \\
 			estrutura auxiliar & ordenação e Union-Find & fila de prioridade \\
-			custo & $O(E \log E)$ & $O(E \log E)$, ou $O(E \log V)$ na versão ansiosa \\
+			custo & $O(E \log E)$ & $O(E \log E)$ \\
 			grafo desconexo & floresta geradora mínima & só a componente de $s$ \\
 			\bottomrule
 		\end{tabular}
 	\end{center}
 
 	\vspace{0.3cm}
-	Como $E < V^2$, $\log E < 2 \log V$: $O(E \log E)$ e $O(E \log V)$ diferem
-	por uma constante.
+	Os dois têm o mesmo custo. A escolha depende mais da forma como o grafo
+	chega ao programa: lista de arestas ou listas de adjacência.
 \end{frame}
 
 % ==========================================
