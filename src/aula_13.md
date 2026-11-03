@@ -23,8 +23,9 @@
 Ao final desta aula você deve ser capaz de:
 
 1. Definir árvore geradora e árvore geradora mínima de um grafo com pesos;
-2. Enunciar a propriedade do corte e usá-la para justificar que uma aresta
-   pertence à árvore geradora mínima;
+2. Enunciar a propriedade do corte e usá-la para mostrar que uma aresta
+   pertence à árvore geradora mínima, indicando um corte em que ela é a aresta
+   de travessia mais leve;
 3. Executar à mão os algoritmos de Kruskal e de Prim, registrando a ordem em que
    as arestas entram na árvore e as que são descartadas;
 4. Explicar o papel do Union-Find no algoritmo de Kruskal e o da fila de
@@ -151,9 +152,11 @@ localidades da seção 1 tem $12^{10}$, cerca de 62 bilhões. Os algoritmos dest
 aula encontram a árvore mínima em tempo $O(E \log E)$.
 
 Quando os pesos são todos distintos, a árvore geradora mínima é única. Com
-pesos repetidos pode haver mais de uma, todas com o mesmo peso total. As
-justificativas desta aula supõem pesos distintos; os algoritmos funcionam nos
-dois casos.
+pesos repetidos pode haver mais de uma, todas com o mesmo peso total. A
+propriedade do corte, apresentada na seção 4, e a demonstração dela supõem
+pesos distintos. Com pesos repetidos, a propriedade vale numa forma mais fraca:
+a aresta de travessia mais leve pertence a alguma árvore geradora mínima.
+Kruskal e Prim encontram uma árvore mínima nos dois casos.
 
 A árvore geradora mínima só existe em grafo conexo. Num grafo desconexo, o
 equivalente é a **floresta geradora mínima**, com uma árvore mínima por
@@ -173,8 +176,9 @@ arestas de travessia são 0-5 (peso 7), 2-4 (peso 6) e 3-6 (peso 9).
 > **Propriedade do corte.** Em qualquer corte, a aresta de travessia de menor
 > peso pertence à árvore geradora mínima.
 
-No exemplo, a aresta 2-4 está na árvore mínima. A justificativa é uma troca.
-Seja $e$ a aresta de travessia mais leve, e suponha uma árvore mínima $T$ que
+No exemplo, a aresta de travessia mais leve é 2-4, e ela de fato está na
+árvore mínima. Para demonstrar a propriedade em qualquer corte, o argumento
+supõe o contrário e troca uma aresta da árvore por outra mais leve. Seja $e$ a aresta de travessia mais leve, e suponha uma árvore mínima $T$ que
 não contém $e$:
 
 1. acrescentar $e$ a $T$ fecha um ciclo, porque $T$ já liga os dois extremos de
