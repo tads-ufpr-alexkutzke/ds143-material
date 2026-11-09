@@ -4,38 +4,30 @@
 
 # Fundamentos
 
-- [Aula 01: Introdução a Go e Union-Find](./aula_01.md)
-- [Aula 02: Análise de algoritmos e conectividade dinâmica](./aula_02.md)
+- [Introdução a Go e Union-Find](./aula_01.md)
+- [Análise de algoritmos e conectividade dinâmica](./aula_02.md)
   - [Autoestudo: recursão, busca e ordenação](./aula_02_autoestudo.md)
-- [Aula 03: Atividade Avaliativa 1](./aula_03.md)
-- [Aula 04: Aula prática de fundamentos](./aula_04.md)
+- [Atividade Avaliativa 1](./aula_03.md)
+- [Aula prática de fundamentos](./aula_04.md)
 
 # Árvores
 
-- [Aula 05: Árvores e percursos](./aula_05.md)
-- [Aula 06: Árvores binárias de busca e AVL](./aula_06.md)
-- [Aula 07: Atividade Avaliativa 2](./aula_07.md)
-- [Aula 09: Árvores rubro-negras, árvores B e tries](./aula_09.md)
+- [Árvores e percursos](./aula_05.md)
+- [Árvores binárias de busca e AVL](./aula_06.md)
+- [Atividade Avaliativa 2](./aula_07.md)
+- [Árvores rubro-negras, árvores B e tries](./aula_09.md)
 
 # Tabelas de dispersão
 
-- [Aula 10: Tabelas de dispersão](./aula_10.md)
-- [Aula 11: Atividade Avaliativa 3](./aula_11.md)
+- [Tabelas de dispersão](./aula_10.md)
+- [Atividade Avaliativa 3](./aula_11.md)
 
 # Grafos
 
-- [Aula 12: Representação e percursos em grafos](./aula_12.md)
-- [Aula 13: Árvores geradoras mínimas](./aula_13.md)
-- [Aula 14: Caminhos mínimos](./aula_14.md)
-- [Aula 14: Atividade Avaliativa 4](./aula_14_aa.md)
-
-# Material anterior (em C, numeração antiga)
-
-- [Árvores e percursos](./aula_07_old.md)
-- [Árvores binárias de busca](./aula_08.md)
-- [Tabelas hash](./aula_10_old.md)
-- [Grafos não direcionados](./aula_11_old.md)
-- [Grafos direcionados e caminhos mínimos](./aula_12_old.md)
+- [Representação e percursos em grafos](./aula_12.md)
+- [Árvores geradoras mínimas](./aula_13.md)
+- [Caminhos mínimos](./aula_14.md)
+- [Atividade Avaliativa 4](./aula_14_aa.md)
 
 # Listas e trabalhos de semestres anteriores
 
