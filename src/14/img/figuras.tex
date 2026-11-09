@@ -1,0 +1,33 @@
+% Figuras do roteiro da aula de caminhos mínimos. Cada tikzpicture vira uma
+% página do PDF e um SVG (ver Makefile).
+
+\documentclass[tikz, border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usetikzlibrary{backgrounds, arrows.meta, positioning, calc}
+
+\tikzset{
+  every picture/.style = {background rectangle/.style={fill=white},
+    show background rectangle}
+}
+
+% Grafo G e estilos das aulas anteriores de grafos.
+\input{../../12/img/grafos.tex}
+\input{../../13/img/agm.tex}
+\input{dijkstra.tex}
+
+\begin{document}
+
+% 1. Árvore de caminhos mínimos de G a partir de 0.
+\grafoGPcaminhos
+
+% 2. Relaxação da aresta 1-3.
+\relaxacao
+
+% 3. Árvore geradora mínima e árvore de caminhos mínimos.
+\agmCaminhos
+
+% 4. Peso negativo.
+\pesoNegativo
+
+\end{document}

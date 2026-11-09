@@ -26,6 +26,8 @@
 
 - [Aula 12: Representação e percursos em grafos](./aula_12.md)
 - [Aula 13: Árvores geradoras mínimas](./aula_13.md)
+- [Aula 14: Caminhos mínimos](./aula_14.md)
+- [Aula 14: Atividade Avaliativa 4](./aula_14_aa.md)
 
 # Material anterior (em C, numeração antiga)
 

@@ -1,0 +1,122 @@
+% Figuras da aula de caminhos mínimos. Compartilhado entre o roteiro
+% (figuras.tex) e os slides. Usa o grafo G e os estilos de
+% ../../12/img/grafos.tex e ../../13/img/agm.tex, que precisam ser carregados
+% antes. Os estados do passo a passo seguem a saída de dijkstra.go.
+
+% Rótulos de distância de G. #1: oito valores, do vértice 0 ao vértice 7.
+\newcommand{\dRotulos}[1]{%
+  \foreach \d [count=\v from 0] in {#1} {
+    \pgfmathparse{{"left","above","right","above","below","below","below","above"}[\v]}
+    \edef\p{\pgfmathresult}
+    \node [gnota, \p=1pt of g\v] {$\d$};
+  }
+}
+
+% Um passo de Dijkstra. #1: vértices da árvore; #2: arestas da árvore; #3:
+% aresta que entra; #4: aresta do candidato descartado; #5: vértice que acabou
+% de entrar; #6: as oito distâncias; #7: fila de prioridade em ordem de
+% distância, em pares vértice/distância; #8: o que o passo faz.
+\newcommand{\passoDijkstra}[8]{%
+\begin{tikzpicture}
+  \useasboundingbox (-1.1, -2.55) rectangle (8.8, 3.65);
+  \GPestado{#1}{#2}{#3}{#4}{#5}
+  \dRotulos{#6}
+  \node [glegenda, anchor=center] at (7.9, 3.4) {fila de prioridade};
+  \foreach \a/\p [count=\i] in {#7}
+    \node [gquadro, fill=white] at (7.9, 3.4 - 0.42*\i) {\a\ (\p)};
+  \node [gtexto] at (-1.1, -1.05) {#8};
+  \node [gv, gpreto, minimum size=1em] at (-0.9, -2.35) {};
+  \node [glegenda] at (-0.65, -2.35) {na árvore};
+  \draw [gnova] (1.0, -2.35) -- (1.5, -2.35);
+  \node [glegenda] at (1.65, -2.35) {entra agora};
+  \draw [grej] (3.4, -2.35) -- (3.9, -2.35);
+  \node [glegenda] at (4.05, -2.35) {candidato descartado};
+\end{tikzpicture}}
+
+\newcommand{\dijkstraPasso}[1]{\ifcase#1
+\or\passoDijkstra{}{}{}{}{}{0,\infty,\infty,\infty,\infty,\infty,\infty,\infty}{0/0}{início: a distância de 0 é 0, e as outras são infinitas}
+\or\passoDijkstra{0}{}{}{}{0}{0,4,3,\infty,\infty,7,\infty,\infty}{2/3, 1/4, 5/7}{retira 0(0): 0 entra; relaxa 0-1, 0-2 e 0-5}
+\or\passoDijkstra{0, 2}{}{0/2}{}{2}{0,4,3,8,9,7,\infty,\infty}{1/4, 5/7, 3/8, 4/9}{retira 2(3): 2 entra; relaxa 2-3 e 2-4}
+\or\passoDijkstra{0, 2, 1}{0/2}{0/1}{}{1}{0,4,3,6,9,7,\infty,\infty}{3/6, 5/7, 3/8, 4/9}{retira 1(4): 1 entra; relaxa 1-3, e 6 é menor que 8}
+\or\passoDijkstra{0, 2, 1, 3}{0/2, 0/1}{1/3}{}{3}{0,4,3,6,9,7,15,\infty}{5/7, 3/8, 4/9, 6/15}{retira 3(6): 3 entra; relaxa 3-6}
+\or\passoDijkstra{0, 2, 1, 3, 5}{0/2, 0/1, 1/3}{0/5}{}{5}{0,4,3,6,8,7,15,\infty}{3/8, 4/8, 4/9, 6/15}{retira 5(7): 5 entra; relaxa 5-4, e 8 é menor que 9}
+\or\passoDijkstra{0, 2, 1, 3, 5}{0/2, 0/1, 1/3, 0/5}{}{2/3}{}{0,4,3,6,8,7,15,\infty}{4/8, 4/9, 6/15}{retira 3(8): 3 já está na árvore, com distância 6; descarta}
+\or\passoDijkstra{0, 2, 1, 3, 5, 4}{0/2, 0/1, 1/3, 0/5}{4/5}{}{4}{0,4,3,6,8,7,15,\infty}{4/9, 6/15}{retira 4(8): 4 entra; 4-6 daria 16, que não melhora 15}
+\or\passoDijkstra{0, 2, 1, 3, 5, 4}{0/2, 0/1, 1/3, 0/5, 4/5}{}{2/4}{}{0,4,3,6,8,7,15,\infty}{6/15}{retira 4(9): 4 já está na árvore, com distância 8; descarta}
+\or\passoDijkstra{0, 2, 1, 3, 5, 4, 6}{0/2, 0/1, 1/3, 0/5, 4/5}{3/6}{}{6}{0,4,3,6,8,7,15,27}{7/27}{retira 6(15): 6 entra; relaxa 6-7}
+\or\passoDijkstra{0, 2, 1, 3, 5, 4, 6, 7}{0/2, 0/1, 1/3, 0/5, 4/5, 3/6}{6/7}{}{7}{0,4,3,6,8,7,15,27}{}{retira 7(27): 7 entra; a fila ficou vazia, fim}
+\fi}
+
+% Árvore de caminhos mínimos de G a partir de 0, peso 38, com as distâncias.
+\newcommand{\grafoGPcaminhos}{%
+\begin{tikzpicture}
+  \Gnos
+  \Garestas
+  \foreach \a/\b in {0/1, 0/2, 0/5, 1/3, 3/6, 4/5, 6/7}
+    \draw [garv] (g\a) -- (g\b);
+  \GPpesos
+  \Gnos
+  \dRotulos{0,4,3,6,8,7,15,27}
+\end{tikzpicture}}
+
+% Relaxação da aresta 1-3, no trecho de G com os vértices 0, 1, 2 e 3.
+\newcommand{\relaxaEstado}[3]{%
+  \node [gv] (r0) at (0, 1.2) {0};
+  \node [gv] (r1) at (2, 2.4) {1};
+  \node [gv] (r2) at (2, 0) {2};
+  \node [gv] (r3) at (4, 1.2) {3};
+  \foreach \a/\b in {0/1, 0/2, 1/3, 2/3} \draw [ga] (r\a) -- (r\b);
+  \foreach \a/\b in {#1} \draw [garv] (r\a) -- (r\b);
+  \foreach \a/\b/\p in {0/1/4, 0/2/3, 1/3/2, 2/3/5}
+    \path (r\a) -- node [gpeso] {\p} (r\b);
+  \foreach \v in {0, 1, 2, 3} \node [gv] at (r\v) {\v};
+  \node [gnota, left=1pt of r0] {$0$};
+  \node [gnota, above=1pt of r1] {$4$};
+  \node [gnota, below=1pt of r2] {$3$};
+  \node [gnota, right=1pt of r3] {$#2$};
+  \node [gnota, text=black, anchor=north, align=center, text width=5.4cm]
+    at (2, -0.65) {#3};
+}
+\newcommand{\relaxacao}{%
+\begin{tikzpicture}
+  \begin{scope}
+    \relaxaEstado{0/2, 2/3}{8}{dist[3] = 8, com anterior[3] = 2}
+  \end{scope}
+  \begin{scope}[xshift=6.6cm]
+    \relaxaEstado{0/1, 1/3}{6}{$4 + 2 < 8$: dist[3] = 6, anterior[3] = 1}
+  \end{scope}
+\end{tikzpicture}}
+
+% Árvore geradora mínima e árvore de caminhos mínimos de G, a partir de 0.
+\newcommand{\agmCaminhos}{%
+\begin{tikzpicture}
+  \begin{scope}
+    \Gnos
+    \Garestas
+    \foreach \a/\b in {4/5, 1/3, 0/2, 0/1, 2/4, 4/6, 6/7}
+      \draw [garv] (g\a) -- (g\b);
+    \GPpesos
+    \Gnos
+    \node [gtexto, anchor=center] at (3, -0.8) {árvore geradora mínima: peso 36};
+  \end{scope}
+  \begin{scope}[xshift=7.4cm]
+    \Gnos
+    \Garestas
+    \foreach \a/\b in {0/1, 0/2, 0/5, 1/3, 3/6, 4/5, 6/7}
+      \draw [garv] (g\a) -- (g\b);
+    \GPpesos
+    \Gnos
+    \node [gtexto, anchor=center] at (3, -0.8) {caminhos mínimos de 0: peso 38};
+  \end{scope}
+\end{tikzpicture}}
+
+% Grafo dirigido com uma aresta de peso negativo, em que Dijkstra erra.
+\newcommand{\pesoNegativo}{%
+\begin{tikzpicture}
+  \node [gv] (n0) at (0, 0.9) {0};
+  \node [gv] (n1) at (3, 1.8) {1};
+  \node [gv] (n2) at (3, 0) {2};
+  \draw [arco] (n0) -- node [gpeso] {2} (n1);
+  \draw [arco] (n0) -- node [gpeso] {3} (n2);
+  \draw [arco] (n2) -- node [gpeso] {$-2$} (n1);
+\end{tikzpicture}}

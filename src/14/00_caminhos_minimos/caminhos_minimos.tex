@@ -1,0 +1,401 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemeSingapore}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, calc}
+% Grafo G e estilos das aulas anteriores de grafos, e as figuras desta aula,
+% compartilhadas com o roteiro.
+\input{../../12/img/grafos.tex}
+\input{../../13/img/agm.tex}
+\input{../img/dijkstra.tex}
+
+\setminted{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  frame=lines,
+  framesep=2mm,
+  baselinestretch=1.05,
+  tabsize=2
+}
+
+\apptocmd{\frame}{}{\justifying}{}
+
+\setbeamertemplate{navigation symbols}{}
+
+% slides de prática e de resposta: fundo e título em cores próprias
+\newcommand{\estilopratica}{%
+  \setbeamercolor{frametitle}{fg=orange!85!black}%
+  \setbeamercolor{background canvas}{bg=orange!8}}
+\newcommand{\estiloresposta}{%
+  \setbeamercolor{frametitle}{fg=green!45!black}%
+  \setbeamercolor{background canvas}{bg=green!6}}
+
+\title{14 - Caminhos mínimos}
+\author{Prof. Alex Kutzke}
+\date{Novembro de 2026}
+
+\begin{document}
+
+% ==========================================
+\begin{frame}
+	\begin{center}
+		\large{Setor de Educação Profissional e Tecnológica}\\
+		Tecnologia em Análise e Desenvolvimento de Sistemas\\
+		\vspace{1cm}
+		\small{DS143 - Estruturas de Dados II}
+	\end{center}
+	\titlepage
+\end{frame}
+
+% ==========================================
+\begin{frame}{Objetivos da aula}
+	\footnotesize
+	Ao final desta aula você deve ser capaz de:
+	\begin{enumerate}
+		\item Definir caminho mínimo e distância em um grafo com pesos, e mostrar
+		      com um exemplo por que a busca em largura não os encontra;
+		\item Executar à mão o algoritmo de Dijkstra, registrando as distâncias,
+		      a fila de prioridade e os candidatos descartados;
+		\item Explicar a relaxação de uma aresta e por que o algoritmo exige pesos
+		      não negativos;
+		\item Justificar o custo do algoritmo;
+		\item Diferenciar a árvore de caminhos mínimos da árvore geradora mínima.
+	\end{enumerate}
+	\vspace{0.1cm}
+	Este conteúdo cai na Prova 2.
+\end{frame}
+
+% ==========================================
+\begin{frame}{Roteiro}
+	\tableofcontents
+\end{frame}
+
+% ==========================================
+\section{O problema}
+
+\begin{frame}[fragile]{Demonstração: rotas até as escolas}
+	\begin{minted}[fontsize=\scriptsize]{text}
+$ go run rotas.go
+Árvore geradora mínima              Árvore de caminhos mínimos, de S
+|           .K....       ...G   |   |            K           ...G   |
+|   A..   ..      ...F...       |   |   A..       .      F...       |
+|      ..B.                     |   |      ..B.   .     .           |
+|          ..                   |   |          ..  .  ..            |
+|            ..                 |   |            ... .              |
+|              .S...            |   |              .S...            |
+|              .    ....H       |   |              . .  ....H       |
+|     C.      .          ..     |   |     C.      .  .       ..     |
+|   ..  ...  .             ..   |   |       ...  .    .        ..   |
+| D.       .E...             .I |   | D.........E     .          .I |
+|               ...J            |   |                  J            |
+81.6 km de estrada                  95.1 km de estrada
+\end{minted}
+	\footnotesize
+	\begin{itemize}
+		\item as mesmas 21 estradas e as mesmas 12 localidades, com duas perguntas
+		      diferentes;
+		\item da sede até a escola F: 23,1 km pela árvore geradora mínima e 9,4 km
+		      pelo caminho mínimo.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Caminho mínimo}
+	\begin{columns}[c]
+		\begin{column}{0.46\textwidth}
+			\footnotesize
+			\begin{itemize}
+				\item \textbf{peso de um caminho}: soma dos pesos das arestas;
+				\item \textbf{caminho mínimo} de $s$ a $v$: caminho de menor peso entre
+				      eles;
+				\item \textbf{distância} de $s$ a $v$: o peso do caminho mínimo.
+			\end{itemize}
+			\vspace{0.2cm}
+			Em $G$, de 0 a 6:
+			\begin{itemize}
+				\item 0-1-3-6: $4 + 2 + 9 = 15$;
+				\item 0-5-4-6: $7 + 1 + 8 = 16$;
+				\item 0-2-4-6: $3 + 6 + 8 = 17$.
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.52\textwidth}
+			\begin{center}
+				\scalebox{0.82}{\grafoGP}
+			\end{center}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{A busca em largura não olha os pesos}
+	\begin{columns}[c]
+		\begin{column}{0.46\textwidth}
+			\footnotesize
+			\begin{itemize}
+				\item a busca em largura minimiza o número de arestas;
+				\item na árvore ao lado, ela chega ao 4 por 0-2-4, com peso 9;
+				\item 0-5-4 também tem duas arestas, e o peso é 8.
+			\end{itemize}
+			\vspace{0.2cm}
+			Com pesos, o próximo vértice a visitar depende da distância percorrida
+			até ele.
+		\end{column}
+		\begin{column}{0.52\textwidth}
+			\begin{center}
+				\scalebox{0.82}{\grafoGPbfs}
+			\end{center}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Relaxação de uma aresta}
+	\footnotesize
+	O vetor \texttt{dist} guarda o peso do melhor caminho conhecido até cada
+	vértice, e o vetor \texttt{anterior}, o vértice que vem antes dele nesse
+	caminho.
+	\begin{center}
+		\scalebox{0.72}{\relaxacao}
+	\end{center}
+	\begin{minted}[fontsize=\scriptsize]{go}
+if dist[v]+a.Peso < dist[w] { // passar por v melhora o caminho até w?
+    dist[w] = dist[v] + a.Peso
+    anterior[w] = v
+}
+\end{minted}
+\end{frame}
+
+% ==========================================
+\section{Dijkstra}
+
+\begin{frame}{Algoritmo de Dijkstra}
+	\begin{enumerate}
+		\item Comece com \texttt{dist[s]} = 0, as outras distâncias infinitas e
+		      $s$ na fila de prioridade;
+		\item Retire da fila o candidato de menor distância;
+		\item Se o vértice já está na árvore, descarte o candidato;
+		\item Senão, coloque o vértice na árvore e relaxe as arestas dele. Cada
+		      melhora põe um novo candidato na fila;
+		\item Repita até a fila esvaziar.
+	\end{enumerate}
+	\vspace{0.3cm}
+	\footnotesize
+	Um vértice pode ter vários candidatos na fila, um para cada melhora da
+	distância. Só o menor deles coloca o vértice na árvore.
+\end{frame}
+
+\begin{frame}{Dijkstra passo a passo}
+	\begin{center}
+		\only<1>{\dijkstraPasso{1}}%
+		\only<2>{\dijkstraPasso{2}}%
+		\only<3>{\dijkstraPasso{3}}%
+		\only<4>{\dijkstraPasso{4}}%
+		\only<5>{\dijkstraPasso{5}}%
+		\only<6>{\dijkstraPasso{6}}%
+		\only<7>{\dijkstraPasso{7}}%
+		\only<8>{\dijkstraPasso{8}}%
+		\only<9>{\dijkstraPasso{9}}%
+		\only<10>{\dijkstraPasso{10}}%
+		\only<11>{\dijkstraPasso{11}}%
+	\end{center}
+\end{frame}
+
+{\estilopratica
+\begin{frame}{Prática: Dijkstra a partir do vértice 3}
+	\begin{columns}[c]
+		\begin{column}{0.46\textwidth}
+			\footnotesize
+			Tempo: 5 minutos. Em dupla, no papel:
+			\begin{itemize}
+				\item execute o algoritmo em $G$ a partir do vértice 3;
+				\item anote a ordem em que os vértices entram na árvore;
+				\item anote a distância de cada vértice;
+				\item identifique o candidato descartado.
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.52\textwidth}
+			\begin{center}
+				\scalebox{0.82}{\grafoGP}
+			\end{center}
+		\end{column}
+	\end{columns}
+\end{frame}
+}
+
+{\estiloresposta
+\begin{frame}{Resposta: Dijkstra a partir do vértice 3}
+	\footnotesize
+	Ordem de entrada: 3, 1, 2, 0, 6, 4, 5, 7.
+	\begin{center}
+		\begin{tabular}{lcccccccc}
+			\toprule
+			vértice & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+			\midrule
+			\texttt{dist} & 6 & 2 & 5 & 0 & 11 & 12 & 9 & 21 \\
+			\texttt{anterior} & 1 & 3 & 3 & - & 2 & 4 & 3 & 6 \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	\begin{itemize}
+		\item quando o 0 entra, com distância 6, a aresta 0-5 põe na fila o
+		      candidato 5(13);
+		\item quando o 4 entra, com distância 11, a aresta 4-5 põe o candidato
+		      5(12), que sai primeiro;
+		\item o candidato 5(13) sai depois, com o 5 já na árvore, e é descartado.
+	\end{itemize}
+\end{frame}
+}
+
+\begin{frame}[fragile]{Dijkstra em Go: candidatos e início}
+	\begin{minted}[fontsize=\scriptsize]{go}
+// Candidato é um vértice que pode entrar na árvore, com a distância da
+// origem até ele pelo caminho encontrado até aqui.
+type Candidato struct {
+    V    int
+    Dist float64
+}
+
+func Dijkstra(g *GrafoP, s int) (dist []float64, anterior []int) {
+    dist = make([]float64, g.V())
+    anterior = make([]int, g.V())
+    for v := range dist {
+        dist[v] = math.Inf(1) // ainda sem caminho
+        anterior[v] = -1
+    }
+    naArvore := make([]bool, g.V())
+    fila := &FilaCandidatos{}
+\end{minted}
+	\footnotesize
+	\texttt{FilaCandidatos} tem a forma de \texttt{FilaArestas} do Prim, com
+	\texttt{Dist} como prioridade.
+\end{frame}
+
+\begin{frame}[fragile]{Dijkstra em Go: laço principal}
+	\begin{minted}[fontsize=\scriptsize]{go}
+    dist[s] = 0
+    heap.Push(fila, Candidato{s, 0})
+    for fila.Len() > 0 {
+        c := heap.Pop(fila).(Candidato)
+        v := c.V
+        if naArvore[v] {
+            continue // v já entrou por um caminho menor
+        }
+        naArvore[v] = true
+        for _, a := range g.adj[v] {
+            w := a.Outro(v)
+            if !naArvore[w] && dist[v]+a.Peso < dist[w] {
+                dist[w] = dist[v] + a.Peso
+                anterior[w] = v
+                heap.Push(fila, Candidato{w, dist[w]})
+            }
+        }
+    }
+    return dist, anterior
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Por que o menor candidato já é a distância}
+	\begin{itemize}
+		\item o candidato $v$ tem a menor distância da fila, $d$;
+		\item qualquer outro caminho de $s$ a $v$ precisa sair da árvore por alguma
+		      aresta $x$-$y$, com $x$ na árvore e $y$ fora;
+		\item até $y$, esse caminho pesa pelo menos \texttt{dist[y]}, e o candidato
+		      de $y$ na fila tem distância maior ou igual a $d$;
+		\item de $y$ até $v$, os pesos não são negativos, e o caminho inteiro pesa
+		      pelo menos $d$.
+	\end{itemize}
+	\vspace{0.3cm}
+	\footnotesize
+	Em $G$, a partir de 0, o vértice 3 sai da fila com distância 6. Os outros
+	candidatos têm distância 7 ou mais, e nenhum caminho que passe por eles chega
+	ao 3 com peso menor.
+\end{frame}
+
+\begin{frame}{Pesos negativos}
+	\begin{columns}[c]
+		\begin{column}{0.58\textwidth}
+			\footnotesize
+			\begin{itemize}
+				\item o vértice 1 entra na árvore com distância 2;
+				\item depois, o vértice 2 entra com distância 3, e a aresta 2-1 daria
+				      $3 + (-2) = 1$;
+				\item o 1 já está na árvore, e a distância fica errada: 2 em vez de 1.
+			\end{itemize}
+			\vspace{0.2cm}
+			Em grafo não dirigido, uma aresta negativa é um ciclo: ir e voltar por
+			ela reduz o peso sem limite. Pesos negativos pedem outro algoritmo, como
+			o de Bellman-Ford, que não é tratado nesta disciplina.
+		\end{column}
+		\begin{column}{0.40\textwidth}
+			\begin{center}
+				\scalebox{1.1}{\pesoNegativo}
+			\end{center}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Custo do Dijkstra}
+	\begin{itemize}
+		\item uma aresta só é relaxada com sucesso quando o primeiro dos seus
+		      extremos entra na árvore;
+		\item a fila recebe no máximo $E + 1$ candidatos, e cada operação custa
+		      $O(\log E)$;
+		\item total: $O(E \log E)$, igual a $O(E \log V)$, porque $\log E \le 2 \log
+			      V$;
+		\item em grafo denso, um vetor no lugar da fila dá $O(V^2)$, sem heap.
+	\end{itemize}
+	\vspace{0.3cm}
+	\footnotesize
+	Com todas as arestas de mesmo peso, a busca em largura encontra o caminho
+	mínimo em $O(V + E)$, sem fila de prioridade.
+\end{frame}
+
+\begin{frame}{Dijkstra e Prim}
+	\begin{center}
+		\scalebox{0.62}{\agmCaminhos}
+	\end{center}
+	\scriptsize
+	\begin{center}
+		\begin{tabular}{lll}
+			\toprule
+			 & Prim & Dijkstra \\
+			\midrule
+			Prioridade na fila & peso da aresta & distância da origem \\
+			Resultado & árvore geradora mínima & árvore de caminhos mínimos \\
+			Depende da origem & não, com pesos distintos & sim \\
+			Custo & $O(E \log E)$ & $O(E \log E)$ \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+\end{frame}
+
+% ==========================================
+\section{Fechamento}
+
+\begin{frame}{Atividade Avaliativa 4}
+	\begin{itemize}
+		\item o restante do encontro é da Atividade Avaliativa 4, com o enunciado e
+		      o esqueleto na UFPR Virtual;
+		\item depois: exercícios do roteiro da aula, sem entrega e sem nota. O
+		      conteúdo cai na Prova 2;
+		\item rodar \texttt{dijkstra.go} e \texttt{rotas.go}, trocando as arestas e
+		      as estradas;
+		\item leitura: Sedgewick, seção 4.4; Cormen, capítulo 24.
+	\end{itemize}
+
+	\vspace{0.4cm}
+	Próxima aula, 18/11: revisão para a Prova 2, que é em 25/11.
+\end{frame}
+
+\end{document}
