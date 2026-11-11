@@ -88,14 +88,14 @@ Um exemplo possível de execução com o grafo acima é o seguinte:
 
 A primeira linha lê a quantidade de vértices (V). Na sequência são esperadas a definição de `V-1` arestas (`vertice vertice peso`). Por fim, o programa aguarda uma lista de pares de vértices e responde, para cada par, a menor distância entre eles. A execução termina com Ctrl+D ou com o par -1 -1.
 
-O arquivo `exercicios.go` possui a estrutura de as funções que devem ser implementadas como resposta a essa atividade. A compreensão do restante do código é parte da atividade. 
+O arquivo `exercicios.go` possui a estrutura das funções que devem ser implementadas como resposta a essa atividade. A compreensão do restante do código é parte da atividade. 
 
-Ao terminar, `go test ./...` passa inteiro.
+Ao terminar, `go test ./...` deve passar em todos os testes.
 
 ## Parte 2: explicação da complexidade
 
 Explique, no espaço indicado no arquivo `respostas.md`, por que sua implementação
-respeita a complexidade computacional exigida pelo enunciado: preprocessamento do grafo
+respeita a complexidade computacional exigida pelo enunciado: pré-processamento do grafo
 em tempo linear e apresentação da distância entre qualquer par de vértices em tempo constante.
 
 ## Entrega
