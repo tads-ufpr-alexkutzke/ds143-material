@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trabalho prático: situação da etapa 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #f3f5f7; --panel: #ffffff; --fg: #1b232c; --muted: #586370; --line: #d5dbe1;
+  --code-bg: #e9edf1; --accent: #1f5fbf; --accent-soft: #dfe8f7;
+  --ok: #1f7a4d; --ok-soft: #dcefe4; --nao: #c92f2a; --nao-soft: #f8dedd;
+  --aviso: #6b4d00; --aviso-soft: #fff1c7; --marca: #fff6d6;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10151b; --panel: #161d25; --fg: #e2e7ed; --muted: #97a3b0; --line: #2a343f;
+    --code-bg: #1c252f; --accent: #7aa7ff; --accent-soft: #1d2a40;
+    --ok: #3fbf7f; --ok-soft: #173326; --nao: #ff5a52; --nao-soft: #3a1b1a;
+    --aviso: #ffd977; --aviso-soft: #3d3214; --marca: #2c2a17;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.88em; background: var(--code-bg);
+       padding: 0.1em 0.35em; border-radius: 4px; white-space: nowrap; }
+.pagina { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+header .rotulo { font: 600 14px/1 var(--display); letter-spacing: 0.14em;
+                 text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+h1 { font: 700 44px/1.05 var(--display); margin: 0 0 12px; }
+h2 { font: 700 30px/1.1 var(--display); margin: 0 0 16px; }
+h3 { font: 600 20px/1.2 var(--display); letter-spacing: 0.02em; margin: 20px 0 8px; }
+.meta { color: var(--muted); font-size: 15px; margin: 0 0 20px; }
+.meta b { color: var(--fg); font-weight: 600; }
+.aviso { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+         border-radius: 8px; padding: 14px 18px; margin: 0 0 24px; }
+.aviso p { margin: 0 0 8px; } .aviso p:last-child { margin: 0; }
+.ferramentas { position: sticky; top: 0; z-index: 2; background: var(--bg);
+               display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+               padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.ferramentas label { font: 600 15px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ferramentas input { font: 16px var(--mono); padding: 8px 12px; border: 1px solid var(--line);
+                     border-radius: 6px; background: var(--panel); color: var(--fg); width: 15ch; }
+.ferramentas input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ferramentas nav { margin-left: auto; display: flex; gap: 8px; }
+.ferramentas nav a { font: 600 16px/1 var(--display); letter-spacing: 0.04em; text-decoration: none;
+                     padding: 8px 14px; border-radius: 6px; background: var(--accent-soft); }
+#achado { font-size: 14px; color: var(--muted); }
+.turma { margin-bottom: 48px; scroll-margin-top: 80px; }
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.numeros div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.numeros b { display: block; font: 700 32px/1 var(--display); font-variant-numeric: tabular-nums; }
+.numeros span { font-size: 13px; color: var(--muted); line-height: 1.3; display: block; margin-top: 4px; }
+.tabela { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th { text-align: left; font: 600 14px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase;
+     color: var(--muted); padding: 12px 14px; border-bottom: 2px solid var(--line); white-space: nowrap; }
+td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--code-bg); }
+tr.marcado td { background: var(--marca) !important; }
+tr.oculto { display: none; }
+td.grr { font-family: var(--mono); font-size: 14px; white-space: nowrap; }
+.mod, .sit, .obs, .det { display: inline-block; font-size: 13px; line-height: 1.3;
+                          padding: 3px 9px; border-radius: 999px; margin: 1px 4px 1px 0; white-space: nowrap; }
+.mod.sem { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.mod.com { background: var(--code-bg); color: var(--fg); }
+.mod.nd { background: var(--code-bg); color: var(--muted); font-style: italic; }
+.sit.ok { background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+.sit.nao { background: var(--nao-soft); color: var(--nao); font-weight: 600; }
+.det { color: var(--muted); padding-left: 2px; }
+.obs { background: var(--aviso-soft); color: var(--aviso); }
+.obs.grave { background: var(--nao-soft); color: var(--nao); font-weight: 600; }
+.vazio { color: var(--muted); font-size: 13px; }
+td.obs-col { min-width: 260px; }
+.legenda { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 22px 18px; }
+.legenda dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.legenda dt { padding-top: 2px; } .legenda dd { margin: 0; font-size: 15px; }
+@media (max-width: 640px) {
+  h1 { font-size: 34px; }
+  .ferramentas nav { margin-left: 0; }
+  .legenda dl { grid-template-columns: 1fr; }
+  .legenda dd { margin-bottom: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <p class="rotulo">DS143 Estruturas de Dados II, trabalho prático 2026/2</p>
+    <h1>Situação da etapa 1</h1>
+    <p class="meta">Atualizado em <b>12/11/2026</b>. Prazo da etapa 1: <b>11/11/2026, 23h59</b>.
+      Próxima entrega: etapa 2, <b>29/11/2026, 23h59</b>. <a href="./">Enunciado</a>.</p>
+  </header>
+
+  <div class="aviso">
+    <p>Página temporária. Ela mostra, por GRR, a modalidade registrada e a situação da entrega
+      da etapa 1, sem nome e sem nota. Confira a sua linha. Se alguma informação estiver errada,
+      avise o professor por e-mail.</p>
+    <p>Os desvios da coluna "Observação" foram aceitos nesta etapa e não descontam nota, com uma
+      exceção: a falta do relatório de projeto na modalidade sem IA desconta no item
+      correspondente. Corrija os desvios na etapa 2: um único <code>.zip</code> com a raiz do
+      módulo Go (<code>go.mod</code> e pacote <code>main</code> na raiz do zip), o
+      <code>README.md</code> com nome e GRR de cada pessoa da dupla e nenhum binário compilado.</p>
+  </div>
+
+  <div class="ferramentas">
+    <label for="busca">Seu GRR</label>
+    <input id="busca" type="search" inputmode="numeric" placeholder="2025xxxx" autocomplete="off">
+    <span id="achado" aria-live="polite"></span>
+    <nav><a href="#noite">Noite</a><a href="#tarde">Tarde</a><a href="#legenda">Legenda</a></nav>
+  </div>
+
+    <section class="turma" id="noite">
+      <h2>Turma da noite (TADSN4)</h2>
+      
+      <div class="numeros">
+        <div><b>30</b><span>de 41 entregaram</span></div>
+        <div><b>11</b><span>sem entrega</span></div>
+        <div><b>21</b><span>na modalidade sem IA</span></div>
+        <div><b>20</b><span>na modalidade com IA, 15 por falta de declaração</span></div>
+        <div><b>15</b><span>com observação de forma</span></div>
+      </div>
+      <div class="tabela">
+      <table>
+        <thead><tr><th>GRR</th><th>Modalidade</th><th>Etapa 1</th><th>Observação</th></tr></thead>
+        <tbody>
+        <tr data-grr="GRR20193841"><td class="grr">GRR20193841</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20204495"><td class="grr">GRR20204495</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20205194"><td class="grr">GRR20205194</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20211643"><td class="grr">GRR20211643</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20214717"><td class="grr">GRR20214717</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20214905"><td class="grr">GRR20214905</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20220045"><td class="grr">GRR20220045</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20223396"><td class="grr">GRR20223396</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20223398"><td class="grr">GRR20223398</td><td><span class="mod com">com IA</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20224358"><td class="grr">GRR20224358</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20230997"><td class="grr">GRR20230997</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20231009"><td class="grr">GRR20231009</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20241778"><td class="grr">GRR20241778</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span></td></tr>
+        <tr data-grr="GRR20241786"><td class="grr">GRR20241786</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20241787"><td class="grr">GRR20241787</td><td><span class="mod sem">sem IA</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20243595"><td class="grr">GRR20243595</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20244373"><td class="grr">GRR20244373</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20246065"><td class="grr">GRR20246065</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20250166"><td class="grr">GRR20250166</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20250572"><td class="grr">GRR20250572</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20250818"><td class="grr">GRR20250818</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20250925"><td class="grr">GRR20250925</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20251085"><td class="grr">GRR20251085</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório diferente do enviado pelo par</span><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20251337"><td class="grr">GRR20251337</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20251501"><td class="grr">GRR20251501</td><td><span class="mod sem">sem IA</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20251567"><td class="grr">GRR20251567</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20251827"><td class="grr">GRR20251827</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20252106"><td class="grr">GRR20252106</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20252109"><td class="grr">GRR20252109</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span></td></tr>
+        <tr data-grr="GRR20252155"><td class="grr">GRR20252155</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span><span class="det">envio do par</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20252657"><td class="grr">GRR20252657</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span></td></tr>
+        <tr data-grr="GRR20253150"><td class="grr">GRR20253150</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20253376"><td class="grr">GRR20253376</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span></td></tr>
+        <tr data-grr="GRR20255348"><td class="grr">GRR20255348</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório diferente do enviado pelo par</span><span class="obs">arquivos extras no zip</span></td></tr>
+        <tr data-grr="GRR20255395"><td class="grr">GRR20255395</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20255502"><td class="grr">GRR20255502</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span><span class="det">por e-mail</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20255551"><td class="grr">GRR20255551</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20255562"><td class="grr">GRR20255562</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20255632"><td class="grr">GRR20255632</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs grave">sem relatório de projeto</span><span class="obs">módulo em subpasta</span><span class="obs">arquivos extras no zip</span></td></tr>
+        <tr data-grr="GRR20255750"><td class="grr">GRR20255750</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20255824"><td class="grr">GRR20255824</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span><span class="obs">módulo em subpasta</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section class="turma" id="tarde">
+      <h2>Turma da tarde (TADSV4)</h2>
+      
+      <div class="numeros">
+        <div><b>30</b><span>de 35 entregaram</span></div>
+        <div><b>5</b><span>sem entrega</span></div>
+        <div><b>23</b><span>na modalidade sem IA</span></div>
+        <div><b>12</b><span>na modalidade com IA, 8 por falta de declaração</span></div>
+        <div><b>17</b><span>com observação de forma</span></div>
+      </div>
+      <div class="tabela">
+      <table>
+        <thead><tr><th>GRR</th><th>Modalidade</th><th>Etapa 1</th><th>Observação</th></tr></thead>
+        <tbody>
+        <tr data-grr="GRR20193747"><td class="grr">GRR20193747</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20211610"><td class="grr">GRR20211610</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span><span class="det">por e-mail</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20221098"><td class="grr">GRR20221098</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20230937"><td class="grr">GRR20230937</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20240007"><td class="grr">GRR20240007</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">binário compilado no zip</span><span class="obs">LEIAME.md no lugar do README.md</span><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20240632"><td class="grr">GRR20240632</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20246205"><td class="grr">GRR20246205</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span><span class="obs">LEIAME.md no lugar do README.md</span><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20246221"><td class="grr">GRR20246221</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">README.md sem GRR</span><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20250064"><td class="grr">GRR20250064</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span><span class="det">envio do par</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20250215"><td class="grr">GRR20250215</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20250662"><td class="grr">GRR20250662</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20250751"><td class="grr">GRR20250751</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20251037"><td class="grr">GRR20251037</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20251178"><td class="grr">GRR20251178</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20251192"><td class="grr">GRR20251192</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20251303"><td class="grr">GRR20251303</td><td><span class="mod sem">sem IA</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20251898"><td class="grr">GRR20251898</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">kit inteiro no zip, com executáveis</span><span class="obs">módulo em subpasta</span><span class="obs">sem README.md</span></td></tr>
+        <tr data-grr="GRR20251916"><td class="grr">GRR20251916</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20252054"><td class="grr">GRR20252054</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">repositório inteiro no zip, com executáveis</span><span class="obs">módulo em subpasta</span><span class="obs">relatório com outro nome</span><span class="obs">README.md fora do módulo</span></td></tr>
+        <tr data-grr="GRR20252190"><td class="grr">GRR20252190</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20252408"><td class="grr">GRR20252408</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20252723"><td class="grr">GRR20252723</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span></td></tr>
+        <tr data-grr="GRR20252884"><td class="grr">GRR20252884</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">relatório com outro nome</span></td></tr>
+        <tr data-grr="GRR20253136"><td class="grr">GRR20253136</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20253191"><td class="grr">GRR20253191</td><td><span class="mod sem">sem IA</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
+        <tr data-grr="GRR20254073"><td class="grr">GRR20254073</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">repositório inteiro no zip, com executáveis</span><span class="obs">módulo em subpasta</span><span class="obs">relatório com outro nome</span><span class="obs">README.md fora do módulo</span></td></tr>
+        <tr data-grr="GRR20254201"><td class="grr">GRR20254201</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20254293"><td class="grr">GRR20254293</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20254382"><td class="grr">GRR20254382</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20254383"><td class="grr">GRR20254383</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20254762"><td class="grr">GRR20254762</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20254788"><td class="grr">GRR20254788</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
+        <tr data-grr="GRR20255289"><td class="grr">GRR20255289</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20255367"><td class="grr">GRR20255367</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span><span class="det">na tarefa da etapa 2</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        <tr data-grr="GRR20255692"><td class="grr">GRR20255692</td><td><span class="mod sem">sem IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+  <section class="turma" id="legenda">
+    <h2>Legenda</h2>
+    <div class="legenda">
+      <h3>Modalidade</h3>
+      <dl>
+        <dt><span class="mod sem">sem IA</span></dt>
+        <dd>Declaração de que o trabalho é feito sem IA generativa. A nota vem da suíte de testes,
+          do relatório de projeto e da defesa presencial, até 100 pontos.</dd>
+        <dt><span class="mod com">com IA</span></dt>
+        <dd>Declaração de uso de IA. A nota vem só da suíte de testes, até 60 pontos.</dd>
+        <dt><span class="mod nd">com IA (sem declaração)</span></dt>
+        <dd>Nenhuma declaração registrada até 28/10, no formulário do UFPR Virtual ou por e-mail.
+          Como diz o enunciado, o trabalho fica na modalidade com IA.</dd>
+      </dl>
+      <h3>Etapa 1</h3>
+      <dl>
+        <dt><span class="sit ok">entregue</span></dt>
+        <dd>Arquivo enviado na tarefa da etapa 1 do UFPR Virtual.</dd>
+        <dt><span class="sit ok">entregue</span><span class="det">envio do par</span></dt>
+        <dd>A pessoa não enviou, mas a outra pessoa da dupla enviou o arquivo com os dois nomes.</dd>
+        <dt><span class="sit ok">entregue</span><span class="det">por e-mail</span></dt>
+        <dd>Entrega recebida por outro meio e aceita pelo professor. O mesmo vale para
+          "na tarefa da etapa 2".</dd>
+        <dt><span class="sit nao">não entregue</span></dt>
+        <dd>Nenhum arquivo recebido. Não há entrega com atraso.</dd>
+      </dl>
+      <h3>Observação</h3>
+      <dl>
+        <dt><span class="obs grave">sem relatório de projeto</span></dt>
+        <dd>Modalidade sem IA, sem o arquivo <code>relatorio_de_projeto.md</code>.</dd>
+        <dt><span class="obs">relatório com outro nome</span></dt>
+        <dd>O relatório veio com nome diferente de <code>relatorio_de_projeto.md</code>.</dd>
+        <dt><span class="obs">relatório diferente do enviado pelo par</span></dt>
+        <dd>As duas pessoas da dupla enviaram o mesmo código com relatórios diferentes. O professor
+          considera a versão mais longa.</dd>
+        <dt><span class="obs">módulo em subpasta</span></dt>
+        <dd>O <code>go.mod</code> não está na raiz do zip.</dd>
+        <dt><span class="obs">arquivos extras no zip</span></dt>
+        <dd>Pastas como <code>__MACOSX/</code>, <code>.DS_Store</code> ou a saída do corretor.</dd>
+        <dt><span class="obs">kit inteiro no zip, com executáveis</span></dt>
+        <dd>O zip traz o kit ou o repositório inteiro, com os executáveis do kit, e não só o módulo
+          do bot. O mesmo vale para "repositório inteiro no zip".</dd>
+        <dt><span class="obs">binário compilado no zip</span></dt>
+        <dd>O zip traz o executável do bot.</dd>
+        <dt><span class="obs">sem README.md</span></dt>
+        <dd>A identificação não está no <code>README.md</code> da raiz do módulo, como pede o
+          enunciado. O mesmo vale para "LEIAME.md no lugar do README.md", "README.md sem GRR" e
+          "README.md fora do módulo".</dd>
+      </dl>
+    </div>
+  </section>
+</div>
+<script>
+const campo = document.getElementById('busca');
+const achado = document.getElementById('achado');
+function filtra() {
+  const q = campo.value.replace(/\D/g, '');
+  let n = 0;
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    const casa = q.length > 0 && tr.dataset.grr.includes(q);
+    tr.classList.toggle('marcado', casa && q.length >= 4);
+    tr.classList.toggle('oculto', q.length >= 4 && !casa);
+    if (casa && q.length >= 4) n++;
+  });
+  achado.textContent = q.length >= 4 ? (n ? n + ' encontrado(s)' : 'nenhum GRR encontrado') : '';
+}
+campo.addEventListener('input', filtra);
+</script>
+</body>
+</html>
