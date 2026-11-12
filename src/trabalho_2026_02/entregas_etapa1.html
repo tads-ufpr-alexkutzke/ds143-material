@@ -79,6 +79,9 @@ td.grr { font-family: var(--mono); font-size: 14px; white-space: nowrap; }
 .obs { background: var(--aviso-soft); color: var(--aviso); }
 .obs.grave { background: var(--nao-soft); color: var(--nao); font-weight: 600; }
 .vazio { color: var(--muted); font-size: 13px; }
+th .nota-th { display: block; margin-top: 6px; font: 400 13px/1.4 var(--body); letter-spacing: 0;
+              text-transform: none; white-space: normal; color: var(--muted); }
+th .nota-th .obs { font-size: 12px; padding: 1px 7px; }
 td.obs-col { min-width: 260px; }
 .legenda { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 22px 18px; }
 .legenda dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
@@ -130,7 +133,7 @@ td.obs-col { min-width: 260px; }
       </div>
       <div class="tabela">
       <table>
-        <thead><tr><th>GRR</th><th>Modalidade</th><th>Etapa 1</th><th>Observação</th></tr></thead>
+        <thead><tr><th>GRR</th><th>Modalidade</th><th>Etapa 1</th><th>Observação<span class="nota-th"><span class="obs">em amarelo</span> só para conhecimento, sem desconto de nota nesta entrega</span></th></tr></thead>
         <tbody>
         <tr data-grr="GRR20193841"><td class="grr">GRR20193841</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
         <tr data-grr="GRR20204495"><td class="grr">GRR20204495</td><td><span class="mod com">com IA</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="vazio">nada a corrigir</span></td></tr>
@@ -190,7 +193,7 @@ td.obs-col { min-width: 260px; }
       </div>
       <div class="tabela">
       <table>
-        <thead><tr><th>GRR</th><th>Modalidade</th><th>Etapa 1</th><th>Observação</th></tr></thead>
+        <thead><tr><th>GRR</th><th>Modalidade</th><th>Etapa 1</th><th>Observação<span class="nota-th"><span class="obs">em amarelo</span> só para conhecimento, sem desconto de nota nesta entrega</span></th></tr></thead>
         <tbody>
         <tr data-grr="GRR20193747"><td class="grr">GRR20193747</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit nao">não entregue</span></td><td class="obs-col"></td></tr>
         <tr data-grr="GRR20211610"><td class="grr">GRR20211610</td><td><span class="mod nd">com IA (sem declaração)</span></td><td><span class="sit ok">entregue</span></td><td class="obs-col"><span class="obs">módulo em subpasta</span></td></tr>
